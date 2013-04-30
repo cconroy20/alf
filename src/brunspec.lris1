@@ -1,0 +1,47 @@
+#!/bin/sh
+#BSUB -q itc_cluster
+#BSUB -J LRIS1
+#BSUB -R "span[ptile=35]"
+#BSUB -n 35
+#BSUB -o lris1.out
+#BSUB -e lris1.err
+#BSUB -W 24:00
+##BSUB -b 7:00
+
+./specfit.exe n1023 &
+./specfit.exe n2549 &
+./specfit.exe n2685 &
+./specfit.exe n2695 &
+./specfit.exe n2699 &
+./specfit.exe n2768 &
+./specfit.exe n2974 &
+./specfit.exe n31 &
+./specfit.exe n3377 &
+./specfit.exe n2279 &
+./specfit.exe n3384 &
+./specfit.exe n3414 &
+./specfit.exe n3608 &
+./specfit.exe n4262 &
+./specfit.exe n4270 &
+./specfit.exe n4278 &
+./specfit.exe n4382 &
+./specfit.exe n4458 &
+./specfit.exe n4459 &
+./specfit.exe n4473 &
+./specfit.exe n4546 &
+./specfit.exe n4552 &
+./specfit.exe n4564 &
+./specfit.exe n4570 &
+./specfit.exe n4621 &
+./specfit.exe n4660 &
+./specfit.exe n474 &
+./specfit.exe n524 &
+./specfit.exe n5308 &
+./specfit.exe n5813 &
+./specfit.exe n5838 &
+./specfit.exe n5845 &
+./specfit.exe n5846 &
+./specfit.exe n821 &
+./specfit.exe n87 &
+
+./wait.pl
