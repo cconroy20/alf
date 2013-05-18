@@ -26,7 +26,7 @@ FUNCTION GETVELZ()
      idata%wgt = linterp(tlam,data%wgt,sspgrid%lam)
      
      CALL CONTNORMSPEC(sspgrid%lam,idata%flx,idata%wgt,lo,hi,dflx)
-     CALL CONTNORMSPEC(sspgrid%lam,10**sspgrid%logfchab(nage,:),&
+     CALL CONTNORMSPEC(sspgrid%lam,10**sspgrid%logfkrpa(nage,:),&
           idata%wgt,lo,hi,mflx)
      i1 = MIN(MAX(locate(sspgrid%lam,lo),1),nl-1)
      i2 = MIN(MAX(locate(sspgrid%lam,hi),2),nl)

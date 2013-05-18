@@ -15,7 +15,7 @@ SUBROUTINE SET_WAVE_LIMITS(file)
        file(1:1).EQ.'b') THEN
      l1   = (/0.40,0.46,0.800,0.963/) * 1E4
      l2   = (/0.46,0.55,0.892,1.015/) * 1E4
-  ELSE IF (file(1:4).EQ.'ages') THEN
+  ELSE IF (file(1:4).EQ.'ages'.OR.file(1:2).EQ.'SN') THEN
      l1   = (/0.40,0.46,0.6,0.7/) * 1E4
      l2   = (/0.46,0.55,0.7,0.8/) * 1E4
   ELSE

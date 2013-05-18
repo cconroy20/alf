@@ -6,9 +6,9 @@ PROGRAM SPECFIT
   IMPLICIT NONE
 
   !number of chain steps to run
-  INTEGER, PARAMETER :: nmcmc=1E5
+  INTEGER, PARAMETER :: nmcmc=1E6
   !estimated burn-in length
-  INTEGER, PARAMETER :: nburn=1E4
+  INTEGER, PARAMETER :: nburn=1E5
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !total length of output mcmc file
