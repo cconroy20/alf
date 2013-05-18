@@ -18,7 +18,7 @@ MODULE SFVARS
   !apply template error function? (only works for SDSS stacks)
   INTEGER, PARAMETER :: apply_temperrfcn=0
   !fit only a subset of the full model parameters
-  INTEGER, PARAMETER :: fitsimple=1
+  INTEGER, PARAMETER :: fitsimple=0
   !force [Na/Fe]=[Mg/Fe]
   INTEGER, PARAMETER :: force_nafe=0
 
@@ -117,7 +117,7 @@ MODULE SFVARS
           fep,fem,cp,cm,ap,np,nm,tip,tim,mgp,mgm,sip,sim,crp,mnp,bap,bam,&
           nip,cup,cop,eup,srp,kp,vp,yp,zp,zm,zrp,rbp,teffp,teffm,m7g,nap6,nap9
      REAL(DP), DIMENSION(nage)    :: agegrid
-     REAL(DP), DIMENSION(nage,nl) :: logfchab
+     REAL(DP), DIMENSION(nage,nl) :: logfkrpa
      REAL(DP), DIMENSION(nimf,nimf,nl) :: imf
      REAL(DP), DIMENSION(nimf) :: imfx
      REAL(DP), DIMENSION(4,nl) :: hotspec

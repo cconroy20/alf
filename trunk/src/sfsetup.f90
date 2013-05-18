@@ -103,12 +103,12 @@ SUBROUTINE SFSETUP()
      READ(21,*) 
   ENDDO
   DO i=1,nl
-     READ(21,*) d1,sspgrid%logfchab(1,i),sspgrid%logfchab(2,i),&
-          sspgrid%logfchab(3,i),sspgrid%logfchab(4,i),sspgrid%logfchab(5,i),&
-          sspgrid%logfchab(6,i)
+     READ(21,*) d1,sspgrid%logfkrpa(1,i),sspgrid%logfkrpa(2,i),&
+          sspgrid%logfkrpa(3,i),sspgrid%logfkrpa(4,i),sspgrid%logfkrpa(5,i),&
+          sspgrid%logfkrpa(6,i)
   ENDDO
   CLOSE(21)
-  sspgrid%logfchab = LOG10(sspgrid%logfchab+tiny_number)
+  sspgrid%logfkrpa = LOG10(sspgrid%logfkrpa+tiny_number)
   sspgrid%agegrid  = (/3.0,5.0,7.0,9.0,11.0,13.5/)
 
 
@@ -195,7 +195,7 @@ SUBROUTINE SFSETUP()
   vv = locate(sspgrid%lam(1:nl),l5000)
   DO i=1,3
      sspgrid%hotspec(i,:) = sspgrid%hotspec(i,:)/sspgrid%hotspec(i,vv)*&
-          10**sspgrid%logfchab(6,vv)
+          10**sspgrid%logfkrpa(6,vv)
   ENDDO
   !hot star Teff in kK
   sspgrid%teffarrhot = (/8.0,10.,20.,30./)
