@@ -1,7 +1,9 @@
 FUNCTION FUNC(nposarr,spec)
 
-  !routine to get a new model and compute chi^2
+  !routine to get a new model and compute chi^2.  Optionally,
+  !the model spectrum is returned (spec)
 
+  !TBD:
   !solve for the polynomial that matches the data to the model
   !i.e., solve for *one* polynomial, rather than two, and 
   !put the coefficients into the MCMC just like every other parameter
@@ -67,9 +69,9 @@ FUNCTION FUNC(nposarr,spec)
   ELSE 
      func = func -2*LOG(pr)
   ENDIF
-
+   
+  !for testing purposes
   IF (1.EQ.0) THEN
-     !for testing purposes
      WRITE(*,'(2ES10.3,F7.2,99F7.3)') &
           func,pr,npos%sigma,npos%velz,npos%age,npos%feh,npos%afe,&
           npos%nhe,npos%cfe,npos%nfe,npos%nafe,npos%mgfe,npos%sife,npos%kfe,&

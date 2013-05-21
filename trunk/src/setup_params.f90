@@ -1,5 +1,8 @@
 SUBROUTINE SETUP_PARAMS(pos,dstep,prlo,prhi,velz)
 
+  !define the first position (pos), the step size (dstep),
+  !and the lower and upper bounds on the priors (prlo, prhi)
+
   USE sfvars; USE sfutils, ONLY : myran
   IMPLICIT NONE
 
@@ -130,7 +133,7 @@ SUBROUTINE SETUP_PARAMS(pos,dstep,prlo,prhi,velz)
   prlo%logemnorm = -5.0
 
   !priors (high)
-  prhi%age  = 14.5
+  prhi%age  = 15.0
   prhi%feh  = 0.6
   prhi%afe  = 0.6
   prhi%nhe  = 0.6

@@ -1,5 +1,9 @@
 SUBROUTINE GETMODEL(pos,spec,mw)
 
+  !routine to produce a model spectrum (spec) for an input 
+  !set of parameters (pos).  The optional flag 'mw' is used
+  !to force the IMF to be of the MW (Kroupa 2001) form
+
   USE sfvars; USE nr, ONLY : locate
   USE sfutils, ONLY : velbroad
   IMPLICIT NONE

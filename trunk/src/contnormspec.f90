@@ -16,6 +16,10 @@ END SUBROUTINE NPOLY
 
 SUBROUTINE CONTNORMSPEC(lam,flx,err,il1,il2,flxout)
 
+  !routine to continuum normalize a spectrum by a high-order
+  !polynomial.  The order of the polynomial is determined by
+  !n=(lam_max-lam_min)/100.
+
   USE sfvars; USE nr, ONLY : locate, lfit, svdfit
   IMPLICIT NONE
 

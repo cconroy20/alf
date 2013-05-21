@@ -1,5 +1,10 @@
 SUBROUTINE SET_WAVE_LIMITS(file)
 
+  !define the wavelength boundaries used in the fit.  Each 
+  !interval is fit separately.  If the red or blue limit
+  !is beyond the data limit, then that interval is exluded from
+  !the fit
+
   USE sfvars
   IMPLICIT NONE
   

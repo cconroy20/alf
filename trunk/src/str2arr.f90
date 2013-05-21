@@ -1,5 +1,9 @@
 SUBROUTINE STR2ARR(switch,str,arr)
 
+  !simple routine to dump the information in the parameteter 
+  !structure (str) into an array (arr), or visa versa, depending
+  !on the value of the switch
+
   USE sfvars
   IMPLICIT NONE
 

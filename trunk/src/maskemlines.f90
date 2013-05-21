@@ -1,5 +1,7 @@
 SUBROUTINE MASKEMLINES(zred,sigma)
 
+  !routine to mask emission lines
+
   USE sfvars
   IMPLICIT NONE
 

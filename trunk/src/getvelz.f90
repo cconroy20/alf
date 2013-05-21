@@ -1,5 +1,10 @@
 FUNCTION GETVELZ()
 
+  !function to estimate the recession velocity
+  !this routine is used to get a first-guess at the velocity
+  !so that the subsequent Powell minimization (in specfit)
+  !coverges faster
+
   USE sfvars; USE nr, ONLY : locate
   USE sfutils, ONLY : linterp,contnormspec
   IMPLICIT NONE
