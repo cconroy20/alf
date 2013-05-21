@@ -19,7 +19,6 @@ SUBROUTINE VELBROAD(lambda,spec,sigma)
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
  
-
   tspec(1:nl) = linterp(LOG(lambda(1:nl)),spec(1:nl),lnlam(1:nl))
      
   fwhm   = sigma*2.35482/clight*1E5/dlstep
@@ -37,5 +36,4 @@ SUBROUTINE VELBROAD(lambda,spec,sigma)
   !interpolate back to the main array
   spec(1:nl) = linterp(EXP(lnlam(1:nl)),nspec(1:nl),lambda(1:nl))
   
-
 END SUBROUTINE VELBROAD

@@ -1,5 +1,9 @@
 PROGRAM SPECFIT
 
+  !master program to fit the continuum-normalized spectrum
+  !of an old (>4 Gyr), metal-rich ([Fe/H]>-0.3) stellar
+  !population to the CvD stellar pop models
+
   USE sfvars; USE nr, ONLY : gasdev,ran,locate,powell,ran1
   USE ran_state, ONLY : ran_seed,ran_init
   USE sfutils

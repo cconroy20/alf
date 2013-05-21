@@ -1,5 +1,7 @@
 SUBROUTINE SFSETUP()
 
+  !read in and set up all the arrays
+
   USE sfvars; USE nr, ONLY : locate
   IMPLICIT NONE
   
