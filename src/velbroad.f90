@@ -1,7 +1,7 @@
 SUBROUTINE VELBROAD(lambda,spec,sigma)
 
   !routine to compute velocity broadening of an input spectrum
-  !the PSF kernel has a width of m*sigma, where m=4
+  !the PSF kernel has a width of m*sigma, where m=6
 
   USE sfvars; USE nr, ONLY : locate; USE sfutils, ONLY : linterp
   IMPLICIT NONE
@@ -11,14 +11,14 @@ SUBROUTINE VELBROAD(lambda,spec,sigma)
   REAL(DP), INTENT(in) :: sigma
   REAL(DP), DIMENSION(100000) :: tspec,nspec,vel,func,gauss,psf
   REAL(DP) :: cg,xmax,xmin,fwhm,psig
-  INTEGER :: i,j,il,ih,m=4,grange
+  INTEGER :: i,j,il,ih,m=6,grange
   !convolve at fixed sigma_velocity
   !if set to 0, then the convolution is at fixed sigma_wavelength
   INTEGER, PARAMETER :: velocity=1
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
- 
+  
   tspec(1:nl) = linterp(LOG(lambda(1:nl)),spec(1:nl),lnlam(1:nl))
      
   fwhm   = sigma*2.35482/clight*1E5/dlstep
