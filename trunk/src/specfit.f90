@@ -15,13 +15,15 @@ PROGRAM SPECFIT
   INTEGER, PARAMETER :: nburn=1E5
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
+  !force the IMF to be a MW IMF if =1
+  INTEGER, PARAMETER :: mwimf=0
+
   !total length of output mcmc file
   INTEGER, PARAMETER :: nmax=1E5
   !down-sample the output chains by this factor
   INTEGER, PARAMETER :: sample=nmcmc/nmax
   !Powell iteration tolerance
   REAL(DP), PARAMETER :: ftol=0.1
-
   INTEGER :: i,j,k,totacc=0,stat,i1,i2,iter=30,vv
   REAL(DP) :: mass,mwmass,fret,bret=huge_number,deltachi2,velz
   REAL(DP), DIMENSION(nl)   :: mspec,aspec,mspecmw,aspecmw
@@ -161,6 +163,11 @@ PROGRAM SPECFIT
      CALL GASDEV(granarr)
      nposarr = oposarr + granarr * dsteparr
      CALL STR2ARR(2,npos,nposarr) !arr->str
+
+     IF (mwimf.EQ.1) THEN
+        npos%imf1 = 1.3
+        npos%imf2 = 2.3
+     ENDIF
 
      !get a new model and compute chi^2
      npos%chi2 = func(nposarr,spec=mspec)
