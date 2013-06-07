@@ -16,7 +16,7 @@ PROGRAM SPECFIT
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !force the IMF to be a MW IMF if =1
-  INTEGER, PARAMETER :: mwimf=0
+  INTEGER, PARAMETER :: mwimf=1
 
   !total length of output mcmc file
   INTEGER, PARAMETER :: nmax=1E5
@@ -167,6 +167,7 @@ PROGRAM SPECFIT
      IF (mwimf.EQ.1) THEN
         npos%imf1 = 1.3
         npos%imf2 = 2.3
+        CALL STR2ARR(1,npos,nposarr) !str->arr
      ENDIF
 
      !get a new model and compute chi^2
