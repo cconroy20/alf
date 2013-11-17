@@ -13,14 +13,22 @@ MODULE SFVARS
 
   !-----------------Define various parameters--------------------!
 
+  !Option flags for the user to choose:
+
   !mask emission lines?
   INTEGER, PARAMETER :: maskem=0
   !apply template error function? (only works for SDSS stacks)
   INTEGER, PARAMETER :: apply_temperrfcn=0
-  !fit only a subset of the full model parameters
+  !fit only a subset of the full model parameters 
+  !  e.g., no IMF, no nuisance parameters, no "exotic" elements
   INTEGER, PARAMETER :: fitsimple=0
   !force [Na/Fe]=[Mg/Fe]
   INTEGER, PARAMETER :: force_nafe=0
+  !force the IMF to be a MW IMF if =1
+  INTEGER, PARAMETER :: mwimf=0
+  !if set, compute velocity broadening the fast, and slightly
+  !less accurate way
+  INTEGER, PARAMETER :: velbroad_fast=0
 
   !number of spectral elements in SSPs
   !nstart and nend allow us to use only a subset of 
