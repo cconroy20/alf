@@ -40,7 +40,7 @@ FUNCTION FUNC(nposarr,spec)
   idata%flx = linterp(tlam,data%flx,sspgrid%lam)
   idata%err = linterp(tlam,data%err,sspgrid%lam)
   idata%wgt = linterp(tlam,data%wgt,sspgrid%lam)
- 
+
   !compute chi2
   func = 0.0
   DO i=1,nlint
@@ -72,7 +72,7 @@ FUNCTION FUNC(nposarr,spec)
    
   !for testing purposes
   IF (1.EQ.0) THEN
-     WRITE(*,'(2ES10.3,F7.2,99F7.3)') &
+     WRITE(*,'(2ES10.3,F9.2,99F7.3)') &
           func,pr,npos%sigma,npos%velz,npos%age,npos%feh,npos%afe,&
           npos%nhe,npos%cfe,npos%nfe,npos%nafe,npos%mgfe,npos%sife,npos%kfe,&
           npos%cafe,npos%tife,npos%vfe,npos%crfe,npos%mnfe,npos%cofe,npos%nife,&

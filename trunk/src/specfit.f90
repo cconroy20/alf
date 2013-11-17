@@ -10,16 +10,14 @@ PROGRAM SPECFIT
   IMPLICIT NONE
 
   !number of chain steps to run
-  INTEGER, PARAMETER :: nmcmc=1E6
+  INTEGER, PARAMETER :: nmcmc=1E4
   !estimated burn-in length
-  INTEGER, PARAMETER :: nburn=1E5
+  INTEGER, PARAMETER :: nburn=1E4
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
-  !force the IMF to be a MW IMF if =1
-  INTEGER, PARAMETER :: mwimf=1
 
   !total length of output mcmc file
-  INTEGER, PARAMETER :: nmax=1E5
+  INTEGER, PARAMETER :: nmax=1E4
   !down-sample the output chains by this factor
   INTEGER, PARAMETER :: sample=nmcmc/nmax
   !Powell iteration tolerance
@@ -107,6 +105,7 @@ PROGRAM SPECFIT
   !we have to do this otherwise Powell minimization sometimes
   !chooses incorrect solutions
   velz = getvelz()
+  IF (file(1:5).EQ.'usher') velz = 0.0
 
   IF (dopowell.EQ.1) THEN 
 

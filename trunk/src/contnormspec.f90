@@ -47,7 +47,7 @@ SUBROUTINE CONTNORMSPEC(lam,flx,err,il1,il2,flxout)
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
-  !divide by a powerlaw of degree npow. one degree per 100A.
+  !divide by a power-law of degree npow. one degree per 100A.
   npow = NINT((il2-il1)/100.0) 
   npow = MIN(npow,14) !don't let things get out of hand
   

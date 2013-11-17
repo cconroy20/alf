@@ -25,7 +25,6 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   spec = dt*sspgrid%logfkrpa(vt+1,:) + (1-dt)*sspgrid%logfkrpa(vt,:)
   spec = 10**spec
 
-
   !vary [Fe/H]
   IF (pos%feh.GT.0.0) THEN 
      tmp  = 1 + (sspgrid%fep/sspgrid%solar-1)*pos%feh/0.3
@@ -228,7 +227,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
 
   !velocity broaden the model
   IF (pos%sigma.GT.20.0) &
-       CALL VELBROAD(sspgrid%lam,spec,pos%sigma)
+       CALL VELBROAD(sspgrid%lam,spec,pos%sigma,MINVAL(l1),MAXVAL(l2))
 
   IF (apply_temperrfcn.EQ.1) THEN
      spec = spec / temperrfcn
