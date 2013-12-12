@@ -31,7 +31,7 @@ SUBROUTINE SFSETUP()
   CLOSE(11)
 
   !read in the ATLAS SSPs
-  OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp.abund.chab.s100',&
+  OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp.abund.krpa.s100',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   READ(20,*) !burn the header
   READ(20,*)
@@ -85,7 +85,7 @@ SUBROUTINE SFSETUP()
   ENDIF
 
   !read in the extra ATLAS SSPs
-  OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp.abundex.chab.s100',&
+  OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp.abundex.krpa.s100',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   READ(20,*) !burn the header
   READ(20,*)
@@ -99,7 +99,7 @@ SUBROUTINE SFSETUP()
 
 
   !read in empirical spectra as a function of age
-  OPEN(21,FILE=TRIM(SPECFIT_HOME)//'/infiles/CvD_chabIMF.ssp.s100',&
+  OPEN(21,FILE=TRIM(SPECFIT_HOME)//'/infiles/CvD_krpaIMF.ssp.s100',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   DO i=1,nstart-1
      READ(21,*) 
@@ -107,11 +107,11 @@ SUBROUTINE SFSETUP()
   DO i=1,nl
      READ(21,*) d1,sspgrid%logfkrpa(1,i),sspgrid%logfkrpa(2,i),&
           sspgrid%logfkrpa(3,i),sspgrid%logfkrpa(4,i),sspgrid%logfkrpa(5,i),&
-          sspgrid%logfkrpa(6,i)
+          sspgrid%logfkrpa(6,i),sspgrid%logfkrpa(7,i)
   ENDDO
   CLOSE(21)
   sspgrid%logfkrpa = LOG10(sspgrid%logfkrpa+tiny_number)
-  sspgrid%agegrid  = (/3.0,5.0,7.0,9.0,11.0,13.5/)
+  sspgrid%agegrid  = (/1.0,3.0,5.0,7.0,9.0,11.0,13.5/)
 
 
   !vary two power-law slopes, from 0.1<M<0.5 and 0.5<M<1.0

@@ -22,7 +22,7 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl)
   IF (sigma.EQ.0) RETURN
 
   !compute smoothing the fast (and slightly less accurate) way
-  IF (velbroad_fast.EQ.1) THEN
+  IF (velbroad_simple.EQ.1) THEN
 
      tspec = spec
      spec  = 0.0
@@ -51,7 +51,7 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl)
          
      ENDDO
 
-  !compute smoothing the correct (and much slower) way
+  !compute smoothing the correct way
   !actually, this way is faster than the one above!
   ELSE
 

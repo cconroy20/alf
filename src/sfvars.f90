@@ -13,7 +13,7 @@ MODULE SFVARS
 
   !-----------------Define various parameters--------------------!
 
-  !Option flags for the user to choose:
+  !flags for the user to choose:
 
   !mask emission lines?
   INTEGER, PARAMETER :: maskem=0
@@ -24,18 +24,21 @@ MODULE SFVARS
   INTEGER, PARAMETER :: fitsimple=0
   !force [Na/Fe]=[Mg/Fe]
   INTEGER, PARAMETER :: force_nafe=0
-  !force the IMF to be a MW IMF if =1
+  !force the IMF to be a MW IMF if set
   INTEGER, PARAMETER :: mwimf=0
-  !if set, compute velocity broadening the fast, and slightly
-  !less accurate way
-  INTEGER, PARAMETER :: velbroad_fast=0
+  !if set, compute velocity broadening via a simple method
+  !rather than the proper convolution in log_lambda space
+  INTEGER, PARAMETER :: velbroad_simple=0
+
+  !the parameters below should not be modified unless you
+  !know what you are doing!
 
   !number of spectral elements in SSPs
   !nstart and nend allow us to use only a subset of 
   !the full wavelength array
-  INTEGER, PARAMETER :: nstart = 8990
-  INTEGER, PARAMETER :: nend   = 15769
-  INTEGER, PARAMETER :: nl = nend-nstart+1 !21769
+  INTEGER, PARAMETER :: nstart = 2100
+  INTEGER, PARAMETER :: nend   = 7700
+  INTEGER, PARAMETER :: nl = nend-nstart+1
   !number of wavelength intervals
   INTEGER, PARAMETER :: nlint = 4
   !number of emission lines to fit
@@ -43,7 +46,7 @@ MODULE SFVARS
   !length of input data
   INTEGER :: datmax=0
   !number of ages in the SSP grid
-  INTEGER, PARAMETER :: nage = 6
+  INTEGER, PARAMETER :: nage = 7
   !number of IMF values in the SSP grid
   INTEGER, PARAMETER :: nimf = 35
   !max number of data wavelength points

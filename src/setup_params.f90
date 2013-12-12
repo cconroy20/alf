@@ -13,7 +13,7 @@ SUBROUTINE SETUP_PARAMS(pos,dstep,prlo,prhi,velz)
   !---------------------------------------------------------------!
 
   !setup the first position
-  pos%age  = myran()*4+8
+  pos%age  = myran()*4+6
   pos%feh  = myran()*0.2-0.1
   pos%afe  = myran()*0.2-0.1
   pos%nhe  = myran()*0.2-0.1
@@ -95,7 +95,7 @@ SUBROUTINE SETUP_PARAMS(pos,dstep,prlo,prhi,velz)
   dstep%logemnorm = mcstep * 100
 
   !priors (low)
-  prlo%age  = 2.5
+  prlo%age  = 0.5
   prlo%feh  = -0.6
   prlo%afe  = -0.6
   prlo%nhe  = -0.6
