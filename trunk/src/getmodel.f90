@@ -20,8 +20,10 @@ SUBROUTINE GETMODEL(pos,spec,mw)
 
   !vary age
   vt   = MAX(MIN(locate(sspgrid%agegrid,pos%age),nage-1),1)
-  dt   = (pos%age-sspgrid%agegrid(vt))/&
-       (sspgrid%agegrid(vt+1)-sspgrid%agegrid(vt))
+  !interpolate in log(age)
+  dt   = (LOG10(pos%age)-LOG10(sspgrid%agegrid(vt)))/&
+       (LOG10(sspgrid%agegrid(vt+1))-LOG10(sspgrid%agegrid(vt)))
+  dt   = MAX(dt,-0.25) !no extrapolation younger than 0.5 Gyr
   spec = dt*sspgrid%logfkrpa(vt+1,:) + (1-dt)*sspgrid%logfkrpa(vt,:)
   spec = 10**spec
 
@@ -121,7 +123,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      
      !vary young (3 Gyr) population
      fy = MAX(MIN(10**pos%logfy,1.0),0.0)
-     spec = (1-fy)*spec + fy*10**sspgrid%logfkrpa(1,:)
+     spec = (1-fy)*spec + fy*10**sspgrid%logfkrpa(2,:)
      
      !add a hot star
      vt = MAX(MIN(locate(sspgrid%teffarrhot,pos%hotteff),3),1)
@@ -160,8 +162,8 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      spec = spec * tmp
 
      !vary [Cu/Fe]
-  !   tmp  = 1 + (sspgrid%cup/sspgrid%solar-1)*pos%cufe/0.3
-  !   spec = spec * tmp
+     tmp  = 1 + (sspgrid%cup/sspgrid%solar-1)*pos%cufe/0.3
+     spec = spec * tmp
      
      !vary [Rb/Fe]
      tmp  = 1 + (sspgrid%rbp/sspgrid%solar-1)*pos%rbfe/0.3
