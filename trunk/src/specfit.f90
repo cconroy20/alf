@@ -105,7 +105,8 @@ PROGRAM SPECFIT
   !we have to do this otherwise Powell minimization sometimes
   !chooses incorrect solutions
   velz = getvelz()
-  IF (file(1:5).EQ.'usher') velz = 0.0
+  IF (file(1:5).EQ.'usher')   velz = 0.0
+  IF (file(1:7).EQ.'mosfire') velz = 0.0
   
   IF (dopowell.EQ.1) THEN 
 
