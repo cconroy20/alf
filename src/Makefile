@@ -22,7 +22,7 @@ F90FLAGS = -O3 -fno-strict-overflow
 #F90FLAGS = -O3 -funroll-loops -xP
 #---------------------
 
-PROGS = specfit
+PROGS = specfit write_a_model
 
 COMMON =  nrtype.o sfvars.o nr.o nrutil.o ran_state.o sfutils.o getmodel.o \
 	sfsetup.o linterp.o velbroad.o tsum.o set_wave_limits.o \
@@ -40,9 +40,12 @@ clean :
 specfit : specfit.o $(COMMON) 
 	$(F90) -o specfit.exe specfit.o $(COMMON)
 
+write_a_model : write_a_model.o $(COMMON) 
+	$(F90) -o write_a_model.exe write_a_model.o $(COMMON)
+
 specfit.o : sfvars.o nrtype.o nr.o sfutils.o ran_state.o nrutil.o
 
-sps_utils.o: sfvars.o
+write_a_model.o : sfvars.o nrtype.o nr.o sfutils.o ran_state.o nrutil.o
 
 ran_state.o: nrutil.o
 
