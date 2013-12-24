@@ -19,9 +19,10 @@ MODULE SFUTILS
   END INTERFACE
 
   INTERFACE
-     SUBROUTINE GETM2L(lam,spec,pos,m2l,mw)
+     SUBROUTINE GETM2L(msto,lam,spec,pos,m2l,mw)
        USE sfvars
        REAL(DP), DIMENSION(nl), INTENT(in) :: lam,spec
+       REAL(DP), INTENT(in) :: msto
        TYPE(PARAMS), INTENT(in)   :: pos
        REAL(DP), DIMENSION(nfil), INTENT(out) :: m2l
        INTEGER, OPTIONAL :: mw

@@ -1,12 +1,11 @@
 PROGRAM SPECFIT
 
-  !master program to fit the continuum-normalized spectrum
-  !of an old (>4 Gyr), metal-rich ([Fe/H]>-0.3) stellar
-  !population to the CvD stellar pop models
+  ! Master program to fit the continuum-normalized spectrum
+  ! of an old (>1 Gyr), metal-rich ([Fe/H]>-0.3) stellar
+  ! population to the CvD model.
 
   USE sfvars; USE nr, ONLY : gasdev,ran,locate,powell,ran1
-  USE ran_state, ONLY : ran_seed,ran_init
-  USE sfutils
+  USE ran_state, ONLY : ran_seed,ran_init; USE sfutils
   IMPLICIT NONE
 
   !number of chain steps to run
@@ -15,15 +14,15 @@ PROGRAM SPECFIT
   INTEGER, PARAMETER :: nburn=1E4
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
-
   !total length of output mcmc file
   INTEGER, PARAMETER :: nmax=1E4
+
   !down-sample the output chains by this factor
   INTEGER, PARAMETER :: sample=nmcmc/nmax
   !Powell iteration tolerance
   REAL(DP), PARAMETER :: ftol=0.1
-  INTEGER :: i,j,k,totacc=0,stat,i1,i2,iter=30,vv
-  REAL(DP) :: mass,mwmass,fret,bret=huge_number,deltachi2,velz
+  INTEGER  :: i,j,k,totacc=0,stat,i1,i2,iter=30,vv
+  REAL(DP) :: mass,mwmass,fret,bret=huge_number,deltachi2,velz,s2n,msto
   REAL(DP), DIMENSION(nl)   :: mspec,aspec,mspecmw,aspecmw
   REAL(DP), DIMENSION(nl)   :: dflx,mflx,lam, err1=1.0
   REAL(DP), DIMENSION(nfil) :: mag,m2l,m2lmw
@@ -32,11 +31,10 @@ PROGRAM SPECFIT
   REAL(DP), DIMENSION(npar) :: granarr=0.,dsteparr=0.
   REAL(DP), DIMENSION(3,npar+2*nfil) :: runtot=0.0
   REAL(DP), DIMENSION(npar,npar) :: xi=0.0
-  CHARACTER(10)  :: time=''
-  CHARACTER(50)  :: file='',tag=''
-  TYPE(PARAMS)   :: npos,opos,prlo,prhi,dstep,bpos
-  TYPE(TDATA), DIMENSION(nl)   :: idata
-  REAL(DP) :: mto=1.0,imf1=1.3,imf2=2.3,imf3=2.3,s2n
+  CHARACTER(10) :: time=''
+  CHARACTER(50) :: file='',tag=''
+  TYPE(PARAMS)  :: npos,opos,prlo,prhi,dstep,bpos
+  TYPE(TDATA), DIMENSION(nl) :: idata
   
   !---------------------------------------------------------------!
   !---------------------------Setup-------------------------------!
@@ -44,7 +42,7 @@ PROGRAM SPECFIT
 
 
   !initialize the random number generator
-  CALL init_random_seed()
+  CALL INIT_RANDOM_SEED()
 
   IF (IARGC().LT.1) THEN
      file(1:5) = 'sdss6'
@@ -63,7 +61,7 @@ PROGRAM SPECFIT
 
   CALL date_and_time(TIME=time)
   WRITE(*,*) 
-  WRITE(*,*) 'Start Time '//time(1:2)//':'//time(3:4)//':'//time(5:6)
+  WRITE(*,*) 'Start Time '//time(1:2)//':'//time(3:4)
 
   !read in the SSPs and bandpass filters
   CALL SFSETUP()
@@ -185,12 +183,19 @@ PROGRAM SPECFIT
 
      !write chain element to file, subsampling the main chain
      IF (MOD(j,sample).EQ.0.AND.j.GT.nburn) THEN
-        CALL GETM2L(lam,mspec,opos,m2l)  !compute M/L
-        CALL GETMODEL(opos,mspecmw,mw=1) !get spectra for MW IMF
-        CALL GETM2L(lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
+        !compute the main sequence turn-off mass
+        msto=10**( msto_fit0 + msto_fit1*LOG10(opos%age) )
+        CALL GETM2L(msto,lam,mspec,opos,m2l) ! compute M/L
+        CALL GETMODEL(opos,mspecmw,mw=1)     ! get spectra for MW IMF
+        CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
         WRITE(12,'(ES11.5,99(F9.3,1x))') opos%chi2,oposarr,m2l,m2lmw
         CALL FLUSH(12)
-        runtot(1,:) = runtot(1,:)+1
+    ENDIF
+
+    !here we want to use all of the chain elements after Nburn
+    !for a more reliable estimate of the variance, etc.
+    IF (j.GT.nburn) THEN
+        runtot(1,:)      = runtot(1,:)+1.
         runtot(2,1:npar) = runtot(2,1:npar) + oposarr
         runtot(3,1:npar) = runtot(3,1:npar) + oposarr**2
         runtot(2,npar+1:npar+nfil) = runtot(2,npar+1:npar+nfil)+m2l
@@ -206,15 +211,16 @@ PROGRAM SPECFIT
   CLOSE(12)
 
   CALL date_and_time(TIME=time)
-  WRITE(*,*) '  End Time '//time(1:2)//':'//time(3:4)//':'//time(5:6)
+  WRITE(*,*) '  End Time '//time(1:2)//':'//time(3:4)
   WRITE(*,*) 
-  WRITE(*,'("facc: ",F4.2)') REAL(totacc)/REAL(nmcmc)
+  WRITE(*,'("  facc: ",F4.2)') REAL(totacc)/REAL(nmcmc)
   WRITE(*,*) 
 
   !---------------------------------------------------------------!
   !--------------------Write results to file----------------------!
   !---------------------------------------------------------------!
 
+  !NB: the model written to file has the lowest chi^2
   CALL GETMODEL(bpos,mspec)  !get the model
   tlam      = data%lam / (1+bpos%velz/clight*1E5) !de-redshift the data
   idata%flx = linterp(tlam,data%flx,lam)
@@ -231,7 +237,7 @@ PROGRAM SPECFIT
      CALL CONTNORMSPEC(lam,mspec,idata%wgt,l1(i),l2(i),mflx)
      i1 = MIN(MAX(locate(lam,l1(i)),1),nl-1)
      i2 = MIN(MAX(locate(lam,l2(i)),2),nl)
-     WRITE(*,'("rms:",F5.2,"%")') &
+     WRITE(*,'("  rms:",F5.2,"%")') &
           SQRT( SUM( (dflx(i1:i2)/mflx(i1:i2)-1)**2 ) / (i2-i1+1) )*100
      DO j=i1,i2
         WRITE(13,'(F9.2,3ES12.4)') lam(j),mflx(j),dflx(j),&
@@ -241,6 +247,7 @@ PROGRAM SPECFIT
   CLOSE(13)
   
   !write best-fit parameters
+  !here, "best-fit" means the mean of the posterior distributions
   OPEN(14,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
        TRIM(file)//TRIM(tag)//'.bestp',STATUS='REPLACE')
   WRITE(14,'(ES11.5,99(F9.3,1x))') bpos%chi2, runtot(2,:)/runtot(1,:)
@@ -250,7 +257,6 @@ PROGRAM SPECFIT
   OPEN(14,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
        TRIM(file)//TRIM(tag)//'.errp',STATUS='REPLACE')
   WRITE(14,'(ES11.5,99(F9.3,1x))') 0.0, &
-       !SQRT( 1/runtot(1,:)*(runtot(3,:)-runtot(2,:)**2/runtot(1,:)) )
        SQRT( runtot(3,:)/runtot(1,:) - runtot(2,:)**2/runtot(1,:)**2 )
   CLOSE(14)
 

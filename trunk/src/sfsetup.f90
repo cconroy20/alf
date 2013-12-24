@@ -151,7 +151,7 @@ SUBROUTINE SFSETUP()
   CLOSE(22)
  
 
-  !read in three hot stars 
+  !read in hot stars 
 
   OPEN(23,FILE=TRIM(SPECFIT_HOME)//'/infiles/ap00t8000g4.00at12.spec.s100',&
        STATUS='OLD',iostat=stat,ACTION='READ')

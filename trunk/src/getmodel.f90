@@ -37,7 +37,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   ENDIF
 
   !vary [O/Fe]
-  tmp  = 1 + (sspgrid%ap/sspgrid%solar-1)*pos%afe/0.2
+  tmp  = 1 + (sspgrid%ap/sspgrid%solar-1)*pos%afe/0.3
   spec = spec * tmp
 
   !vary [C/Fe]
@@ -93,10 +93,10 @@ SUBROUTINE GETMODEL(pos,spec,mw)
 
   !vary [Ca/Fe]
   IF (pos%cafe.GT.0.0) THEN 
-     tmp  = 1 + (sspgrid%cap/sspgrid%solar-1)*pos%cafe/0.15
+     tmp  = 1 + (sspgrid%cap/sspgrid%solar-1)*pos%cafe/0.3
      spec = spec * tmp
   ELSE IF (pos%cafe.LT.0.0) THEN     
-     tmp  = 1 + (sspgrid%cam/sspgrid%solar-1)*ABS(pos%cafe)/0.15
+     tmp  = 1 + (sspgrid%cam/sspgrid%solar-1)*ABS(pos%cafe)/0.3
      spec = spec * tmp
   ENDIF
 
@@ -112,7 +112,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   !only include these parameters in the "full" model
   IF (fitsimple.EQ.0) THEN
 
-     !vary teff
+     !vary Teff
      IF (pos%teff.GT.0.0) THEN 
         tmp  = 1 + (sspgrid%teffp/sspgrid%solar-1)*pos%teff/50.
         spec = spec * tmp
@@ -208,6 +208,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
              (1-dx1)*dx2*sspgrid%imf(vv1,vv2+1,:)+&
              dx1*dx2*sspgrid%imf(vv1+1,vv2+1,:)
         tmp = tmp/sspgrid%imf(i13,i23,:)
+
         !turn off IMF sensitivity at lambda<7000A
         !wh = where(la LT 7E3)
         !tmp[wh] = 1.0

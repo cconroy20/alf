@@ -1,4 +1,4 @@
-SUBROUTINE GETM2L(lam,spec,pos,m2l,mw)
+SUBROUTINE GETM2L(msto,lam,spec,pos,m2l,mw)
 
   !compute mass-to-light ratio in several filters (AB mags)
 
@@ -6,11 +6,12 @@ SUBROUTINE GETM2L(lam,spec,pos,m2l,mw)
   IMPLICIT NONE
 
   REAL(DP), DIMENSION(nl), INTENT(in) :: lam,spec
+  REAL(DP), INTENT(in) :: msto
   TYPE(PARAMS), INTENT(in)   :: pos
   REAL(DP), DIMENSION(nfil), INTENT(out) :: m2l
   REAL(DP), DIMENSION(nfil) :: mag
   REAL(DP), DIMENSION(nl)   :: aspec
-  REAL(DP) :: mass, mto=1.10, imf1=1.3,imf2=2.3,imf3=2.3
+  REAL(DP) :: mass
   INTEGER, OPTIONAL :: mw
 
   !---------------------------------------------------------------!
@@ -24,9 +25,9 @@ SUBROUTINE GETM2L(lam,spec,pos,m2l,mw)
   mag(3) = 0.0 !-2.5*LOG10(tsum(lam,aspec*fil(3,:)/lam))-48.6
 
   IF (PRESENT(mw)) THEN
-     mass = getmass(mto,imf1,imf2,imf3)
+     mass = getmass(msto,krpa_imf1,krpa_imf2,krpa_imf3)
   ELSE
-     mass = getmass(mto,pos%imf1,pos%imf2,imf3)
+     mass = getmass(msto,pos%imf1,pos%imf2,krpa_imf3)
   ENDIF
 
   m2l  = mass / 10**(2./5*(magsun-mag))
