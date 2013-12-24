@@ -21,7 +21,7 @@ MODULE SFVARS
   INTEGER, PARAMETER :: apply_temperrfcn=0
   !fit only a subset of the full model parameters 
   !e.g., no IMF, no nuisance parameters, no "exotic" elements
-  INTEGER, PARAMETER :: fitsimple=1
+  INTEGER, PARAMETER :: fitsimple=0
   !force [Na/Fe]=[Mg/Fe]
   INTEGER, PARAMETER :: force_nafe=0
   !force the IMF to be a MW IMF if set
@@ -61,6 +61,10 @@ MODULE SFVARS
   REAL(DP) :: mcstep=1E-4
   !lower and upper limits for the IMF
   REAL(DP), PARAMETER :: imflo=0.08,imfhi=100.0
+  !power-law slopes for a Kroupa IMF
+  REAL(DP), PARAMETER :: krpa_imf1=1.3,krpa_imf2=2.3,krpa_imf3=2.3
+  !linear fit to log(age) vs. log(MS TO mass)
+  REAL(DP), PARAMETER :: msto_fit0=0.290835,msto_fit1=-0.301566
 
   !----------Setup a common block of arrays and vars-------------!
 
@@ -137,7 +141,7 @@ MODULE SFVARS
 
   !structure for the data
   TYPE TDATA
-     REAL(DP) :: lam=1E6, flx=0., err=0., wgt=0.0
+     REAL(DP) :: lam=1E6,flx=0.,err=0.,wgt=0.0
   END TYPE TDATA
 
   !define the actual SSP grid to be shared between the routines
