@@ -22,24 +22,24 @@ PROGRAM WRITE_A_MODEL
   !compute an array of gaussian deviates
   CALL GASDEV(gdev)
 
-  file = 'age+10.0_mgfe+0.3_feh+0.1_sigma+50_nfe+0.3_s2n+200.spec'
-  s2n  = 200.0
-  lmin = 4590.
-  lmax = 5800.
+  file = 'age+8.0_mgfe+0.2_feh-0.05_nfe+0.2_cfe+0.2_afe+0.2_sigma+350_sn+10_v2.spec'
+  s2n  = 10.0
+  lmin = 3900.
+  lmax = 5600.
 
   !read in the SSPs and bandpass filters
   CALL SFSETUP()
   lam = sspgrid%lam
 
-  pos%sigma   = 50.0
-  pos%age     = 10.0
-  pos%feh     = 0.1
-  pos%afe     = 0.3
+  pos%sigma   = 350.0
+  pos%age     = 8.0
+  pos%feh     = -0.05
+  pos%afe     = 0.2
   pos%nhe     = 0.0
-  pos%cfe     = 0.0
+  pos%cfe     = 0.2
   pos%nfe     = 0.2
   pos%nafe    = 0.0
-  pos%mgfe    = 0.3
+  pos%mgfe    = 0.2
   pos%sife    = 0.0
   pos%kfe     = 0.0
   pos%cafe    = 0.0
