@@ -19,9 +19,9 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   !---------------------------------------------------------------!
 
   !vary age
-  vt   = MAX(MIN(locate(sspgrid%agegrid,pos%age),nage-1),1)
+  vt   = MAX(MIN(locate(LOG10(sspgrid%agegrid),pos%logage),nage-1),1)
   !interpolate in log(age)
-  dt   = (LOG10(pos%age)-LOG10(sspgrid%agegrid(vt)))/&
+  dt   = (pos%logage-LOG10(sspgrid%agegrid(vt)))/&
        (LOG10(sspgrid%agegrid(vt+1))-LOG10(sspgrid%agegrid(vt)))
   dt   = MAX(dt,-0.25) !no extrapolation younger than 0.5 Gyr
   spec = dt*sspgrid%logfkrpa(vt+1,:) + (1-dt)*sspgrid%logfkrpa(vt,:)

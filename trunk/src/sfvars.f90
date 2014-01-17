@@ -117,7 +117,7 @@ MODULE SFVARS
   
   !structure for the set of parameters necessary to generate a model
   TYPE PARAMS
-     REAL(DP) :: age=13.5,feh=0.0,afe=0.0,nhe=0.0,cfe=0.0,nfe=0.0,nafe=0.0,&
+     REAL(DP) :: logage=1.0,feh=0.0,afe=0.0,nhe=0.0,cfe=0.0,nfe=0.0,nafe=0.0,&
           mgfe=0.0,sife=0.0,kfe=0.0,cafe=0.0,tife=0.0,vfe=0.0,crfe=0.0,&
           mnfe=0.0,cofe=0.0,nife=0.0,cufe=0.0,rbfe=0.0,srfe=0.0,yfe=0.0,zrfe=0.0,&
           bafe=0.0,eufe=0.0,teff=0.0,imf1=1.3,imf2=2.3,logfy=-5.0,sigma=0.0,&

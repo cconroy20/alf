@@ -32,7 +32,7 @@ PROGRAM WRITE_A_MODEL
   lam = sspgrid%lam
 
   pos%sigma   = 350.0
-  pos%age     = 8.0
+  pos%logage  = LOG10(8.0)
   pos%feh     = -0.05
   pos%afe     = 0.2
   pos%nhe     = 0.0
