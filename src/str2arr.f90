@@ -19,7 +19,7 @@ SUBROUTINE STR2ARR(switch,str,arr)
 
      !str->arr
 
-     arr(1)=str%age
+     arr(1)=str%logage
      arr(2)=str%feh
      arr(3)=str%afe
      arr(4)=str%nhe
@@ -66,7 +66,7 @@ SUBROUTINE STR2ARR(switch,str,arr)
 
      !arr->str
 
-     str%age=arr(1)
+     str%logage=arr(1)
      str%feh=arr(2)
      str%afe=arr(3)
      str%nhe=arr(4)

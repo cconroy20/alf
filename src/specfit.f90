@@ -11,7 +11,7 @@ PROGRAM SPECFIT
   !number of chain steps to run
   INTEGER, PARAMETER :: nmcmc=1E5
   !estimated burn-in length
-  INTEGER, PARAMETER :: nburn=1E4
+  INTEGER, PARAMETER :: nburn=1E5
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !total length of output mcmc file
@@ -131,7 +131,7 @@ PROGRAM SPECFIT
      !params, so set them to defaults
      opos%imf1 = 1.3
      opos%imf2 = 2.3
-     opos%age  = 12.0
+     opos%logage = LOG10(12.0)
      opos%cofe = 0.0
      opos%crfe = 0.0
      opos%mnfe = 0.0
@@ -184,11 +184,11 @@ PROGRAM SPECFIT
      !write chain element to file, subsampling the main chain
      IF (MOD(j,sample).EQ.0.AND.j.GT.nburn) THEN
         !compute the main sequence turn-off mass
-        msto=10**( msto_fit0 + msto_fit1*LOG10(opos%age) )
+        msto=10**( msto_fit0 + msto_fit1*opos%logage )
         CALL GETM2L(msto,lam,mspec,opos,m2l) ! compute M/L
         CALL GETMODEL(opos,mspecmw,mw=1)     ! get spectra for MW IMF
         CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
-        WRITE(12,'(ES11.5,99(F9.3,1x))') opos%chi2,oposarr,m2l,m2lmw
+        WRITE(12,'(ES11.5,99(F9.4,1x))') opos%chi2,oposarr,m2l,m2lmw
         CALL FLUSH(12)
     ENDIF
 
