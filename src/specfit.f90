@@ -9,13 +9,13 @@ PROGRAM SPECFIT
   IMPLICIT NONE
 
   !number of chain steps to run
-  INTEGER, PARAMETER :: nmcmc=1E5
+  INTEGER, PARAMETER :: nmcmc=1E6
   !estimated burn-in length
-  INTEGER, PARAMETER :: nburn=1E5
+  INTEGER, PARAMETER :: nburn=3E5
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !total length of output mcmc file
-  INTEGER, PARAMETER :: nmax=1E4
+  INTEGER, PARAMETER :: nmax=1E5
 
   !down-sample the output chains by this factor
   INTEGER, PARAMETER :: sample=nmcmc/nmax
@@ -250,13 +250,13 @@ PROGRAM SPECFIT
   !here, "best-fit" means the mean of the posterior distributions
   OPEN(14,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
        TRIM(file)//TRIM(tag)//'.bestp',STATUS='REPLACE')
-  WRITE(14,'(ES11.5,99(F9.3,1x))') bpos%chi2, runtot(2,:)/runtot(1,:)
+  WRITE(14,'(ES11.5,99(F9.4,1x))') bpos%chi2, runtot(2,:)/runtot(1,:)
   CLOSE(14)
 
   !write 1 sigma errors on parameters
   OPEN(14,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
        TRIM(file)//TRIM(tag)//'.errp',STATUS='REPLACE')
-  WRITE(14,'(ES11.5,99(F9.3,1x))') 0.0, &
+  WRITE(14,'(ES11.5,99(F9.4,1x))') 0.0, &
        SQRT( runtot(3,:)/runtot(1,:) - runtot(2,:)**2/runtot(1,:)**2 )
   CLOSE(14)
 

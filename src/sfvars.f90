@@ -21,11 +21,11 @@ MODULE SFVARS
   INTEGER, PARAMETER :: apply_temperrfcn=0
   !fit only a subset of the full model parameters 
   !e.g., no IMF, no nuisance parameters, no "exotic" elements
-  INTEGER, PARAMETER :: fitsimple=0
+  INTEGER, PARAMETER :: fitsimple=1
   !force [Na/Fe]=[Mg/Fe]
-  INTEGER, PARAMETER :: force_nafe=0
+  INTEGER, PARAMETER :: force_nafe=1
   !force the IMF to be a MW IMF if set
-  INTEGER, PARAMETER :: mwimf=0
+  INTEGER, PARAMETER :: mwimf=1
   !if set, compute velocity broadening via a simple method
   !rather than the proper convolution in log_lambda space
   INTEGER, PARAMETER :: velbroad_simple=0
