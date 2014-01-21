@@ -9,7 +9,7 @@ PROGRAM SPECFIT
   IMPLICIT NONE
 
   !number of chain steps to run
-  INTEGER, PARAMETER :: nmcmc=1E6
+  INTEGER, PARAMETER :: nmcmc=1E4
   !estimated burn-in length
   INTEGER, PARAMETER :: nburn=3E5
   !start w/ powell minimization?
@@ -131,11 +131,11 @@ PROGRAM SPECFIT
      !params, so set them to defaults
      opos%imf1 = 1.3
      opos%imf2 = 2.3
-     opos%logage = LOG10(12.0)
-     opos%cofe = 0.0
-     opos%crfe = 0.0
-     opos%mnfe = 0.0
-     opos%nife = 0.0
+     !opos%logage = LOG10(12.0)
+     opos%coh = 0.0
+     opos%crh = 0.0
+     opos%mnh = 0.0
+     opos%nih = 0.0
      CALL STR2ARR(1,opos,oposarr) !str->arr
 
   ENDIF

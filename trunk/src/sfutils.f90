@@ -1,6 +1,18 @@
 MODULE SFUTILS
 
   INTERFACE
+     SUBROUTINE ADD_RESPONSE(spec,pos,range,dr,vr,solar,plus,minus)
+       USE sfvars
+       INTEGER, INTENT(in) :: vr
+       REAL(SP), INTENT(in) :: range
+       REAL(DP), INTENT(in) :: pos,dr
+       REAL(DP), DIMENSION(nl), INTENT(inout) :: spec
+       REAL(DP), DIMENSION(nage_rfcn,nl), INTENT(in) :: plus,solar
+       REAL(DP), DIMENSION(nage_rfcn,nl), INTENT(in), OPTIONAL :: minus
+     END SUBROUTINE ADD_RESPONSE
+  END INTERFACE
+
+  INTERFACE
      SUBROUTINE CONTNORMSPEC(lam,flx,err,il1,il2,flxout)
        USE sfvars
        REAL(DP), DIMENSION(nl), INTENT(in) :: lam,flx,err

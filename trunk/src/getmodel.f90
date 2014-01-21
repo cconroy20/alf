@@ -5,121 +5,88 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   !to force the IMF to be of the MW (Kroupa 2001) form
 
   USE sfvars; USE nr, ONLY : locate
-  USE sfutils, ONLY : velbroad
+  USE sfutils, ONLY : velbroad, add_response
   IMPLICIT NONE
 
   TYPE(PARAMS), INTENT(in) :: pos
   REAL(DP), DIMENSION(nl), INTENT(out) :: spec
   INTEGER, OPTIONAL :: mw
-  REAL(DP), DIMENSION(nl) :: tmp
-  INTEGER :: vt,vv1,vv2,i
-  REAL(DP) :: dt,fy,dx1,dx2,lsig,vz
+  REAL(DP), DIMENSION(nl) :: tmp,tmpr
+  INTEGER :: vt,vv1,vv2,i,vr
+  REAL(DP) :: dt,fy,dx1,dx2,lsig,vz,dr
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
-  !vary age
-  vt   = MAX(MIN(locate(LOG10(sspgrid%agegrid),pos%logage),nage-1),1)
-  !interpolate in log(age)
-  dt   = (pos%logage-LOG10(sspgrid%agegrid(vt)))/&
-       (LOG10(sspgrid%agegrid(vt+1))-LOG10(sspgrid%agegrid(vt)))
+  !vary age of the empirical SSPs
+  vt   = MAX(MIN(locate(sspgrid%logagegrid,pos%logage),nage-1),1)
+  dt   = (pos%logage-sspgrid%logagegrid(vt))/&
+       (sspgrid%logagegrid(vt+1)-sspgrid%logagegrid(vt))
   dt   = MAX(dt,-0.25) !no extrapolation younger than 0.5 Gyr
   spec = dt*sspgrid%logfkrpa(vt+1,:) + (1-dt)*sspgrid%logfkrpa(vt,:)
   spec = 10**spec
 
+  !vary age in the response functions
+  IF (use_age_dep_resp_fcns.EQ.0) THEN
+     !force the use of the 13 Gyr response fcn
+     vr = nage_rfcn-1
+     dr = 1.0
+  ELSE
+     vr = MAX(MIN(locate(sspgrid%logagegrid_rfcn,pos%logage),nage_rfcn-1),1)
+     dr = (pos%logage-sspgrid%logagegrid_rfcn(vr))/&
+          (sspgrid%logagegrid_rfcn(vr+1)-sspgrid%logagegrid_rfcn(vr))
+     dr = MAX(MIN(dr,1.0),0.0)
+  ENDIF
+
   !vary [Fe/H]
-  IF (pos%feh.GT.0.0) THEN 
-     tmp  = 1 + (sspgrid%fep/sspgrid%solar-1)*pos%feh/0.3
+  CALL ADD_RESPONSE(spec,pos%feh,0.3,dr,vr,sspgrid%solar,sspgrid%fep,sspgrid%fem)
+  !vary [O/H]
+  CALL ADD_RESPONSE(spec,pos%ah,0.3,dr,vr,sspgrid%solar,sspgrid%ap)
+  !vary [C/H]
+  CALL ADD_RESPONSE(spec,pos%ch,0.15,dr,vr,sspgrid%solar,sspgrid%cp,sspgrid%cm)
+  !vary [N/H]
+  CALL ADD_RESPONSE(spec,pos%nh,0.3,dr,vr,sspgrid%solar,sspgrid%np,sspgrid%nm)
+  !vary [Mg/H]
+  CALL ADD_RESPONSE(spec,pos%mgh,0.3,dr,vr,sspgrid%solar,sspgrid%mgp,sspgrid%mgm)
+  !vary [Si/H]
+  CALL ADD_RESPONSE(spec,pos%sih,0.3,dr,vr,sspgrid%solar,sspgrid%sip,sspgrid%sim)
+  !vary [Ca/H]
+  CALL ADD_RESPONSE(spec,pos%cah,0.3,dr,vr,sspgrid%solar,sspgrid%cap,sspgrid%cam)
+  !vary [Ti/H]
+  CALL ADD_RESPONSE(spec,pos%tih,0.3,dr,vr,sspgrid%solar,sspgrid%tip,sspgrid%tim)
+
+  !vary [Na/H] (special case)
+  IF (pos%nah.GT.0.0.AND.pos%nah.LT.0.3) THEN
+     tmpr = dr*sspgrid%nap(vr+1,:)/sspgrid%solar(vr+1,:) + &
+          (1-dr)*sspgrid%nap(vr,:)/sspgrid%solar(vr,:)
+     tmp  = 1 + (tmpr-1)*pos%nah/0.3
      spec = spec * tmp
-  ELSE IF (pos%feh.LT.0.0) THEN     
-     tmp  = 1 + (sspgrid%fem/sspgrid%solar-1)*ABS(pos%feh)/0.3
+  ELSE IF (pos%nah.GE.0.3.AND.pos%nah.LT.0.6) THEN
+     tmpr = dr*sspgrid%nap(vr+1,:)/sspgrid%solar(vr+1,:) + &
+          (1-dr)*sspgrid%nap(vr,:)/sspgrid%solar(vr,:)
+     tmp = dr * (sspgrid%nap6(vr+1,:)-sspgrid%nap(vr+1,:))/sspgrid%solar(vr+1,:) + &
+          (1-dr)*(sspgrid%nap6(vr,:)-sspgrid%nap(vr,:))/sspgrid%solar(vr,:)
+     spec = spec * ( tmpr + tmp*(pos%nah-0.3)/0.3 )
+  ELSE IF (pos%nah.GE.0.6) THEN
+     tmpr = dr*sspgrid%nap6(vr+1,:)/sspgrid%solar(vr+1,:) + &
+          (1-dr)*sspgrid%nap6(vr,:)/sspgrid%solar(vr,:)
+     tmp = dr * (sspgrid%nap9(vr+1,:)-sspgrid%nap6(vr+1,:))/sspgrid%solar(vr+1,:) + &
+          (1-dr)*(sspgrid%nap9(vr,:)-sspgrid%nap6(vr,:))/sspgrid%solar(vr,:)
+     spec = spec * ( tmpr + tmp*(pos%nah-0.6)/0.6 )
+  ELSE IF (pos%nah.LT.0.0) THEN
+     tmpr = dr*sspgrid%nam(vr+1,:)/sspgrid%solar(vr+1,:) + &
+          (1-dr)*sspgrid%nam(vr,:)/sspgrid%solar(vr,:)
+     tmp  = 1 + (tmpr-1)*ABS(pos%nah)/0.3
      spec = spec * tmp
   ENDIF
 
-  !vary [O/Fe]
-  tmp  = 1 + (sspgrid%ap/sspgrid%solar-1)*pos%afe/0.3
-  spec = spec * tmp
-
-  !vary [C/Fe]
-  IF (pos%cfe.GT.0.0) THEN 
-     tmp  = 1 + (sspgrid%cp/sspgrid%solar-1)*pos%cfe/0.15
-     spec = spec * tmp
-  ELSE IF (pos%cfe.LT.0.0) THEN     
-     tmp  = 1 + (sspgrid%cm/sspgrid%solar-1)*ABS(pos%cfe)/0.15
-     spec = spec * tmp
-  ENDIF
-
-  !vary [N/Fe]
-  IF (pos%nfe.GT.0.0) THEN 
-     tmp  = 1 + (sspgrid%np/sspgrid%solar-1)*pos%nfe/0.3
-     spec = spec * tmp
-  ELSE IF (pos%nfe.LT.0.0) THEN     
-     tmp  = 1 + (sspgrid%nm/sspgrid%solar-1)*ABS(pos%nfe)/0.3
-     spec = spec * tmp
-  ENDIF
-
-  !vary [Na/Fe]
-  IF (pos%nafe.GT.0.0.AND.pos%nafe.LT.0.3) THEN 
-     tmp  = 1 + (sspgrid%nap/sspgrid%solar-1)*pos%nafe/0.3
-     spec = spec * tmp
-  ELSE IF (pos%nafe.GE.0.3.AND.pos%nafe.LT.0.6) THEN 
-     tmp  = sspgrid%nap + (sspgrid%nap6-sspgrid%nap)*(pos%nafe-0.3)/0.3
-     spec = spec * tmp/sspgrid%solar
-  ELSE IF (pos%nafe.GE.0.6) THEN 
-     tmp  = sspgrid%nap6 + (sspgrid%nap9-sspgrid%nap6)*(pos%nafe-0.6)/0.6
-     spec = spec * tmp/sspgrid%solar
-  ELSE IF (pos%nafe.LT.0.0) THEN     
-     tmp  = 1 + (sspgrid%nam/sspgrid%solar-1)*ABS(pos%nafe)/0.3
-     spec = spec * tmp
-  ENDIF
-
-  !vary [Mg/Fe]
-  IF (pos%mgfe.GT.0.0) THEN 
-     tmp  = 1 + (sspgrid%mgp/sspgrid%solar-1)*pos%mgfe/0.3
-     spec = spec * tmp
-  ELSE IF (pos%mgfe.LT.0.0) THEN     
-     tmp  = 1 + (sspgrid%mgm/sspgrid%solar-1)*ABS(pos%mgfe)/0.3
-     spec = spec * tmp
-  ENDIF
-
-  !vary [Si/Fe]
-  IF (pos%sife.GT.0.0) THEN 
-     tmp  = 1 + (sspgrid%sip/sspgrid%solar-1)*pos%sife/0.3
-     spec = spec * tmp
-  ELSE IF (pos%sife.LT.0.0) THEN     
-     tmp  = 1 + (sspgrid%sim/sspgrid%solar-1)*ABS(pos%sife)/0.3
-     spec = spec * tmp
-  ENDIF
-
-  !vary [Ca/Fe]
-  IF (pos%cafe.GT.0.0) THEN 
-     tmp  = 1 + (sspgrid%cap/sspgrid%solar-1)*pos%cafe/0.3
-     spec = spec * tmp
-  ELSE IF (pos%cafe.LT.0.0) THEN     
-     tmp  = 1 + (sspgrid%cam/sspgrid%solar-1)*ABS(pos%cafe)/0.3
-     spec = spec * tmp
-  ENDIF
-
-  !vary [Ti/Fe]
-  IF (pos%tife.GT.0.0) THEN 
-     tmp  = 1 + (sspgrid%tip/sspgrid%solar-1)*pos%tife/0.3
-     spec = spec * tmp
-  ELSE IF (pos%tife.LT.0.0) THEN     
-     tmp  = 1 + (sspgrid%tim/sspgrid%solar-1)*ABS(pos%tife)/0.3
-     spec = spec * tmp
-  ENDIF
 
   !only include these parameters in the "full" model
   IF (fitsimple.EQ.0) THEN
 
-     !vary Teff
-     IF (pos%teff.GT.0.0) THEN 
-        tmp  = 1 + (sspgrid%teffp/sspgrid%solar-1)*pos%teff/50.
-        spec = spec * tmp
-     ELSE IF (pos%teff.LT.0.0) THEN     
-        tmp  = 1 + (sspgrid%teffm/sspgrid%solar-1)*ABS(pos%teff)/50.
-        spec = spec * tmp
-     ENDIF
+     !vary Teff (special case - force use of the 13 Gyr model)
+     CALL ADD_RESPONSE(spec,pos%teff,50.,1.d0,nage_rfcn-1,sspgrid%solar,&
+          sspgrid%teffp,sspgrid%teffm)
      
      !vary young (3 Gyr) population
      fy = MAX(MIN(10**pos%logfy,1.0),0.0)
@@ -137,63 +104,33 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      fy = MAX(MIN(10**pos%logm7g,1.0),0.0)
      spec = (1-fy)*spec + fy*sspgrid%m7g
 
-     !vary [K/Fe]
-     tmp  = 1 + (sspgrid%kp/sspgrid%solar-1)*pos%kfe/0.3
-     spec = spec * tmp
+     !vary [K/H]
+     CALL ADD_RESPONSE(spec,pos%kh,0.3,dr,vr,sspgrid%solar,sspgrid%kp)
+     !vary [V/H]
+     CALL ADD_RESPONSE(spec,pos%vh,0.3,dr,vr,sspgrid%solar,sspgrid%vp)
+     !vary [Cr/H]
+     CALL ADD_RESPONSE(spec,pos%crh,0.3,dr,vr,sspgrid%solar,sspgrid%crp)
+     !vary [Mn/H]
+     CALL ADD_RESPONSE(spec,pos%mnh,0.3,dr,vr,sspgrid%solar,sspgrid%mnp)
+     !vary [Co/H]
+     CALL ADD_RESPONSE(spec,pos%coh,0.3,dr,vr,sspgrid%solar,sspgrid%cop)
+     !vary [Ni/H]
+     CALL ADD_RESPONSE(spec,pos%nih,0.3,dr,vr,sspgrid%solar,sspgrid%nip)
+     !vary [Cu/H]
+     CALL ADD_RESPONSE(spec,pos%cuh,0.3,dr,vr,sspgrid%solar,sspgrid%cup)
+     !vary [Rb/H]
+     CALL ADD_RESPONSE(spec,pos%rbh,0.3,dr,vr,sspgrid%solar,sspgrid%rbp)
+     !vary [Sr/H]
+     CALL ADD_RESPONSE(spec,pos%srh,0.3,dr,vr,sspgrid%solar,sspgrid%srp)
+     !vary [Y/H]
+     CALL ADD_RESPONSE(spec,pos%yh,0.3,dr,vr,sspgrid%solar,sspgrid%yp)
+     !vary [Zr/H]
+     CALL ADD_RESPONSE(spec,pos%zrh,0.3,dr,vr,sspgrid%solar,sspgrid%zrp)
+     !vary [Ba/H]
+     CALL ADD_RESPONSE(spec,pos%bah,0.3,dr,vr,sspgrid%solar,sspgrid%bap,sspgrid%bam)
+     !vary [Eu/H]
+     CALL ADD_RESPONSE(spec,pos%euh,0.3,dr,vr,sspgrid%solar,sspgrid%eup)
 
-     !vary [V/Fe]
-     tmp  = 1 + (sspgrid%vp/sspgrid%solar-1)*pos%vfe/0.3
-     spec = spec * tmp
-
-     !vary [Cr/Fe]
-     tmp  = 1 + (sspgrid%crp/sspgrid%solar-1)*pos%crfe/0.3
-     spec = spec * tmp
-
-     !vary [Mn/Fe]
-     tmp  = 1 + (sspgrid%mnp/sspgrid%solar-1)*pos%mnfe/0.3
-     spec = spec * tmp
-     
-     !vary [Co/Fe]
-     tmp  = 1 + (sspgrid%cop/sspgrid%solar-1)*pos%cofe/0.3
-     spec = spec * tmp
-     
-     !vary [Ni/Fe]
-     tmp  = 1 + (sspgrid%nip/sspgrid%solar-1)*pos%nife/0.3
-     spec = spec * tmp
-
-     !vary [Cu/Fe]
-     tmp  = 1 + (sspgrid%cup/sspgrid%solar-1)*pos%cufe/0.3
-     spec = spec * tmp
-     
-     !vary [Rb/Fe]
-     tmp  = 1 + (sspgrid%rbp/sspgrid%solar-1)*pos%rbfe/0.3
-     spec = spec * tmp
-     
-     !vary [Sr/Fe]
-     tmp  = 1 + (sspgrid%srp/sspgrid%solar-1)*pos%srfe/0.3
-     spec = spec * tmp
-     
-     !vary [Y/Fe]
-     tmp  = 1 + (sspgrid%yp/sspgrid%solar-1)*pos%yfe/0.3
-     spec = spec * tmp
-     
-     !vary [Zr/Fe]
-     tmp  = 1 + (sspgrid%zrp/sspgrid%solar-1)*pos%zrfe/0.3
-     spec = spec * tmp
-     
-     !vary [Ba/Fe]
-     IF (pos%bafe.GT.0.0) THEN 
-        tmp  = 1 + (sspgrid%bap/sspgrid%solar-1)*pos%bafe/0.3
-        spec = spec * tmp
-     ELSE IF (pos%bafe.LT.0.0) THEN     
-        tmp  = 1 + (sspgrid%bam/sspgrid%solar-1)*ABS(pos%bafe)/0.3
-        spec = spec * tmp
-     ENDIF
-
-     !vary [Eu/Fe]
-     tmp  = 1 + (sspgrid%eup/sspgrid%solar-1)*pos%eufe/0.3
-     spec = spec * tmp
-     
      IF (.NOT.PRESENT(mw)) THEN
         
         !vary IMF
