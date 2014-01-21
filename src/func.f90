@@ -73,10 +73,10 @@ FUNCTION FUNC(nposarr,spec)
   !for testing purposes
   IF (1.EQ.0) THEN
      WRITE(*,'(2ES10.3,F12.2,99F7.3)') &
-          func,pr,npos%sigma,npos%velz,npos%logage,npos%feh,npos%afe,&
-          npos%nhe,npos%cfe,npos%nfe,npos%nafe,npos%mgfe,npos%sife,npos%kfe,&
-          npos%cafe,npos%tife,npos%vfe,npos%crfe,npos%mnfe,npos%cofe,npos%nife,&
-          npos%rbfe,npos%srfe,npos%yfe,npos%zrfe,npos%bafe,npos%eufe,npos%teff,&
+          func,pr,npos%sigma,npos%velz,npos%logage,npos%feh,npos%ah,&
+          npos%nhe,npos%ch,npos%nh,npos%nah,npos%mgh,npos%sih,npos%kh,&
+          npos%cah,npos%tih,npos%vh,npos%crh,npos%mnh,npos%coh,npos%nih,&
+          npos%rbh,npos%srh,npos%yh,npos%zrh,npos%bah,npos%euh,npos%teff,&
           npos%imf1,npos%imf2,npos%logfy,npos%velz,npos%logm7g,npos%hotteff,&
           npos%loghot
   ENDIF

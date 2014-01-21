@@ -31,71 +31,67 @@ SUBROUTINE SFSETUP()
   CLOSE(11)
 
   !read in the ATLAS SSPs
-  OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp.abund.krpa.s100',&
-       STATUS='OLD',iostat=stat,ACTION='READ')
-  READ(20,*) !burn the header
-  READ(20,*)
-  DO i=1,nstart-1
-     READ(20,*) 
+  DO j=1,nage_rfcn
+
+     IF (j.EQ.1) THEN
+        OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t01.abund.krpa.s100',&
+             STATUS='OLD',iostat=stat,ACTION='READ')
+     ELSE IF (j.EQ.2) THEN
+        OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t05.abund.krpa.s100',&
+             STATUS='OLD',iostat=stat,ACTION='READ')
+     ELSE IF (j.EQ.3) THEN
+        OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t09.abund.krpa.s100',&
+             STATUS='OLD',iostat=stat,ACTION='READ')
+     ELSE IF (j.EQ.4) THEN
+        OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t13.abund.krpa.s100',&
+             STATUS='OLD',iostat=stat,ACTION='READ')
+     ENDIF
+           
+     READ(20,*) !burn the header
+     READ(20,*)
+     DO i=1,nstart-1
+        READ(20,*) 
+     ENDDO
+     DO i=1,nl
+        READ(20,*) sspgrid%lam(i),sspgrid%solar(j,i),sspgrid%nap(j,i),&
+             sspgrid%nam(j,i),sspgrid%cap(j,i),sspgrid%cam(j,i),sspgrid%fep(j,i),&
+             sspgrid%fem(j,i),sspgrid%cp(j,i),sspgrid%cm(j,i),d1,sspgrid%zp(j,i),&
+             sspgrid%zm(j,i),sspgrid%np(j,i),sspgrid%nm(j,i),sspgrid%ap(j,i),&
+             sspgrid%tip(j,i),sspgrid%tim(j,i),sspgrid%mgp(j,i),sspgrid%mgm(j,i),&
+             sspgrid%sip(j,i),sspgrid%sim(j,i),sspgrid%hep(j,i),sspgrid%hem(j,i),&
+             sspgrid%teffp(j,i),sspgrid%teffm(j,i),sspgrid%crp(j,i),sspgrid%mnp(j,i),&
+             sspgrid%bap(j,i),sspgrid%bam(j,i),sspgrid%nip(j,i),sspgrid%cop(j,i),&
+             sspgrid%eup(j,i),sspgrid%srp(j,i),sspgrid%kp(j,i),sspgrid%vp(j,i),&
+             sspgrid%yp(j,i),sspgrid%zrp(j,i),sspgrid%rbp(j,i),&
+             sspgrid%cup(j,i),sspgrid%nap6(j,i),sspgrid%nap9(j,i)
+     ENDDO
+     CLOSE(20)
+
   ENDDO
-  DO i=1,nl
-     READ(20,*) sspgrid%lam(i),sspgrid%solar(i),sspgrid%nap(i),sspgrid%nam(i),&
-          sspgrid%cap(i),sspgrid%cam(i),sspgrid%fep(i),sspgrid%fem(i),&
-          sspgrid%cp(i),sspgrid%cm(i),d1,sspgrid%zp(i),sspgrid%zm(i),&
-          sspgrid%np(i),sspgrid%nm(i),sspgrid%ap(i),sspgrid%tip(i),sspgrid%tim(i),&
-          sspgrid%mgp(i),sspgrid%mgm(i),sspgrid%sip(i),sspgrid%sim(i),&
-          sspgrid%hep(i),sspgrid%hem(i),sspgrid%teffp(i),sspgrid%teffm(i),&
-          sspgrid%crp(i),sspgrid%mnp(i),sspgrid%bap(i),sspgrid%bam(i),&
-          sspgrid%nip(i),sspgrid%cop(i),sspgrid%eup(i),sspgrid%srp(i),&
-          sspgrid%kp(i),sspgrid%vp(i),sspgrid%yp(i),sspgrid%zrp(i),sspgrid%rbp(i),&
-          sspgrid%cup(i)
-  ENDDO
-  CLOSE(20)
+
+  sspgrid%logagegrid_rfcn = LOG10((/1.0,5.0,9.0,13.0/))
 
   IF (1.EQ.0) THEN
 
-     !create fake response functions for Cr, Mn, Ni, and Co, by shifting
+     !create fake response functions for Cr, Mn, and Co, by shifting
      !the wavelengths by n pixels
-     shift = 150
-     test2 = sspgrid%crp / sspgrid%solar
-     sspgrid%crp = 1.0
-     sspgrid%crp(shift:nl-1) = test2(1:nl-shift)
-     sspgrid%crp = sspgrid%crp * sspgrid%solar
+     !shift = 150
+     !test2 = sspgrid%crp / sspgrid%solar
+     !sspgrid%crp = 1.0
+     !sspgrid%crp(shift:nl-1) = test2(1:nl-shift)
+     !sspgrid%crp = sspgrid%crp * sspgrid%solar
      
-     test2 = sspgrid%mnp / sspgrid%solar
-     sspgrid%mnp = 1.0
-     sspgrid%mnp(shift:nl-1) = test2(1:nl-shift)
-     sspgrid%mnp = sspgrid%mnp * sspgrid%solar
-     
-     test2 = sspgrid%nip / sspgrid%solar
-     sspgrid%nip = 1.0
-     sspgrid%nip(shift:nl-1) = test2(1:nl-shift)
-     sspgrid%nip = sspgrid%nip * sspgrid%solar
-     
-     test2 = sspgrid%cop / sspgrid%solar
-     sspgrid%cop = 1.0
-     sspgrid%cop(shift:nl-1) = test2(1:nl-shift)
-     sspgrid%cop = sspgrid%cop * sspgrid%solar
-     
-     test2 = sspgrid%vp / sspgrid%solar
-     sspgrid%vp = 1.0
-     sspgrid%vp(shift:nl-1) = test2(1:nl-shift)
-     sspgrid%vp = sspgrid%vp * sspgrid%solar
-
+     !test2 = sspgrid%mnp / sspgrid%solar
+     !sspgrid%mnp = 1.0
+     !sspgrid%mnp(shift:nl-1) = test2(1:nl-shift)
+     !sspgrid%mnp = sspgrid%mnp * sspgrid%solar
+  
+     !test2 = sspgrid%cop / sspgrid%solar
+     !sspgrid%cop = 1.0
+     !sspgrid%cop(shift:nl-1) = test2(1:nl-shift)
+     !sspgrid%cop = sspgrid%cop * sspgrid%solar
+ 
   ENDIF
-
-  !read in the extra ATLAS SSPs
-  OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp.abundex.krpa.s100',&
-       STATUS='OLD',iostat=stat,ACTION='READ')
-  READ(20,*) !burn the header
-  READ(20,*)
-  DO i=1,nstart-1
-     READ(20,*) 
-  ENDDO
-  DO i=1,nl
-     READ(20,*) d1,sspgrid%nap6(i),sspgrid%nap9(i)
-  ENDDO
-  CLOSE(20)
 
 
   !read in empirical spectra as a function of age
@@ -110,8 +106,8 @@ SUBROUTINE SFSETUP()
           sspgrid%logfkrpa(6,i),sspgrid%logfkrpa(7,i)
   ENDDO
   CLOSE(21)
-  sspgrid%logfkrpa = LOG10(sspgrid%logfkrpa+tiny_number)
-  sspgrid%agegrid  = (/1.0,3.0,5.0,7.0,9.0,11.0,13.5/)
+  sspgrid%logfkrpa   = LOG10(sspgrid%logfkrpa+tiny_number)
+  sspgrid%logagegrid = LOG10((/1.0,3.0,5.0,7.0,9.0,11.0,13.5/))
 
 
   !vary two power-law slopes, from 0.1<M<0.5 and 0.5<M<1.0

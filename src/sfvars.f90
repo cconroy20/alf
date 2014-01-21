@@ -22,13 +22,16 @@ MODULE SFVARS
   !fit only a subset of the full model parameters 
   !e.g., no IMF, no nuisance parameters, no "exotic" elements
   INTEGER, PARAMETER :: fitsimple=1
-  !force [Na/Fe]=[Mg/Fe]
-  INTEGER, PARAMETER :: force_nafe=1
+  !force [Na/H]=[Mg/H]
+  INTEGER, PARAMETER :: force_nah=0
   !force the IMF to be a MW IMF if set
   INTEGER, PARAMETER :: mwimf=1
   !if set, compute velocity broadening via a simple method
   !rather than the proper convolution in log_lambda space
+  !don't turn this on - the "correct" version is just as fast
   INTEGER, PARAMETER :: velbroad_simple=0
+  !turn on the use of age-dependent response functions
+  INTEGER, PARAMETER :: use_age_dep_resp_fcns=0
 
   !the parameters below should not be modified unless you
   !know what you are doing!
@@ -45,8 +48,10 @@ MODULE SFVARS
   INTEGER, PARAMETER :: neml = 13
   !length of input data
   INTEGER :: datmax=0
-  !number of ages in the SSP grid
+  !number of ages in the empirical SSP grid
   INTEGER, PARAMETER :: nage = 7
+  !number of ages in the response functions
+  INTEGER, PARAMETER :: nage_rfcn = 4
   !number of IMF values in the SSP grid
   INTEGER, PARAMETER :: nimf = 35
   !max number of data wavelength points
@@ -117,10 +122,10 @@ MODULE SFVARS
   
   !structure for the set of parameters necessary to generate a model
   TYPE PARAMS
-     REAL(DP) :: logage=1.0,feh=0.0,afe=0.0,nhe=0.0,cfe=0.0,nfe=0.0,nafe=0.0,&
-          mgfe=0.0,sife=0.0,kfe=0.0,cafe=0.0,tife=0.0,vfe=0.0,crfe=0.0,&
-          mnfe=0.0,cofe=0.0,nife=0.0,cufe=0.0,rbfe=0.0,srfe=0.0,yfe=0.0,zrfe=0.0,&
-          bafe=0.0,eufe=0.0,teff=0.0,imf1=1.3,imf2=2.3,logfy=-5.0,sigma=0.0,&
+     REAL(DP) :: logage=1.0,feh=0.0,ah=0.0,nhe=0.0,ch=0.0,nh=0.0,nah=0.0,&
+          mgh=0.0,sih=0.0,kh=0.0,cah=0.0,tih=0.0,vh=0.0,crh=0.0,&
+          mnh=0.0,coh=0.0,nih=0.0,cuh=0.0,rbh=0.0,srh=0.0,yh=0.0,zrh=0.0,&
+          bah=0.0,euh=0.0,teff=0.0,imf1=1.3,imf2=2.3,logfy=-5.0,sigma=0.0,&
           sigma2=0.0,velz=0.0,velz2=0.0,logm7g=-5.0,hotteff=20.0,loghot=-5.0
      REAL(DP), DIMENSION(neml) :: logemnorm=-5.0
      REAL(DP) :: chi2=huge_number
@@ -128,10 +133,12 @@ MODULE SFVARS
   
   !structure for the model SSPs
   TYPE SSP
-     REAL(DP), DIMENSION(nl) :: lam,solar,hep,hem,nap,nam,cap,cam,&
+     REAL(DP), DIMENSION(nl) :: lam,m7g
+     REAL(DP), DIMENSION(nage_rfcn,nl) :: solar,hep,hem,nap,nam,cap,cam,&
           fep,fem,cp,cm,ap,np,nm,tip,tim,mgp,mgm,sip,sim,crp,mnp,bap,bam,&
-          nip,cup,cop,eup,srp,kp,vp,yp,zp,zm,zrp,rbp,teffp,teffm,m7g,nap6,nap9
-     REAL(DP), DIMENSION(nage)    :: agegrid
+          nip,cup,cop,eup,srp,kp,vp,yp,zp,zm,zrp,rbp,teffp,teffm,nap6,nap9
+     REAL(DP), DIMENSION(nage_rfcn)   :: logagegrid_rfcn
+     REAL(DP), DIMENSION(nage)    :: logagegrid
      REAL(DP), DIMENSION(nage,nl) :: logfkrpa
      REAL(DP), DIMENSION(nimf,nimf,nl) :: imf
      REAL(DP), DIMENSION(nimf) :: imfx
