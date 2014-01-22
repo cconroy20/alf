@@ -2,7 +2,7 @@ PROGRAM SPECFIT
 
   ! Master program to fit the continuum-normalized spectrum
   ! of an old (>1 Gyr), metal-rich ([Fe/H]>-0.3) stellar
-  ! population to the CvD model.
+  ! population to the CvD model suite.
 
   USE sfvars; USE nr, ONLY : gasdev,ran,locate,powell,ran1
   USE ran_state, ONLY : ran_seed,ran_init; USE sfutils
@@ -10,12 +10,12 @@ PROGRAM SPECFIT
 
   !number of chain steps to run
   INTEGER, PARAMETER :: nmcmc=1E4
-  !estimated burn-in length
-  INTEGER, PARAMETER :: nburn=3E5
+  !length of burn-in
+  INTEGER, PARAMETER :: nburn=1E4
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !total length of output mcmc file
-  INTEGER, PARAMETER :: nmax=1E5
+  INTEGER, PARAMETER :: nmax=1E4
 
   !down-sample the output chains by this factor
   INTEGER, PARAMETER :: sample=nmcmc/nmax
@@ -40,7 +40,6 @@ PROGRAM SPECFIT
   !---------------------------Setup-------------------------------!
   !---------------------------------------------------------------!
 
-
   !initialize the random number generator
   CALL INIT_RANDOM_SEED()
 
@@ -59,9 +58,21 @@ PROGRAM SPECFIT
      STOP
   ENDIF
 
+  WRITE(*,*) 
+  WRITE(*,'("****************************************")') 
+  WRITE(*,'("  fitsimple  =",I2)') fitsimple
+  WRITE(*,'("      mwimf  =",I2)') mwimf
+  WRITE(*,'("  force_nah  =",I2)') force_nah
+  WRITE(*,'("  age-dep Rf =",I2)') use_age_dep_resp_fcns
+  WRITE(*,'("  Nburn      = ",I6)') nburn
+  WRITE(*,'("  Nchain     = ",I6)') nmcmc
+  WRITE(*,'("   Output filename = ",A18)') TRIM(file)//TRIM(tag)
+  WRITE(*,'("****************************************")') 
+ 
   CALL date_and_time(TIME=time)
   WRITE(*,*) 
   WRITE(*,*) 'Start Time '//time(1:2)//':'//time(3:4)
+
 
   !read in the SSPs and bandpass filters
   CALL SFSETUP()
@@ -131,11 +142,10 @@ PROGRAM SPECFIT
      !params, so set them to defaults
      opos%imf1 = 1.3
      opos%imf2 = 2.3
-     !opos%logage = LOG10(12.0)
-     opos%coh = 0.0
-     opos%crh = 0.0
-     opos%mnh = 0.0
-     opos%nih = 0.0
+     opos%coh  = 0.0
+     opos%crh  = 0.0
+     opos%mnh  = 0.0
+     opos%nih  = 0.0
      CALL STR2ARR(1,opos,oposarr) !str->arr
 
   ENDIF
@@ -233,7 +243,8 @@ PROGRAM SPECFIT
   DO i=1,nlint
      IF (MAXVAL(tlam(1:datmax)).LT.l2(i)) CYCLE
      IF (MINVAL(tlam(1:datmax)).GT.l1(i)) CYCLE
-     CALL CONTNORMSPEC(lam,idata%flx,idata%err,l1(i),l2(i),dflx)
+     !CALL CONTNORMSPEC(lam,idata%flx,idata%err,l1(i),l2(i),dflx)
+     CALL CONTNORMSPEC(lam,idata%flx,idata%wgt,l1(i),l2(i),dflx)
      CALL CONTNORMSPEC(lam,mspec,idata%wgt,l1(i),l2(i),mflx)
      i1 = MIN(MAX(locate(lam,l1(i)),1),nl-1)
      i2 = MIN(MAX(locate(lam,l2(i)),2),nl)
