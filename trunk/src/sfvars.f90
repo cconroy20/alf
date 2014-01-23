@@ -21,18 +21,18 @@ MODULE SFVARS
   INTEGER, PARAMETER :: apply_temperrfcn=0
   !fit only a subset of the full model parameters 
   !e.g., no IMF, no nuisance parameters, no "exotic" elements
-  INTEGER, PARAMETER :: fitsimple=0
+  INTEGER, PARAMETER :: fitsimple=1
   !force [Na/H]=[Mg/H]
-  INTEGER, PARAMETER :: force_nah=0
+  INTEGER, PARAMETER :: force_nah=1
   !force the IMF to be a MW IMF if set
   !this is automatically assumed if fitsimple=1
-  INTEGER, PARAMETER :: mwimf=0
+  INTEGER, PARAMETER :: mwimf=1
   !if set, compute velocity broadening via a simple method
   !rather than the proper convolution in log_lambda space
   !don't turn this on - the "correct" version is just as fast
   INTEGER, PARAMETER :: velbroad_simple=0
   !turn on the use of age-dependent response functions
-  INTEGER, PARAMETER :: use_age_dep_resp_fcns=0
+  INTEGER, PARAMETER :: use_age_dep_resp_fcns=1
 
   !the parameters below should not be modified unless you
   !know what you are doing!
