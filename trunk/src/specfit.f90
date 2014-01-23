@@ -9,13 +9,13 @@ PROGRAM SPECFIT
   IMPLICIT NONE
 
   !number of chain steps to run
-  INTEGER, PARAMETER :: nmcmc=1E4
+  INTEGER, PARAMETER :: nmcmc=1E6
   !length of burn-in
-  INTEGER, PARAMETER :: nburn=1E4
+  INTEGER, PARAMETER :: nburn=1E6
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !total length of output mcmc file
-  INTEGER, PARAMETER :: nmax=1E4
+  INTEGER, PARAMETER :: nmax=1E5
 
   !down-sample the output chains by this factor
   INTEGER, PARAMETER :: sample=nmcmc/nmax
@@ -243,8 +243,8 @@ PROGRAM SPECFIT
   DO i=1,nlint
      IF (MAXVAL(tlam(1:datmax)).LT.l2(i)) CYCLE
      IF (MINVAL(tlam(1:datmax)).GT.l1(i)) CYCLE
-     !CALL CONTNORMSPEC(lam,idata%flx,idata%err,l1(i),l2(i),dflx)
-     CALL CONTNORMSPEC(lam,idata%flx,idata%wgt,l1(i),l2(i),dflx)
+     CALL CONTNORMSPEC(lam,idata%flx,idata%err,l1(i),l2(i),dflx)
+     !CALL CONTNORMSPEC(lam,idata%flx,idata%wgt,l1(i),l2(i),dflx)
      CALL CONTNORMSPEC(lam,mspec,idata%wgt,l1(i),l2(i),mflx)
      i1 = MIN(MAX(locate(lam,l1(i)),1),nl-1)
      i2 = MIN(MAX(locate(lam,l2(i)),2),nl)
