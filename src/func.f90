@@ -48,8 +48,7 @@ FUNCTION FUNC(nposarr,spec)
      IF (MAXVAL(tlam(1:datmax)).LT.l2(i)) CYCLE
      IF (MINVAL(tlam(1:datmax)).GT.l1(i)) CYCLE
      CALL CONTNORMSPEC(sspgrid%lam,idata%flx,idata%err,l1(i),l2(i),dflx)
-     !CALL CONTNORMSPEC(sspgrid%lam,idata%flx,idata%wgt,l1(i),l2(i),dflx)
-     CALL CONTNORMSPEC(sspgrid%lam,mspec,idata%wgt,l1(i),l2(i),mflx)
+     CALL CONTNORMSPEC(sspgrid%lam,mspec,idata%wgt*sqrt(mspec),l1(i),l2(i),mflx)
      i1 = MIN(MAX(locate(sspgrid%lam,l1(i)),1),nl-1)
      i2 = MIN(MAX(locate(sspgrid%lam,l2(i)),2),nl)
      tchi2 = SUM(idata(i1:i2)%flx**2/idata(i1:i2)%err**2*&

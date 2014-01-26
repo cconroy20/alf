@@ -22,8 +22,8 @@ PROGRAM WRITE_A_MODEL
   !compute an array of gaussian deviates
   CALL GASDEV(gdev)
 
-  file = 'age+8.0_mgfe+0.2_feh-0.05_nfe+0.2_cfe+0.2_afe+0.2_sigma+350_sn+10_v2.spec'
-  s2n  = 10.0
+  file = 'age+13.0_sn+100.spec'
+  s2n  = 100.0
   lmin = 3900.
   lmax = 5600.
 
@@ -31,15 +31,15 @@ PROGRAM WRITE_A_MODEL
   CALL SFSETUP()
   lam = sspgrid%lam
 
-  pos%sigma   = 350.0
-  pos%logage  = LOG10(8.0)
-  pos%feh     = -0.05
-  pos%ah      = 0.2
+  pos%sigma   = 10.0
+  pos%logage  = LOG10(13.0)
+  pos%feh     = 0.0
+  pos%ah      = 0.0
   pos%nhe     = 0.0
-  pos%ch      = 0.2
-  pos%nh      = 0.2
+  pos%ch      = 0.0
+  pos%nh      = 0.0
   pos%nah     = 0.0
-  pos%mgh     = 0.2
+  pos%mgh     = 0.0
   pos%sih     = 0.0
   pos%kh      = 0.0
   pos%cah     = 0.0

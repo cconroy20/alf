@@ -37,12 +37,15 @@ SUBROUTINE SFSETUP()
         OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t01.abund.krpa.s100',&
              STATUS='OLD',iostat=stat,ACTION='READ')
      ELSE IF (j.EQ.2) THEN
+        OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t03.abund.krpa.s100',&
+             STATUS='OLD',iostat=stat,ACTION='READ')
+      ELSE IF (j.EQ.3) THEN
         OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t05.abund.krpa.s100',&
              STATUS='OLD',iostat=stat,ACTION='READ')
-     ELSE IF (j.EQ.3) THEN
+     ELSE IF (j.EQ.4) THEN
         OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t09.abund.krpa.s100',&
              STATUS='OLD',iostat=stat,ACTION='READ')
-     ELSE IF (j.EQ.4) THEN
+     ELSE IF (j.EQ.5) THEN
         OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t13.abund.krpa.s100',&
              STATUS='OLD',iostat=stat,ACTION='READ')
      ENDIF
@@ -69,7 +72,7 @@ SUBROUTINE SFSETUP()
 
   ENDDO
 
-  sspgrid%logagegrid_rfcn = LOG10((/1.0,5.0,9.0,13.0/))
+  sspgrid%logagegrid_rfcn = LOG10((/1.0,3.0,5.0,9.0,13.0/))
 
   IF (1.EQ.0) THEN
 
