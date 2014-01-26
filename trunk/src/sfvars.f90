@@ -21,18 +21,18 @@ MODULE SFVARS
   INTEGER, PARAMETER :: apply_temperrfcn=0
   !fit only a subset of the full model parameters 
   !e.g., no IMF, no nuisance parameters, no "exotic" elements
-  INTEGER, PARAMETER :: fitsimple=1
+  INTEGER, PARAMETER :: fitsimple=0
   !force [Na/H]=[Mg/H]
-  INTEGER, PARAMETER :: force_nah=1
+  INTEGER, PARAMETER :: force_nah=0
   !force the IMF to be a MW IMF if set
   !this is automatically assumed if fitsimple=1
-  INTEGER, PARAMETER :: mwimf=1
+  INTEGER, PARAMETER :: mwimf=0
   !if set, compute velocity broadening via a simple method
   !rather than the proper convolution in log_lambda space
   !don't turn this on - the "correct" version is just as fast
   INTEGER, PARAMETER :: velbroad_simple=0
   !turn on the use of age-dependent response functions
-  INTEGER, PARAMETER :: use_age_dep_resp_fcns=1
+  INTEGER, PARAMETER :: use_age_dep_resp_fcns=0
 
   !the parameters below should not be modified unless you
   !know what you are doing!
@@ -41,7 +41,7 @@ MODULE SFVARS
   !nstart and nend allow us to use only a subset of 
   !the full wavelength array
   INTEGER, PARAMETER :: nstart = 2100
-  INTEGER, PARAMETER :: nend   = 7700
+  INTEGER, PARAMETER :: nend   = 7700 !4200 
   INTEGER, PARAMETER :: nl = nend-nstart+1
   !number of wavelength intervals
   INTEGER, PARAMETER :: nlint = 4
@@ -52,7 +52,7 @@ MODULE SFVARS
   !number of ages in the empirical SSP grid
   INTEGER, PARAMETER :: nage = 7
   !number of ages in the response functions
-  INTEGER, PARAMETER :: nage_rfcn = 4
+  INTEGER, PARAMETER :: nage_rfcn = 5
   !number of IMF values in the SSP grid
   INTEGER, PARAMETER :: nimf = 35
   !max number of data wavelength points
