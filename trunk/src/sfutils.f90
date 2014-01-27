@@ -13,19 +13,21 @@ MODULE SFUTILS
   END INTERFACE
 
   INTERFACE
-     SUBROUTINE CONTNORMSPEC(lam,flx,err,il1,il2,flxout)
+     SUBROUTINE CONTNORMSPEC(lam,flx,err,il1,il2,flxout,coeff)
        USE sfvars
        REAL(DP), DIMENSION(nl), INTENT(in) :: lam,flx,err
        REAL(DP), INTENT(in) :: il1,il2
        REAL(DP), DIMENSION(nl), INTENT(inout) :: flxout
+       REAL(DP), DIMENSION(ncoeff), OPTIONAL :: coeff
      END SUBROUTINE CONTNORMSPEC
   END INTERFACE
 
   INTERFACE
-     FUNCTION FUNC(nposarr,spec)
+     FUNCTION FUNC(nposarr,spec,funit)
        USE sfvars
        REAL(DP), DIMENSION(:), INTENT(in) :: nposarr
        REAL(DP), DIMENSION(:), OPTIONAL :: spec
+       INTEGER, INTENT(in), OPTIONAL :: funit
        REAL(DP) :: func
      END FUNCTION FUNC
   END INTERFACE

@@ -21,16 +21,16 @@ PROGRAM SPECFIT
   INTEGER, PARAMETER :: sample=nmcmc/nmax
   !Powell iteration tolerance
   REAL(DP), PARAMETER :: ftol=0.1
-  INTEGER  :: i,j,k,totacc=0,stat,i1,i2,iter=30,vv
+  INTEGER  :: i,j,k,totacc=0,stat,i1,i2,iter=30,vv,npow,tpow
   REAL(DP) :: mass,mwmass,fret,bret=huge_number,deltachi2,velz,s2n,msto
-  REAL(DP), DIMENSION(nl)   :: mspec,aspec,mspecmw,aspecmw
-  REAL(DP), DIMENSION(nl)   :: dflx,mflx,lam, err1=1.0
+  REAL(DP), DIMENSION(nl)   :: mspec,dflx,mspecmw,tmp,lam
   REAL(DP), DIMENSION(nfil) :: mag,m2l,m2lmw
   REAL(DP), DIMENSION(ndat) :: tlam
   REAL(DP), DIMENSION(npar) :: oposarr=0.,nposarr=0.,bposarr=0.0
   REAL(DP), DIMENSION(npar) :: granarr=0.,dsteparr=0.
   REAL(DP), DIMENSION(3,npar+2*nfil) :: runtot=0.0
   REAL(DP), DIMENSION(npar,npar) :: xi=0.0
+  REAL(DP), DIMENSION(ncoeff) :: tcoeff
   CHARACTER(10) :: time=''
   CHARACTER(50) :: file='',tag=''
   TYPE(PARAMS)  :: npos,opos,prlo,prhi,dstep,bpos
@@ -73,10 +73,13 @@ PROGRAM SPECFIT
   WRITE(*,*) 
   WRITE(*,*) 'Start Time '//time(1:2)//':'//time(3:4)
 
-
   !read in the SSPs and bandpass filters
   CALL SFSETUP()
   lam = sspgrid%lam
+
+  IF (l2(nlint).GT.lam(nl)) THEN
+     WRITE(*,*) 'WARNING: max wave boundary exceeds model wavelength grid'
+  ENDIF
 
   !read in the data to be fit
   CALL READ_DATA(file)
@@ -94,11 +97,17 @@ PROGRAM SPECFIT
   !that gives us the desired facc~25%
   mcstep = MIN(3E-5*(1.5E3/s2n)**(3./4),1E-3)
 
+  !set wavelength limits
+  CALL SET_WAVE_LIMITS(file)
+
   !set initial params, step sizes, and prior ranges
   CALL SETUP_PARAMS(opos,dstep,prlo,prhi)
 
-  !set wavelength limits
-  CALL SET_WAVE_LIMITS(file)
+  !make an initial estimate of the redshift
+  !we do this to help Powell minimization
+  velz = getvelz()
+  IF (file(1:5).EQ.'usher'.OR.file(1:7).EQ.'mosfire') velz = 0.0
+  opos%velz = velz
 
   !convert the structures into their equivalent arrays
   CALL STR2ARR(1,dstep,dsteparr) !str->arr
@@ -110,13 +119,6 @@ PROGRAM SPECFIT
   !---------------------Powell minimization-----------------------!
   !---------------------------------------------------------------!
 
-  !make an initial estimate of the redshift
-  !we have to do this otherwise Powell minimization sometimes
-  !chooses incorrect solutions
-  velz = getvelz()
-  IF (file(1:5).EQ.'usher')   velz = 0.0
-  IF (file(1:7).EQ.'mosfire') velz = 0.0
-  
   IF (dopowell.EQ.1) THEN 
 
      DO j=1,2
@@ -149,7 +151,7 @@ PROGRAM SPECFIT
      CALL STR2ARR(1,opos,oposarr) !str->arr
 
   ENDIF
- 
+
   IF (maskem.EQ.1) THEN
      !now that we have a good guess of the redshift and velocity dispersion, 
      !mask out regions where emission line contamination may be a problem
@@ -230,45 +232,26 @@ PROGRAM SPECFIT
   !--------------------Write results to file----------------------!
   !---------------------------------------------------------------!
 
-  !NB: the model written to file has the lowest chi^2
-  CALL GETMODEL(bpos,mspec)  !get the model
-  tlam      = data%lam / (1+bpos%velz/clight*1E5) !de-redshift the data
-  idata%flx = linterp(tlam,data%flx,lam)
-  idata%err = linterp(tlam,data%err,lam)
-  idata%wgt = linterp(tlam,data%wgt,lam)
-
-  !write best-fit model and data (cont-norm) to file
   OPEN(13,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
        TRIM(file)//TRIM(tag)//'.bestspec',STATUS='REPLACE')
-  DO i=1,nlint
-     IF (MAXVAL(tlam(1:datmax)).LT.l2(i)) CYCLE
-     IF (MINVAL(tlam(1:datmax)).GT.l1(i)) CYCLE
-     CALL CONTNORMSPEC(lam,idata%flx,idata%err,l1(i),l2(i),dflx)
-     CALL CONTNORMSPEC(lam,mspec,idata%wgt*sqrt(mspec),l1(i),l2(i),mflx)
-     i1 = MIN(MAX(locate(lam,l1(i)),1),nl-1)
-     i2 = MIN(MAX(locate(lam,l2(i)),2),nl)
-     WRITE(*,'("  rms:",F5.2,"%")') &
-          SQRT( SUM( (dflx(i1:i2)/mflx(i1:i2)-1)**2 ) / (i2-i1+1) )*100
-     DO j=i1,i2
-        WRITE(13,'(F9.2,3ES12.4)') lam(j),mflx(j),dflx(j),&
-             idata(j)%flx/idata(j)%err
-     ENDDO
-  ENDDO
+  CALL STR2ARR(1,bpos,bposarr)
+  !NB: the model written to file has the lowest chi^2
+  fret = func(bposarr,spec=mspec,funit=13)
   CLOSE(13)
-  
+ 
   !write best-fit parameters
-  !here, "best-fit" means the mean of the posterior distributions
+  !here, "best-fit" is the mean of the posterior distributions
   OPEN(14,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
        TRIM(file)//TRIM(tag)//'.bestp',STATUS='REPLACE')
   WRITE(14,'(ES11.5,99(F9.4,1x))') bpos%chi2, runtot(2,:)/runtot(1,:)
   CLOSE(14)
 
-  !write 1 sigma errors on parameters
-  OPEN(14,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
+  !write one sigma errors on parameters
+  OPEN(15,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
        TRIM(file)//TRIM(tag)//'.errp',STATUS='REPLACE')
-  WRITE(14,'(ES11.5,99(F9.4,1x))') 0.0, &
+  WRITE(15,'(ES11.5,99(F9.4,1x))') 0.0, &
        SQRT( runtot(3,:)/runtot(1,:) - runtot(2,:)**2/runtot(1,:)**2 )
-  CLOSE(14)
+  CLOSE(15)
 
   WRITE(*,*)
 

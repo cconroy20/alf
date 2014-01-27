@@ -49,6 +49,8 @@ SUBROUTINE SETUP_PARAMS(pos,dstep,prlo,prhi,velz)
   pos%sigma2    = 200.0
   pos%velz2     = 0.0 
   pos%logemnorm = -2.0
+  pos%logcoeff  = -20.0
+  pos%logcoeff(1) = -1.0
 
   IF (PRESENT(velz)) THEN
      pos%velz  = velz
@@ -93,6 +95,7 @@ SUBROUTINE SETUP_PARAMS(pos,dstep,prlo,prhi,velz)
   dstep%velz      = mcstep * 50
   dstep%velz2     = mcstep * 50
   dstep%logemnorm = mcstep * 100
+  dstep%logcoeff  = mcstep * 100
 
   !priors (low)
   prlo%logage    = LOG10(0.5)
@@ -131,6 +134,7 @@ SUBROUTINE SETUP_PARAMS(pos,dstep,prlo,prhi,velz)
   prlo%velz      = -1E4
   prlo%velz2     = -1E4
   prlo%logemnorm = -5.0
+  prlo%logcoeff  = -30.
 
   !priors (high)
   prhi%logage    = LOG10(20.0)
@@ -169,5 +173,6 @@ SUBROUTINE SETUP_PARAMS(pos,dstep,prlo,prhi,velz)
   prhi%velz      = 1E4
   prhi%velz2     = 1E4
   prhi%logemnorm = 1.0
+  prhi%logcoeff  = 10.
 
 END SUBROUTINE SETUP_PARAMS
