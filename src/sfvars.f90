@@ -15,6 +15,9 @@ MODULE SFVARS
 
   !flags for the user to choose:
 
+  !fit a polynomial to the ratio of model and data
+  !if zero, then both data and model are continuum divided
+  INTEGER, PARAMETER :: fitpoly=1
   !mask emission lines?
   INTEGER, PARAMETER :: maskem=0
   !apply template error function? (only works for SDSS stacks)
@@ -34,21 +37,25 @@ MODULE SFVARS
   !turn on the use of age-dependent response functions
   INTEGER, PARAMETER :: use_age_dep_resp_fcns=0
 
-  !the parameters below should not be modified unless you
-  !know what you are doing!
+  !--------------------------------------------------------!
+  ! the parameters below should not be modified unless you !
+  ! know what you are doing!                               !
+  !--------------------------------------------------------!
 
-  !number of spectral elements in SSPs
   !nstart and nend allow us to use only a subset of 
   !the full wavelength array
   INTEGER, PARAMETER :: nstart = 2100
-  INTEGER, PARAMETER :: nend   = 7700 !4200 
+  INTEGER, PARAMETER :: nend   = 7700  !7700 !4600 
+  !number of spectral elements in SSPs
   INTEGER, PARAMETER :: nl = nend-nstart+1
-  !number of wavelength intervals
+  !(max) number of wavelength intervals
   INTEGER, PARAMETER :: nlint = 4
   !number of emission lines to fit
   INTEGER, PARAMETER :: neml = 13
-  !length of input data
-  INTEGER :: datmax=0
+  !number of emission lines to fit
+  INTEGER, PARAMETER :: ncoeff = 30
+  !number of parameters (minus em lines and polynomial)
+  INTEGER, PARAMETER :: npar1 = 35
   !number of ages in the empirical SSP grid
   INTEGER, PARAMETER :: nage = 7
   !number of ages in the response functions
@@ -57,20 +64,22 @@ MODULE SFVARS
   INTEGER, PARAMETER :: nimf = 35
   !max number of data wavelength points
   INTEGER, PARAMETER :: ndat = 1E5
-  !number of parameters
-  INTEGER, PARAMETER :: npar= 34 + neml
+  !total number of model parameters
+  INTEGER, PARAMETER :: npar = npar1 + neml !+ ncoeff
   !number of filters
   INTEGER, PARAMETER :: nfil=3
   !mag of sun in r,I,K filters (AB mag)
   REAL(DP), PARAMETER, DIMENSION(3) :: magsun = (/4.64,4.52,5.14/)
   !factor to specify size of step
-  REAL(DP) :: mcstep=1E-4
+  REAL(DP) :: mcstep=1E-4 * 10
   !lower and upper limits for the IMF
   REAL(DP), PARAMETER :: imflo=0.08,imfhi=100.0
   !power-law slopes for a Kroupa IMF
   REAL(DP), PARAMETER :: krpa_imf1=1.3,krpa_imf2=2.3,krpa_imf3=2.3
   !linear fit to log(age) vs. log(MS TO mass)
   REAL(DP), PARAMETER :: msto_fit0=0.290835,msto_fit1=-0.301566
+  !length of input data
+  INTEGER :: datmax=0
 
   !----------Setup a common block of arrays and vars-------------!
 
@@ -81,6 +90,7 @@ MODULE SFVARS
   !arrays containing the upper and lower prior limits
   REAL(DP), DIMENSION(npar) :: prloarr=0.,prhiarr=0.
 
+  !array for the template error function
   REAL(DP), DIMENSION(nl) :: temperrfcn=1.0
 
   !variables used in velbroad.f90 routine
@@ -98,7 +108,7 @@ MODULE SFVARS
   !set this environment variable in your .cshrc file
   CHARACTER(250) :: SPECFIT_HOME=''
 
-  !indices for x=1.3,x=2.3 in the IMF array
+  !indices where x=1.3,x=2.3 in the IMF array
   INTEGER :: i13,i23
 
   !-------------Physical Constants---------------!
@@ -123,12 +133,14 @@ MODULE SFVARS
   
   !structure for the set of parameters necessary to generate a model
   TYPE PARAMS
-     REAL(DP) :: logage=1.0,feh=0.0,ah=0.0,nhe=0.0,ch=0.0,nh=0.0,nah=0.0,&
+     REAL(DP) :: velz=0.0,sigma=0.0,logage=1.0,feh=0.0,ah=0.0,&
+          nhe=0.0,ch=0.0,nh=0.0,nah=0.0,&
           mgh=0.0,sih=0.0,kh=0.0,cah=0.0,tih=0.0,vh=0.0,crh=0.0,&
           mnh=0.0,coh=0.0,nih=0.0,cuh=0.0,rbh=0.0,srh=0.0,yh=0.0,zrh=0.0,&
-          bah=0.0,euh=0.0,teff=0.0,imf1=1.3,imf2=2.3,logfy=-5.0,sigma=0.0,&
-          sigma2=0.0,velz=0.0,velz2=0.0,logm7g=-5.0,hotteff=20.0,loghot=-5.0
+          bah=0.0,euh=0.0,teff=0.0,imf1=1.3,imf2=2.3,logfy=-5.0,&
+          sigma2=0.0,velz2=0.0,logm7g=-5.0,hotteff=20.0,loghot=-5.0
      REAL(DP), DIMENSION(neml) :: logemnorm=-5.0
+     REAL(DP), DIMENSION(ncoeff) :: logcoeff=-10.0
      REAL(DP) :: chi2=huge_number
   END TYPE PARAMS
   
