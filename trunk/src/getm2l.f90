@@ -45,9 +45,4 @@ SUBROUTINE GETM2L(msto,lam,spec,pos,m2l,mw)
      ENDIF
   ENDDO
 
-  IF (PRESENT(mw)) WRITE(*,*) 'MW:'
-  write(*,*) mag
-  write(*,*) mass
-  write(*,*) m2l
-
 END SUBROUTINE GETM2L
