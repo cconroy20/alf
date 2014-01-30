@@ -15,9 +15,10 @@ SUBROUTINE SET_WAVE_LIMITS(file)
 
   IF (file(1:4).EQ.'sdss'.OR.file(1:3).EQ.'ucd') THEN
      l1 = (/0.40,0.47,0.58,0.80/) * 1E4
-     l2 = (/0.47,0.55,0.64,0.88/) * 1E4
+     l2 = (/0.47,0.58,0.64,0.88/) * 1E4
   ELSE IF (file(1:1).EQ.'n'.OR.file(1:3).EQ.'m32'.OR.&
-       file(1:1).EQ.'b'.OR.file(1:5).EQ.'manga') THEN
+       file(1:1).EQ.'b'.OR.file(1:5).EQ.'manga'.OR.&
+       file(1:5).EQ.'deep2') THEN
      l1  = (/0.40,0.46,0.800,0.963/) * 1E4
      l2  = (/0.46,0.55,0.892,1.015/) * 1E4
   ELSE IF (file(1:4).EQ.'ages'.OR.file(1:2).EQ.'SN'&

@@ -105,8 +105,12 @@ PROGRAM SPECFIT
 
   !make an initial estimate of the redshift
   !we do this to help Powell minimization
-  velz = getvelz()
-  IF (file(1:5).EQ.'usher'.OR.file(1:7).EQ.'mosfire') velz = 0.0
+  IF (file(1:5).EQ.'usher'.OR.file(1:7).EQ.'mosfire'.OR.&
+       file(1:5).EQ.'deep2') THEN
+     velz = 0.0
+  ELSE
+     velz = getvelz()
+  ENDIF  
   opos%velz = velz
 
   !convert the structures into their equivalent arrays
@@ -200,7 +204,7 @@ PROGRAM SPECFIT
         CALL GETM2L(msto,lam,mspec,opos,m2l) ! compute M/L
         CALL GETMODEL(opos,mspecmw,mw=1)     ! get spectra for MW IMF
         CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
-        WRITE(12,'(ES11.5,99(F9.4,1x))') opos%chi2,oposarr,m2l,m2lmw
+        WRITE(12,'(ES11.5,1x,99(F9.4,1x))') opos%chi2,oposarr,m2l,m2lmw
         CALL FLUSH(12)
     ENDIF
 
@@ -249,7 +253,7 @@ PROGRAM SPECFIT
   !write one sigma errors on parameters
   OPEN(15,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
        TRIM(file)//TRIM(tag)//'.errp',STATUS='REPLACE')
-  WRITE(15,'(ES11.5,99(F9.4,1x))') 0.0, &
+  WRITE(15,'(ES11.5,1x,99(F9.4,1x))') 0.0, &
        SQRT( runtot(3,:)/runtot(1,:) - runtot(2,:)**2/runtot(1,:)**2 )
   CLOSE(15)
 

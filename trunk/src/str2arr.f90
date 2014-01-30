@@ -65,6 +65,12 @@ SUBROUTINE STR2ARR(switch,str,arr)
      !   arr(npar1+neml+i) = str%logcoeff(i)
      !ENDDO
 
+     IF (fitsimple.EQ.1) THEN
+        !set parameters that are not being fit to nominal values
+        !(should add all the parameters here...)
+        arr(32)  = 0.0  !velz2
+     ENDIF
+
   ELSE
 
      !arr->str
@@ -114,6 +120,12 @@ SUBROUTINE STR2ARR(switch,str,arr)
      !DO i=1,ncoeff
      !    str%logcoeff(i) = arr(npar1+neml+i)
      !ENDDO
+
+     IF (fitsimple.EQ.1) THEN
+        !set parameters that are not being fit to nominal values
+        !(should add all the parameters here...)
+        str%velz2  = 0.0
+     ENDIF
 
   ENDIF
 

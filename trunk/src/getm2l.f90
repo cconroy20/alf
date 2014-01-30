@@ -13,6 +13,7 @@ SUBROUTINE GETM2L(msto,lam,spec,pos,m2l,mw)
   REAL(DP), DIMENSION(nl)   :: aspec
   REAL(DP) :: mass
   INTEGER, OPTIONAL :: mw
+  INTEGER :: i
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -20,9 +21,14 @@ SUBROUTINE GETM2L(msto,lam,spec,pos,m2l,mw)
   !convert to the proper units
   aspec  = spec*lsun/1E6*lam**2/clight/1E8/4/mypi/pc2cm**2
 
-  mag(1) = -2.5*LOG10(tsum(lam,aspec*fil(1,:)/lam))-48.6
-  mag(2) = -2.5*LOG10(tsum(lam,aspec*fil(2,:)/lam))-48.6
-  mag(3) = 0.0 !-2.5*LOG10(tsum(lam,aspec*fil(3,:)/lam))-48.6
+  DO i=1,3
+     mag(i) = tsum(lam,aspec*fil(i,:)/lam)
+     IF (mag(i).LE.0.0) THEN
+        mag(i)=99.
+     ELSE 
+        mag(i) = -2.5*LOG10(mag(i))-48.60
+     ENDIF
+  ENDDO
 
   IF (PRESENT(mw)) THEN
      mass = getmass(msto,krpa_imf1,krpa_imf2,krpa_imf3)
@@ -30,7 +36,18 @@ SUBROUTINE GETM2L(msto,lam,spec,pos,m2l,mw)
      mass = getmass(msto,pos%imf1,pos%imf2,krpa_imf3)
   ENDIF
 
-  m2l  = mass / 10**(2./5*(magsun-mag))
-  m2l(3) = 0.0
+  DO i=1,3 
+     IF (mag(i).EQ.99) THEN
+        m2l(i) = 0.0
+     ELSE
+        m2l(i)  = mass/10**(2./5*(magsun(i)-mag(i)))
+        IF (m2l(i).GT.50.0) m2l(i)=0.0
+     ENDIF
+  ENDDO
+
+  IF (PRESENT(mw)) WRITE(*,*) 'MW:'
+  write(*,*) mag
+  write(*,*) mass
+  write(*,*) m2l
 
 END SUBROUTINE GETM2L
