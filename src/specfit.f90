@@ -247,7 +247,7 @@ PROGRAM SPECFIT
   !here, "best-fit" is the mean of the posterior distributions
   OPEN(14,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
        TRIM(file)//TRIM(tag)//'.bestp',STATUS='REPLACE')
-  WRITE(14,'(ES11.5,99(F9.4,1x))') bpos%chi2, runtot(2,:)/runtot(1,:)
+  WRITE(14,'(ES11.5,1x,99(F9.4,1x))') bpos%chi2, runtot(2,:)/runtot(1,:)
   CLOSE(14)
 
   !write one sigma errors on parameters
