@@ -3,13 +3,13 @@ FUNCTION GETVELZ()
   !function to estimate the recession velocity
   !this routine is used to get a first-guess at the velocity
   !so that the subsequent Powell minimization (in specfit)
-  !coverges faster.  uses 4300<lambda<5400A
+  !coverges faster.  uses 4100<lambda<5000A
 
   USE sfvars; USE nr, ONLY : locate
   USE sfutils, ONLY : linterp,contnormspec
   IMPLICIT NONE
 
-  REAL(DP) :: getvelz, chi2,lo=4300.,hi=5400.,tchi2,tvz
+  REAL(DP) :: getvelz, chi2,lo=4100.,hi=5000.,tchi2,tvz
   INTEGER, PARAMETER :: nv=1000
   INTEGER :: i,i1,i2
   REAL(DP), DIMENSION(nl) :: mflx,dflx
@@ -40,7 +40,7 @@ FUNCTION GETVELZ()
           (dflx(i1:i2)-mflx(i1:i2))**2)
 
      IF (tchi2.LT.chi2) THEN
-        chi2 = tchi2
+        chi2    = tchi2
         getvelz = tvz
      ENDIF
 

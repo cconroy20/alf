@@ -23,6 +23,20 @@ MODULE SFUTILS
   END INTERFACE
 
   INTERFACE
+     SUBROUTINE EMCEE_ADVANCE(ndim,nwalkers,a,pin,lpin,&
+          pout,lpout,accept)
+       USE sfvars
+       INTEGER, INTENT(in) :: ndim, nwalkers
+       REAL(DP), INTENT(in) :: a
+       REAL(DP), INTENT(in), DIMENSION(ndim,nwalkers) :: pin
+       REAL(DP), INTENT(in), DIMENSION(nwalkers) :: lpin  
+       REAL(DP), INTENT(out), DIMENSION(ndim,nwalkers) :: pout
+       REAL(DP), INTENT(out), DIMENSION(nwalkers) :: lpout
+       INTEGER, INTENT(out), DIMENSION(nwalkers) :: accept
+     END SUBROUTINE EMCEE_ADVANCE
+  END INTERFACE
+
+  INTERFACE
      FUNCTION FUNC(nposarr,spec,funit)
        USE sfvars
        REAL(DP), DIMENSION(:), INTENT(in) :: nposarr
@@ -143,6 +157,15 @@ MODULE SFUTILS
        REAL(DP), DIMENSION(:), INTENT(in) :: xin,yin
        REAL(DP) :: tsum
      END FUNCTION TSUM
+  END INTERFACE
+
+  INTERFACE
+     SUBROUTINE UPDATE_RUNTOT(runtot,inarr,m2l,m2lmw)
+       USE sfvars
+       REAL(DP), INTENT(inout), DIMENSION(3,npar+2*nfil) :: runtot
+       REAL(DP), INTENT(in), DIMENSION(nfil) :: m2l,m2lmw
+       REAL(DP), INTENT(in), DIMENSION(npar) :: inarr
+     END SUBROUTINE UPDATE_RUNTOT
   END INTERFACE
 
   INTERFACE

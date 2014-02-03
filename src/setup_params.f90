@@ -8,54 +8,56 @@ SUBROUTINE SETUP_PARAMS(pos,dstep,prlo,prhi,velz)
 
   TYPE(PARAMS), INTENT(inout) :: pos,prlo,prhi,dstep
   REAL(DP), OPTIONAL :: velz
-
+  INTEGER :: i
+  
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
   !setup the first position
   pos%logage    = myran()*0.2+0.8
-  pos%feh       = myran()*0.2-0.1
-  pos%ah        = myran()*0.2-0.1
-  pos%nhe       = myran()*0.2-0.1
-  pos%ch        = myran()*0.2-0.1
-  pos%nh        = myran()*0.2-0.1
-  pos%nah       = myran()*0.2-0.1
-  pos%mgh       = myran()*0.2-0.1
-  pos%sih       = myran()*0.2-0.1
-  pos%kh        = myran()*0.2-0.1
-  pos%cah       = myran()*0.2-0.1
-  pos%tih       = myran()*0.2-0.1
-  pos%vh        = myran()*0.2-0.1
-  pos%crh       = myran()*0.2-0.1
-  pos%mnh       = myran()*0.2-0.1
-  pos%coh       = myran()*0.2-0.1
-  pos%nih       = myran()*0.2-0.1
-  pos%cuh       = myran()*0.2-0.1
-  pos%rbh       = myran()*0.2-0.1
-  pos%srh       = myran()*0.2-0.1
-  pos%yh        = myran()*0.2-0.1
-  pos%zrh       = myran()*0.2-0.1
-  pos%bah       = myran()*0.2-0.1
-  pos%euh       = myran()*0.2-0.1
-  pos%teff      = myran()*20-10
+  pos%feh       = myran()*1.0-0.5
+  pos%ah        = myran()*1.0-0.5
+  pos%nhe       = myran()*1.0-0.5
+  pos%ch        = myran()*1.0-0.5
+  pos%nh        = myran()*1.0-0.5
+  pos%nah       = myran()*1.0-0.5
+  pos%mgh       = myran()*1.0-0.5
+  pos%sih       = myran()*1.0-0.5
+  pos%kh        = myran()*1.0-0.5
+  pos%cah       = myran()*1.0-0.5
+  pos%tih       = myran()*1.0-0.5
+  pos%vh        = myran()*1.0-0.5
+  pos%crh       = myran()*1.0-0.5
+  pos%mnh       = myran()*1.0-0.5
+  pos%coh       = myran()*1.0-0.5
+  pos%nih       = myran()*1.0-0.5
+  pos%cuh       = myran()*1.0-0.5
+  pos%rbh       = myran()*1.0-0.5
+  pos%srh       = myran()*1.0-0.5
+  pos%yh        = myran()*1.0-0.5
+  pos%zrh       = myran()*1.0-0.5
+  pos%bah       = myran()*1.0-0.5
+  pos%euh       = myran()*1.0-0.5
+  pos%teff      = myran()*80-40
   pos%imf1      = myran()*0.8-0.4 + 1.3
   pos%imf2      = myran()*0.8-0.4 + 2.3
-  pos%logfy     = myran()*0.2-3
-  pos%logm7g    = myran()*0.2-3
+  pos%logfy     = myran()*2-3
+  pos%logm7g    = myran()*2-3
   pos%hotteff   = myran()*5+15
-  pos%loghot    = myran()*0.2-3
+  pos%loghot    = myran()*2-3
   pos%chi2      = huge_number
-  pos%sigma     = 200.0
-  pos%sigma2    = 200.0
-  pos%velz2     = 0.0 
-  pos%logemnorm = -2.0
-  pos%logcoeff  = -20.0
-  pos%logcoeff(1) = -1.0
+  pos%sigma     = myran()*100+100.0
+  pos%sigma2    = myran()*100+100.0
+  pos%velz2     = myran()*10-5
+  DO i=1,neml
+     pos%logemnorm(i) = myran()*2-3
+  ENDDO
+  !pos%logcoeff  = -20.0
 
   IF (PRESENT(velz)) THEN
-     pos%velz  = velz
+     pos%velz  = velz + (myran()*10-5)
   ELSE
-     pos%velz  = 0.0
+     pos%velz  = myran()*10-5
   ENDIF
 
   !setup the step size

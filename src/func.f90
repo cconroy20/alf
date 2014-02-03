@@ -3,15 +3,9 @@ FUNCTION FUNC(nposarr,spec,funit)
   !routine to get a new model and compute chi^2.  Optionally,
   !the model spectrum is returned (spec)
 
-  !TBD:
-  !solve for the polynomial that matches the data to the model
-  !i.e., solve for *one* polynomial, rather than two, and 
-  !put the coefficients into the MCMC just like every other parameter
-  !its a more robust way to do continuum matching; see the PPXF paper
-  !or one of Dan Kelson's ancient papers
-
   USE sfvars; USE nr, ONLY : locate
-  USE sfutils, ONLY : linterp,contnormspec,getmass,str2arr,getmodel
+  USE sfutils, ONLY : linterp,contnormspec,getmass,&
+       str2arr,getmodel
   IMPLICIT NONE
 
   REAL(DP), DIMENSION(:), INTENT(inout) :: nposarr
