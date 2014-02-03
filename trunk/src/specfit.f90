@@ -9,32 +9,41 @@ PROGRAM SPECFIT
   IMPLICIT NONE
 
   !number of chain steps to run
-  INTEGER, PARAMETER :: nmcmc=1E4
+  INTEGER, PARAMETER :: nmcmc=1E5
   !length of burn-in
-  INTEGER, PARAMETER :: nburn=1E5
+  INTEGER, PARAMETER :: nburn=1E6
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
+  !use emcee to sample parameter space?
+  INTEGER, PARAMETER :: doemcee=1
+  !number of walkers for emcee
+  INTEGER, PARAMETER :: nwalkers=100
   !total length of output mcmc file
   INTEGER, PARAMETER :: nmax=1E4
-
+ 
   !down-sample the output chains by this factor
   INTEGER, PARAMETER :: sample=nmcmc/nmax
   !Powell iteration tolerance
   REAL(DP), PARAMETER :: ftol=0.1
   INTEGER  :: i,j,k,totacc=0,stat,i1,i2,iter=30,vv,npow,tpow
-  REAL(DP) :: mass,mwmass,fret,bret=huge_number,deltachi2,velz,s2n,msto
-  REAL(DP), DIMENSION(nl)   :: mspec,dflx,mspecmw,tmp,lam
-  REAL(DP), DIMENSION(nfil) :: mag,m2l,m2lmw
-  REAL(DP), DIMENSION(ndat) :: tlam
+  REAL(DP) :: mass=0.0,mwmass=0.0,bret=huge_number,deltachi2=0.0
+  REAL(DP) :: velz=0.0,s2n=0.0,msto=0.0,minchi2=huge_number,fret
+  REAL(DP), DIMENSION(nl)   :: mspec=0.0,dflx=0.0,mspecmw=0.0,tmp=0.0,lam=0.0
+  REAL(DP), DIMENSION(nfil) :: mag=0.0,m2l=0.0,m2lmw=0.0
+  REAL(DP), DIMENSION(ndat) :: tlam=0.0
   REAL(DP), DIMENSION(npar) :: oposarr=0.,nposarr=0.,bposarr=0.0
   REAL(DP), DIMENSION(npar) :: granarr=0.,dsteparr=0.
   REAL(DP), DIMENSION(3,npar+2*nfil) :: runtot=0.0
   REAL(DP), DIMENSION(npar,npar) :: xi=0.0
-  REAL(DP), DIMENSION(ncoeff) :: tcoeff
+  REAL(DP), DIMENSION(ncoeff) :: tcoeff=0.0
   CHARACTER(10) :: time=''
   CHARACTER(50) :: file='',tag=''
   TYPE(PARAMS)  :: npos,opos,prlo,prhi,dstep,bpos
   TYPE(TDATA), DIMENSION(nl) :: idata
+  !the next three definitions are for emcee
+  REAL(DP), DIMENSION(npar,nwalkers) :: pos_emcee
+  REAL(DP), DIMENSION(nwalkers)      :: lp_emcee
+  INTEGER,  DIMENSION(nwalkers)      :: accept_emcee
   
   !---------------------------------------------------------------!
   !---------------------------Setup-------------------------------!
@@ -60,6 +69,8 @@ PROGRAM SPECFIT
 
   WRITE(*,*) 
   WRITE(*,'("****************************************")') 
+  WRITE(*,'("   dopowell  =",I2)') dopowell
+  WRITE(*,'("    doemcee  =",I2)') doemcee
   WRITE(*,'("  fitsimple  =",I2)') fitsimple
   WRITE(*,'("      mwimf  =",I2)') mwimf
   WRITE(*,'("  force_nah  =",I2)') force_nah
@@ -170,59 +181,116 @@ PROGRAM SPECFIT
   OPEN(12,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
        TRIM(file)//TRIM(tag)//'.mcmc',STATUS='REPLACE')
    
-  !run the chain
-  DO j=1,nmcmc+nburn
+  IF (doemcee.EQ.1) THEN
 
-     !take a step
-     CALL GASDEV(granarr)
-     nposarr = oposarr + granarr * dsteparr
-     CALL STR2ARR(2,npos,nposarr) !arr->str
+     !use DFM's fortran version of emcee
 
-     IF (mwimf.EQ.1) THEN
-        npos%imf1 = 1.3
-        npos%imf2 = 2.3
-        CALL STR2ARR(1,npos,nposarr) !str->arr
-     ENDIF
+     !initialize the walkers
+     DO j=1,nwalkers
 
-     !get a new model and compute chi^2
-     npos%chi2 = func(nposarr,spec=mspec)
+        IF (dopowell.EQ.1) THEN
+           !use the best-fit position from Powell, with small
+           !random offsets to set up all the walkers
+           DO i=1,npar
+              pos_emcee(i,j) = bposarr(i) + 0.2*(2.*myran()-1.0)
+           ENDDO
+        ELSE
+           !random initialization of each walker
+           CALL SETUP_PARAMS(opos,dstep,prlo,prhi,velz=velz)
+           CALL STR2ARR(1,opos,pos_emcee(:,j))
+        ENDIF
 
-     !keep the model with the lowest chi2
-     IF (npos%chi2.LT.opos%chi2) bpos = npos
-     deltachi2 = EXP(-(npos%chi2-opos%chi2)/2.)
-     !accept the step?
-     IF (myran().LT.deltachi2) THEN
-        opos    = npos
-        oposarr = nposarr
-        IF (j.GT.nburn) totacc  = totacc+1
-     ENDIF
+        !Compute the initial log-probability for each walker
+        lp_emcee(j) = -0.5*func(pos_emcee(:, j))
 
-     !write chain element to file, subsampling the main chain
-     IF (MOD(j,sample).EQ.0.AND.j.GT.nburn) THEN
-        !compute the main sequence turn-off mass
-        msto=10**( msto_fit0 + msto_fit1*opos%logage )
-        CALL GETM2L(msto,lam,mspec,opos,m2l) ! compute M/L
-        CALL GETMODEL(opos,mspecmw,mw=1)     ! get spectra for MW IMF
-        CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
-        WRITE(12,'(ES11.5,1x,99(F9.4,1x))') opos%chi2,oposarr,m2l,m2lmw
-        CALL FLUSH(12)
-    ENDIF
+     ENDDO
 
-    !here we want to use all of the chain elements after Nburn
-    !for a more reliable estimate of the variance, etc.
-    IF (j.GT.nburn) THEN
-        runtot(1,:)      = runtot(1,:)+1.
-        runtot(2,1:npar) = runtot(2,1:npar) + oposarr
-        runtot(3,1:npar) = runtot(3,1:npar) + oposarr**2
-        runtot(2,npar+1:npar+nfil) = runtot(2,npar+1:npar+nfil)+m2l
-        runtot(3,npar+1:npar+nfil) = runtot(3,npar+1:npar+nfil)+m2l**2
-        runtot(2,npar+nfil+1:npar+2*nfil) = &
-             runtot(2,npar+nfil+1:npar+2*nfil)+m2lmw
-        runtot(3,npar+nfil+1:npar+2*nfil) = &
-             runtot(3,npar+nfil+1:npar+2*nfil)+m2lmw**2
-     ENDIF
+     !burn-in
+     DO i=1,nburn/nwalkers
+        CALL EMCEE_ADVANCE(npar,nwalkers,2.d0,pos_emcee,&
+             lp_emcee,pos_emcee,lp_emcee,accept_emcee)
+     ENDDO
+  
+     !Run a production chain
+     DO i=1,nmcmc/nwalkers
 
-  ENDDO
+        CALL EMCEE_ADVANCE(npar,nwalkers,2.d0,pos_emcee,&
+             lp_emcee,pos_emcee,lp_emcee,accept_emcee)
+        totacc = totacc + SUM(accept_emcee)
+
+        DO j=1,nwalkers
+           CALL STR2ARR(2,opos,pos_emcee(:,j)) !arr->str
+           !compute the main sequence turn-off mass
+           msto=10**( msto_fit0 + msto_fit1*opos%logage )
+           CALL GETMODEL(opos,mspec)
+           CALL GETM2L(msto,lam,mspec,opos,m2l) ! compute M/L
+           CALL GETMODEL(opos,mspecmw,mw=1)     ! get spectra for MW IMF
+           CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
+           WRITE(12,'(ES11.5,1x,99(F9.4,1x))') -2.0*lp_emcee(j),&
+                pos_emcee(:, j),m2l,m2lmw
+           CALL FLUSH(12)
+           !keep the model with the lowest chi2
+           IF (-2.0*lp_emcee(j).LT.minchi2) THEN
+              bposarr = pos_emcee(:, j)
+              minchi2 = lp_emcee(j)
+           ENDIF
+           CALL UPDATE_RUNTOT(runtot,pos_emcee(:,j),m2l,m2lmw)
+        ENDDO
+
+     ENDDO
+
+     !save the best position to the structure (used to write best spec)
+     CALL STR2ARR(2,bpos,bposarr)
+     bpos%chi2 = minchi2
+
+  ELSE
+
+     !run a standard Metropolis Hastings MCMC
+
+     DO j=1,nmcmc+nburn
+
+        !take a step
+        CALL GASDEV(granarr)
+        nposarr = oposarr + granarr * dsteparr
+        CALL STR2ARR(2,npos,nposarr) !arr->str
+        
+        IF (mwimf.EQ.1) THEN
+           npos%imf1 = 1.3
+           npos%imf2 = 2.3
+           CALL STR2ARR(1,npos,nposarr) !str->arr
+        ENDIF
+
+        !get a new model and compute chi^2
+        npos%chi2 = func(nposarr,spec=mspec)
+        
+        !keep the model with the lowest chi2
+        IF (npos%chi2.LT.opos%chi2) bpos = npos
+        deltachi2 = EXP(-(npos%chi2-opos%chi2)/2.)
+        !accept the step?
+        IF (myran().LT.deltachi2) THEN
+           opos    = npos
+           oposarr = nposarr
+           IF (j.GT.nburn) totacc  = totacc+1
+        ENDIF
+
+        !write chain element to file, subsampling the main chain
+        IF (MOD(j,sample).EQ.0.AND.j.GT.nburn) THEN
+           !compute the main sequence turn-off mass
+           msto=10**( msto_fit0 + msto_fit1*opos%logage )
+           CALL GETM2L(msto,lam,mspec,opos,m2l) ! compute M/L
+           CALL GETMODEL(opos,mspecmw,mw=1)     ! get spectra for MW IMF
+           CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
+           WRITE(12,'(ES11.5,1x,99(F9.4,1x))') opos%chi2,oposarr,m2l,m2lmw
+           CALL FLUSH(12)
+        ENDIF
+
+        !here we want to use all of the chain elements after Nburn
+        !for a more reliable estimate of the variance, etc.
+        IF (j.GT.nburn) CALL UPDATE_RUNTOT(runtot,oposarr,m2l,m2lmw)
+
+     ENDDO
+
+  ENDIF
 
   CLOSE(12)
 

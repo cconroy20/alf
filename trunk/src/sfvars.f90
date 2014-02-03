@@ -45,14 +45,14 @@ MODULE SFVARS
   !nstart and nend allow us to use only a subset of 
   !the full wavelength array
   INTEGER, PARAMETER :: nstart = 2100
-  INTEGER, PARAMETER :: nend   = 4200  !7700 !4200 
+  INTEGER, PARAMETER :: nend   = 4400  !7700 !4200 
   !number of spectral elements in SSPs
   INTEGER, PARAMETER :: nl = nend-nstart+1
   !(max) number of wavelength intervals
   INTEGER, PARAMETER :: nlint = 4
   !number of emission lines to fit
   INTEGER, PARAMETER :: neml = 13
-  !number of emission lines to fit
+  !number of coefficients for the polynomial fitting
   INTEGER, PARAMETER :: ncoeff = 30
   !number of parameters (minus em lines and polynomial)
   INTEGER, PARAMETER :: npar1 = 35
