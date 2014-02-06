@@ -9,9 +9,9 @@ PROGRAM SPECFIT
   IMPLICIT NONE
 
   !number of chain steps to run
-  INTEGER, PARAMETER :: nmcmc=1E5
+  INTEGER, PARAMETER :: nmcmc=1E4
   !length of burn-in
-  INTEGER, PARAMETER :: nburn=1E6
+  INTEGER, PARAMETER :: nburn=1E4
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !use emcee to sample parameter space?

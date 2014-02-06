@@ -1,5 +1,8 @@
 SUBROUTINE EMCEE_ADVANCE(ndim,nwalkers,a,pin,lpin,pout,lpout,accept)
 
+  ! This routine was written by Dan Foreman-Mackey, based on his
+  ! python code emcee.
+
   ! This subroutine advances an ensemble of walkers using the
   ! Goodman & Weare stretch move.
   !

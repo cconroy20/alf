@@ -29,7 +29,7 @@ MODULE SFVARS
   INTEGER, PARAMETER :: force_nah=0
   !force the IMF to be a MW IMF if set
   !this is automatically assumed if fitsimple=1
-  INTEGER, PARAMETER :: mwimf=0
+  INTEGER, PARAMETER :: mwimf=1
   !if set, compute velocity broadening via a simple method
   !rather than the proper convolution in log_lambda space
   !don't turn this on - the "correct" version is just as fast
@@ -45,7 +45,7 @@ MODULE SFVARS
   !nstart and nend allow us to use only a subset of 
   !the full wavelength array
   INTEGER, PARAMETER :: nstart = 2100
-  INTEGER, PARAMETER :: nend   = 4400  !7700 !4200 
+  INTEGER, PARAMETER :: nend   = 7700  !7700 !4200 
   !number of spectral elements in SSPs
   INTEGER, PARAMETER :: nl = nend-nstart+1
   !(max) number of wavelength intervals
