@@ -11,35 +11,28 @@ PROGRAM SPECFIT
   !number of chain steps to run
   INTEGER, PARAMETER :: nmcmc=1E4
   !length of burn-in
-  INTEGER, PARAMETER :: nburn=1E4
+  INTEGER, PARAMETER :: nburn=1E5
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !use emcee to sample parameter space?
   INTEGER, PARAMETER :: doemcee=1
   !number of walkers for emcee
   INTEGER, PARAMETER :: nwalkers=100
-  !total length of output mcmc file
-  INTEGER, PARAMETER :: nmax=1E4
- 
-  !down-sample the output chains by this factor
-  INTEGER, PARAMETER :: sample=nmcmc/nmax
   !Powell iteration tolerance
   REAL(DP), PARAMETER :: ftol=0.1
-  INTEGER  :: i,j,k,totacc=0,stat,i1,i2,iter=30,vv,npow,tpow
+
+  INTEGER  :: i,j,k,totacc=0,stat,iter=30,vv
   REAL(DP) :: mass=0.0,mwmass=0.0,bret=huge_number,deltachi2=0.0
   REAL(DP) :: velz=0.0,s2n=0.0,msto=0.0,minchi2=huge_number,fret
-  REAL(DP), DIMENSION(nl)   :: mspec=0.0,dflx=0.0,mspecmw=0.0,tmp=0.0,lam=0.0
+  REAL(DP), DIMENSION(nl)   :: mspec=0.0,mspecmw=0.0,lam=0.0
   REAL(DP), DIMENSION(nfil) :: mag=0.0,m2l=0.0,m2lmw=0.0
-  REAL(DP), DIMENSION(ndat) :: tlam=0.0
   REAL(DP), DIMENSION(npar) :: oposarr=0.,nposarr=0.,bposarr=0.0
   REAL(DP), DIMENSION(npar) :: granarr=0.,dsteparr=0.
   REAL(DP), DIMENSION(3,npar+2*nfil) :: runtot=0.0
-  REAL(DP), DIMENSION(npar,npar) :: xi=0.0
-  REAL(DP), DIMENSION(ncoeff) :: tcoeff=0.0
+  REAL(DP), DIMENSION(npar,npar)     :: xi=0.0
   CHARACTER(10) :: time=''
   CHARACTER(50) :: file='',tag=''
   TYPE(PARAMS)  :: npos,opos,prlo,prhi,dstep,bpos
-  TYPE(TDATA), DIMENSION(nl) :: idata
   !the next three definitions are for emcee
   REAL(DP), DIMENSION(npar,nwalkers) :: pos_emcee
   REAL(DP), DIMENSION(nwalkers)      :: lp_emcee
@@ -60,11 +53,6 @@ PROGRAM SPECFIT
   IF (IARGC().GT.1) THEN
      tag(1:1)='_'
      CALL GETARG(2,tag(2:))
-  ENDIF
-
-  IF (nmax.GT.nmcmc) THEN
-     WRITE(*,*) 'ERROR: nmax > nmcmc'
-     STOP
   ENDIF
 
   WRITE(*,*) 
@@ -89,7 +77,8 @@ PROGRAM SPECFIT
   lam = sspgrid%lam
 
   IF (l2(nlint).GT.lam(nl)) THEN
-     WRITE(*,*) 'WARNING: max wave boundary exceeds model wavelength grid'
+     WRITE(*,*) 'ERROR: max wave boundary exceeds model wavelength grid'
+     STOP
   ENDIF
 
   !read in the data to be fit
@@ -226,13 +215,13 @@ PROGRAM SPECFIT
            CALL GETM2L(msto,lam,mspec,opos,m2l) ! compute M/L
            CALL GETMODEL(opos,mspecmw,mw=1)     ! get spectra for MW IMF
            CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
-           WRITE(12,'(ES11.5,1x,99(F9.4,1x))') -2.0*lp_emcee(j),&
+           WRITE(12,'(ES12.5,1x,99(F9.4,1x))') -2.0*lp_emcee(j),&
                 pos_emcee(:, j),m2l,m2lmw
            CALL FLUSH(12)
            !keep the model with the lowest chi2
            IF (-2.0*lp_emcee(j).LT.minchi2) THEN
               bposarr = pos_emcee(:, j)
-              minchi2 = lp_emcee(j)
+              minchi2 = -2.0*lp_emcee(j)
            ENDIF
            CALL UPDATE_RUNTOT(runtot,pos_emcee(:,j),m2l,m2lmw)
         ENDDO
@@ -273,14 +262,14 @@ PROGRAM SPECFIT
            IF (j.GT.nburn) totacc  = totacc+1
         ENDIF
 
-        !write chain element to file, subsampling the main chain
-        IF (MOD(j,sample).EQ.0.AND.j.GT.nburn) THEN
+        !write chain element to file
+        IF (j.GT.nburn) THEN
            !compute the main sequence turn-off mass
            msto=10**( msto_fit0 + msto_fit1*opos%logage )
            CALL GETM2L(msto,lam,mspec,opos,m2l) ! compute M/L
            CALL GETMODEL(opos,mspecmw,mw=1)     ! get spectra for MW IMF
            CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
-           WRITE(12,'(ES11.5,1x,99(F9.4,1x))') opos%chi2,oposarr,m2l,m2lmw
+           WRITE(12,'(ES12.5,1x,99(F9.4,1x))') opos%chi2,oposarr,m2l,m2lmw
            CALL FLUSH(12)
         ENDIF
 
@@ -297,7 +286,7 @@ PROGRAM SPECFIT
   CALL date_and_time(TIME=time)
   WRITE(*,*) '  End Time '//time(1:2)//':'//time(3:4)
   WRITE(*,*) 
-  WRITE(*,'("  facc: ",F4.2)') REAL(totacc)/REAL(nmcmc)
+  WRITE(*,'("  facc: ",F5.2)') REAL(totacc)/REAL(nmcmc)
   WRITE(*,*) 
 
   !---------------------------------------------------------------!
@@ -315,13 +304,13 @@ PROGRAM SPECFIT
   !here, "best-fit" is the mean of the posterior distributions
   OPEN(14,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
        TRIM(file)//TRIM(tag)//'.bestp',STATUS='REPLACE')
-  WRITE(14,'(ES11.5,1x,99(F9.4,1x))') bpos%chi2, runtot(2,:)/runtot(1,:)
+  WRITE(14,'(ES12.5,1x,99(F9.4,1x))') bpos%chi2, runtot(2,:)/runtot(1,:)
   CLOSE(14)
 
   !write one sigma errors on parameters
   OPEN(15,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
        TRIM(file)//TRIM(tag)//'.errp',STATUS='REPLACE')
-  WRITE(15,'(ES11.5,1x,99(F9.4,1x))') 0.0, &
+  WRITE(15,'(ES12.5,1x,99(F9.4,1x))') 0.0, &
        SQRT( runtot(3,:)/runtot(1,:) - runtot(2,:)**2/runtot(1,:)**2 )
   CLOSE(15)
 

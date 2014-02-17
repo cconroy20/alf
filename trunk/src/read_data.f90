@@ -22,6 +22,7 @@ SUBROUTINE READ_DATA(file)
 
   DO i=1,ndat
      READ(10,*,IOSTAT=stat) data(i)%lam,data(i)%flx,data(i)%err,data(i)%wgt
+     IF (data(i)%err.LE.tiny_number) data(i)%err = huge_number
      IF (stat.NE.0) GOTO 20
   ENDDO
 20 CONTINUE
