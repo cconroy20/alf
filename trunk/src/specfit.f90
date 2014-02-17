@@ -13,7 +13,7 @@ PROGRAM SPECFIT
   !length of burn-in
   INTEGER, PARAMETER :: nburn=1E5
   !start w/ powell minimization?
-  INTEGER, PARAMETER :: dopowell=0
+  INTEGER, PARAMETER :: dopowell=1
   !use emcee to sample parameter space?
   INTEGER, PARAMETER :: doemcee=1
   !number of walkers for emcee
@@ -190,10 +190,9 @@ PROGRAM SPECFIT
 
         !Compute the initial log-probability for each walker
         lp_emcee(j) = -0.5*func(pos_emcee(:, j))
-        write(*,*) -2.0*lp_emcee(j) 
 
      ENDDO
-stop
+
      !burn-in
      DO i=1,nburn/nwalkers
         CALL EMCEE_ADVANCE(npar,nwalkers,2.d0,pos_emcee,&
@@ -209,7 +208,6 @@ stop
 
         DO j=1,nwalkers
            CALL STR2ARR(2,opos,pos_emcee(:,j)) !arr->str
-write(*,*) opos
            !compute the main sequence turn-off mass
            msto = 10**( msto_fit0 + msto_fit1*opos%logage )
            msto = MIN(MAX(msto,0.6),10.)
