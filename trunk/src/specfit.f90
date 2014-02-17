@@ -9,11 +9,11 @@ PROGRAM SPECFIT
   IMPLICIT NONE
 
   !number of chain steps to run
-  INTEGER, PARAMETER :: nmcmc=1E4
+  INTEGER, PARAMETER :: nmcmc=1E5
   !length of burn-in
   INTEGER, PARAMETER :: nburn=1E5
   !start w/ powell minimization?
-  INTEGER, PARAMETER :: dopowell=1
+  INTEGER, PARAMETER :: dopowell=0
   !use emcee to sample parameter space?
   INTEGER, PARAMETER :: doemcee=1
   !number of walkers for emcee
@@ -125,7 +125,8 @@ PROGRAM SPECFIT
 
   IF (dopowell.EQ.1) THEN 
 
-     DO j=1,2
+     WRITE(*,*) 'Running Powell...'
+     DO j=1,5
         xi=0.0
         DO i=1,npar
            xi(i,i) = 1E-2
@@ -148,10 +149,6 @@ PROGRAM SPECFIT
      !params, so set them to defaults
      opos%imf1 = 1.3
      opos%imf2 = 2.3
-     opos%coh  = 0.0
-     opos%crh  = 0.0
-     opos%mnh  = 0.0
-     opos%nih  = 0.0
      CALL STR2ARR(1,opos,oposarr) !str->arr
 
   ENDIF
@@ -159,6 +156,7 @@ PROGRAM SPECFIT
   IF (maskem.EQ.1) THEN
      !now that we have a good guess of the redshift and velocity dispersion, 
      !mask out regions where emission line contamination may be a problem
+     !In full mode, the default is to actually *fit* for emissions lines.
      CALL MASKEMLINES(opos%velz,opos%sigma)
   ENDIF
 
@@ -173,6 +171,7 @@ PROGRAM SPECFIT
   IF (doemcee.EQ.1) THEN
 
      !use DFM's fortran version of emcee
+     WRITE(*,*) 'Running emcee...'
 
      !initialize the walkers
      DO j=1,nwalkers
@@ -191,9 +190,10 @@ PROGRAM SPECFIT
 
         !Compute the initial log-probability for each walker
         lp_emcee(j) = -0.5*func(pos_emcee(:, j))
+        write(*,*) -2.0*lp_emcee(j) 
 
      ENDDO
-
+stop
      !burn-in
      DO i=1,nburn/nwalkers
         CALL EMCEE_ADVANCE(npar,nwalkers,2.d0,pos_emcee,&
@@ -209,12 +209,18 @@ PROGRAM SPECFIT
 
         DO j=1,nwalkers
            CALL STR2ARR(2,opos,pos_emcee(:,j)) !arr->str
+write(*,*) opos
            !compute the main sequence turn-off mass
-           msto=10**( msto_fit0 + msto_fit1*opos%logage )
-           CALL GETMODEL(opos,mspec)
-           CALL GETM2L(msto,lam,mspec,opos,m2l) ! compute M/L
+           msto = 10**( msto_fit0 + msto_fit1*opos%logage )
+           msto = MIN(MAX(msto,0.6),10.)
            CALL GETMODEL(opos,mspecmw,mw=1)     ! get spectra for MW IMF
            CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
+           IF (fitsimple.EQ.0.AND.mwimf.EQ.0) THEN
+              CALL GETMODEL(opos,mspec)
+              CALL GETM2L(msto,lam,mspec,opos,m2l) ! compute M/L
+           ELSE
+              m2l = m2lmw
+           ENDIF
            WRITE(12,'(ES12.5,1x,99(F9.4,1x))') -2.0*lp_emcee(j),&
                 pos_emcee(:, j),m2l,m2lmw
            CALL FLUSH(12)
@@ -265,7 +271,8 @@ PROGRAM SPECFIT
         !write chain element to file
         IF (j.GT.nburn) THEN
            !compute the main sequence turn-off mass
-           msto=10**( msto_fit0 + msto_fit1*opos%logage )
+           msto = 10**( msto_fit0 + msto_fit1*opos%logage )
+           msto = MIN(MAX(msto,0.6),10.)
            CALL GETM2L(msto,lam,mspec,opos,m2l) ! compute M/L
            CALL GETMODEL(opos,mspecmw,mw=1)     ! get spectra for MW IMF
            CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
