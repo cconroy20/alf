@@ -24,12 +24,12 @@ MODULE SFVARS
   INTEGER, PARAMETER :: apply_temperrfcn=0
   !fit only a subset of the full model parameters 
   !e.g., no IMF, no nuisance parameters, no "exotic" elements
-  INTEGER, PARAMETER :: fitsimple=0
+  INTEGER, PARAMETER :: fitsimple=1
   !force [Na/H]=[Mg/H]
   INTEGER, PARAMETER :: force_nah=0
   !force the IMF to be a MW IMF if set
   !this is automatically assumed if fitsimple=1
-  INTEGER, PARAMETER :: mwimf=0
+  INTEGER, PARAMETER :: mwimf=1
   !if set, compute velocity broadening via a simple method
   !rather than the proper convolution in log_lambda space
   !don't turn this on - the "correct" version is just as fast
@@ -45,7 +45,7 @@ MODULE SFVARS
   !nstart and nend allow us to use only a subset of 
   !the full wavelength array
   INTEGER, PARAMETER :: nstart = 2100
-  INTEGER, PARAMETER :: nend   = 7700  !7700 !4200 
+  INTEGER, PARAMETER :: nend   = 5500  !7700 !4200 
   !number of spectral elements in SSPs
   INTEGER, PARAMETER :: nl = nend-nstart+1
   !(max) number of wavelength intervals
@@ -71,7 +71,7 @@ MODULE SFVARS
   !mag of sun in r,I,K filters (AB mag)
   REAL(DP), PARAMETER, DIMENSION(3) :: magsun = (/4.64,4.52,5.14/)
   !factor to specify size of step
-  REAL(DP) :: mcstep=1E-4 * 10
+  REAL(DP) :: mcstep=1E-3
   !lower and upper limits for the IMF
   REAL(DP), PARAMETER :: imflo=0.08,imfhi=100.0
   !power-law slopes for a Kroupa IMF
