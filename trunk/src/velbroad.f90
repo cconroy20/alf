@@ -6,8 +6,8 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl)
   USE sfvars; USE nr, ONLY : locate; USE sfutils, ONLY : linterp,tsum
   IMPLICIT NONE
   
-  REAL(DP), INTENT(in), DIMENSION(:) :: lambda
-  REAL(DP), INTENT(inout), DIMENSION(:) :: spec
+  REAL(DP), INTENT(in), DIMENSION(nl) :: lambda
+  REAL(DP), INTENT(inout), DIMENSION(nl) :: spec
   REAL(DP), INTENT(in) :: sigma,minl,maxl
   REAL(DP), DIMENSION(nl) :: tspec,nspec,vel,func,gauss,psf
   REAL(DP) :: xmax,xmin,fwhm,psig
@@ -55,7 +55,7 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl)
   !actually, this way is faster than the one above!
   ELSE
 
-     tspec(1:nl) = linterp(LOG(lambda(1:nl)),spec(1:nl),lnlam(1:nl))
+     tspec = linterp(LOG(lambda(1:nl)),spec(1:nl),lnlam)
      
      fwhm   = sigma*2.35482/clight*1E5/dlstep
      psig   = fwhm/2.d0/SQRT(-2.d0*LOG(0.5d0)) ! equivalent sigma for kernel
@@ -71,7 +71,7 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl)
      ENDDO
      
      !interpolate back to the main array
-     spec(1:nl) = linterp(EXP(lnlam(1:nl)),nspec(1:nl),lambda(1:nl))
+     spec = linterp(EXP(lnlam(1:nl)),nspec(1:nl),lambda)
   
   ENDIF
 
