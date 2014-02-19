@@ -9,7 +9,7 @@ PROGRAM SPECFIT
   IMPLICIT NONE
 
   !number of chain steps to run
-  INTEGER, PARAMETER :: nmcmc=1E5
+  INTEGER, PARAMETER :: nmcmc=1E4
   !length of burn-in
   INTEGER, PARAMETER :: nburn=1E5
   !start w/ powell minimization?
@@ -25,7 +25,7 @@ PROGRAM SPECFIT
   REAL(DP) :: mass=0.0,mwmass=0.0,bret=huge_number,deltachi2=0.0
   REAL(DP) :: velz=0.0,s2n=0.0,msto=0.0,minchi2=huge_number,fret
   REAL(DP), DIMENSION(nl)   :: mspec=0.0,mspecmw=0.0,lam=0.0
-  REAL(DP), DIMENSION(nfil) :: mag=0.0,m2l=0.0,m2lmw=0.0
+  REAL(DP), DIMENSION(nfil) :: m2l=0.0,m2lmw=0.0
   REAL(DP), DIMENSION(npar) :: oposarr=0.,nposarr=0.,bposarr=0.0
   REAL(DP), DIMENSION(npar) :: granarr=0.,dsteparr=0.
   REAL(DP), DIMENSION(3,npar+2*nfil) :: runtot=0.0
