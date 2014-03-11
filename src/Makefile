@@ -25,7 +25,7 @@ F90FLAGS = -O3 -fno-strict-overflow
 PROGS = specfit write_a_model
 
 COMMON =  nrtype.o sfvars.o nr.o nrutil.o ran_state.o sfutils.o getmodel.o \
-	sfsetup.o linterp.o velbroad.o tsum.o set_wave_limits.o add_response.o \
+	sfsetup.o linterp.o velbroad.o tsum.o add_response.o \
 	contnormspec.o locate.o gasdev.o setup_params.o str2arr.o \
 	ran1.o read_data.o lfit.o gaussj.o covsrt.o getm2l.o myran.o \
 	powell.o linmin.o mnbrak.o brent.o func.o init_random_seed.o \

@@ -208,7 +208,6 @@ SUBROUTINE SFSETUP()
      lnlam(i) = i*dlstep+LOG(MINVAL(sspgrid%lam(1:nl)))
   ENDDO
 
-
   !define central wavelengths of emission lines (in vacuum)
   emlines(1)  = 3728.38  ! [OII]  the other line is at 3730.29
   emlines(2)  = 3868.00  ! [NeIII]

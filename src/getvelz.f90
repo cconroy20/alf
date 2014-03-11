@@ -9,8 +9,8 @@ FUNCTION GETVELZ()
   USE sfutils, ONLY : linterp,contnormspec
   IMPLICIT NONE
 
-  REAL(DP) :: getvelz, chi2,lo=4100.,hi=5000.,tchi2,tvz
-  INTEGER, PARAMETER :: nv=1000
+  REAL(DP) :: getvelz, chi2,lo,hi,tchi2,tvz
+  INTEGER, PARAMETER :: nv=500
   INTEGER :: i,i1,i2
   REAL(DP), DIMENSION(nl) :: mflx,dflx
   TYPE(TDATA), DIMENSION(nl) :: idata
@@ -18,11 +18,14 @@ FUNCTION GETVELZ()
 
   !------------------------------------------------------!
 
+  lo = l1(1)+100
+  hi = l2(1)-100
+
   chi2 = huge_number
 
   DO i=1,nv
 
-     tvz = REAL(i)*11-1E3
+     tvz = REAL(i)*20-1E3
 
      !de-redshift the data and interpolate to model wave array
      tlam      = data%lam / (1+tvz/clight*1E5)
@@ -45,6 +48,6 @@ FUNCTION GETVELZ()
      ENDIF
 
   ENDDO
-     
+
 
 END FUNCTION GETVELZ
