@@ -15,13 +15,6 @@ MODULE SFVARS
 
   !flags for the user to choose:
 
-  !fit a polynomial to the ratio of model and data
-  !if zero, then both data and model are continuum divided
-  INTEGER, PARAMETER :: fitpoly=1
-  !mask emission lines?
-  INTEGER, PARAMETER :: maskem=0
-  !apply template error function? (only works for SDSS stacks)
-  INTEGER, PARAMETER :: apply_temperrfcn=0
   !fit only a subset of the full model parameters 
   !e.g., no IMF, no nuisance parameters, no "exotic" elements
   INTEGER, PARAMETER :: fitsimple=1
@@ -29,7 +22,15 @@ MODULE SFVARS
   INTEGER, PARAMETER :: force_nah=0
   !force the IMF to be a MW IMF if set
   !this is automatically assumed if fitsimple=1
-  INTEGER, PARAMETER :: mwimf=1
+  INTEGER, PARAMETER :: mwimf=0
+
+  !fit a polynomial to the ratio of model and data
+  !if zero, then both data and model are continuum divided
+  INTEGER, PARAMETER :: fitpoly=1
+  !mask emission lines? (if 0, then the em lines are incl in the fit)
+  INTEGER, PARAMETER :: maskem=0
+  !apply template error function? (only works for SDSS stacks)
+  INTEGER, PARAMETER :: apply_temperrfcn=0
   !if set, compute velocity broadening via a simple method
   !rather than the proper convolution in log_lambda space
   !don't turn this on - the "correct" version is just as fast
@@ -45,11 +46,13 @@ MODULE SFVARS
   !nstart and nend allow us to use only a subset of 
   !the full wavelength array
   INTEGER, PARAMETER :: nstart = 2100
-  INTEGER, PARAMETER :: nend   = 5500  !7700 !4200 
+  INTEGER, PARAMETER :: nend   = 4200 !14125 !7700  !7700 !4200 
   !number of spectral elements in SSPs
   INTEGER, PARAMETER :: nl = nend-nstart+1
   !(max) number of wavelength intervals
-  INTEGER, PARAMETER :: nlint = 4
+  INTEGER, PARAMETER :: nlint_max = 10
+  !actual number of wavelength intervals
+  INTEGER :: nlint = 0  
   !number of emission lines to fit
   INTEGER, PARAMETER :: neml = 13
   !number of coefficients for the polynomial fitting
@@ -70,8 +73,6 @@ MODULE SFVARS
   INTEGER, PARAMETER :: nfil=3
   !mag of sun in r,I,K filters (AB mag)
   REAL(DP), PARAMETER, DIMENSION(3) :: magsun = (/4.64,4.52,5.14/)
-  !factor to specify size of step
-  REAL(DP) :: mcstep=1E-3
   !lower and upper limits for the IMF
   REAL(DP), PARAMETER :: imflo=0.08,imfhi=100.0
   !power-law slopes for a Kroupa IMF
@@ -86,7 +87,7 @@ MODULE SFVARS
   !common array for filters
   REAL(DP), DIMENSION(nfil,nl) :: fil=0.0
   !common array for wavelength intervals
-  REAL(DP), DIMENSION(nlint)   :: l1,l2
+  REAL(DP), DIMENSION(nlint_max)   :: l1,l2
   !arrays containing the upper and lower prior limits
   REAL(DP), DIMENSION(npar) :: prloarr=0.,prhiarr=0.
 

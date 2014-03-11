@@ -12,9 +12,6 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl)
   REAL(DP), DIMENSION(nl) :: tspec,nspec,vel,func,gauss,psf
   REAL(DP) :: xmax,xmin,fwhm,psig
   INTEGER :: i,j,il,ih,m=4,grange
-  !convolve at fixed sigma_velocity
-  !if set to 0, then the convolution is at fixed sigma_wavelength
-  INTEGER, PARAMETER :: velocity=1
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!

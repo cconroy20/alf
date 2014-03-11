@@ -9,6 +9,8 @@ SUBROUTINE READ_DATA(file)
 
   CHARACTER(50), INTENT(in)  :: file
   INTEGER :: stat,i
+  CHARACTER(1) :: char
+  REAL(DP) :: ll1,ll2
   
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -19,6 +21,44 @@ SUBROUTINE READ_DATA(file)
      WRITE(*,*) 'READ_DATA ERROR: file not found'
      STOP
   ENDIF
+
+  !--------Read in the wavelength boundaries, which are in the header------!
+
+  char='#'
+  nlint = 0
+  DO WHILE (char.EQ.'#') 
+     READ(10,*) char,ll1,ll2
+     IF (char.EQ.'#') THEN 
+        nlint = nlint+1
+        IF (nlint.GT.nlint_max) THEN 
+           WRITE(*,*) 'READ_DATA ERROR: number of wavelength '//&
+                'intervals exceeds nlint_max'
+           STOP
+        ENDIF
+        IF (ll1.GE.ll2) THEN 
+           WRITE(*,*) 'READ_DATA ERROR: l1>l2!  returning...'
+           STOP
+        ENDIF
+        l1(nlint) = ll1
+        l2(nlint) = ll2
+     ENDIF
+  ENDDO
+  BACKSPACE(10)
+
+  IF (nlint.EQ.0) THEN
+     WRITE(*,*) 'no wavelength boundaries specified, using default' 
+     nlint = 2
+     l1(1) = 0.40
+     l1(2) = 0.47
+     l2(1) = 0.47
+     l2(2) = 0.55
+  ENDIF
+
+  !convert from um to A.
+  l1 = l1*1E4
+  l2 = l2*1E4
+
+  !--------now read in the input spectrum, errors, and weights----------!
 
   DO i=1,ndat
      READ(10,*,IOSTAT=stat) data(i)%lam,data(i)%flx,data(i)%err,data(i)%wgt

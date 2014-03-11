@@ -1,4 +1,4 @@
-SUBROUTINE SETUP_PARAMS(pos,dstep,prlo,prhi,velz)
+SUBROUTINE SETUP_PARAMS(pos,prlo,prhi,velz)
 
   !define the first position (pos), the step size (dstep),
   !and the lower and upper bounds on the priors (prlo, prhi)
@@ -6,7 +6,7 @@ SUBROUTINE SETUP_PARAMS(pos,dstep,prlo,prhi,velz)
   USE sfvars; USE sfutils, ONLY : myran
   IMPLICIT NONE
 
-  TYPE(PARAMS), INTENT(inout) :: pos,prlo,prhi,dstep
+  TYPE(PARAMS), INTENT(inout) :: pos,prlo,prhi
   REAL(DP), OPTIONAL :: velz
   INTEGER :: i
   
@@ -52,7 +52,6 @@ SUBROUTINE SETUP_PARAMS(pos,dstep,prlo,prhi,velz)
   DO i=1,neml
      pos%logemnorm(i) = myran()*2-3
   ENDDO
-  !pos%logcoeff  = -20.0
 
   IF (PRESENT(velz)) THEN
      pos%velz  = velz + (myran()*10-5)
@@ -60,44 +59,6 @@ SUBROUTINE SETUP_PARAMS(pos,dstep,prlo,prhi,velz)
      pos%velz  = myran()*10-5
   ENDIF
 
-  !setup the step size
-  dstep%logage    = mcstep * 20 ! * 500
-  dstep%feh       = mcstep
-  dstep%ah        = mcstep * 10
-  dstep%nhe       = mcstep * 200
-  dstep%ch        = mcstep
-  dstep%nh        = mcstep
-  dstep%nah       = mcstep * 10
-  dstep%mgh       = mcstep
-  dstep%sih       = mcstep
-  dstep%kh        = mcstep * 200
-  dstep%cah       = mcstep
-  dstep%tih       = mcstep
-  dstep%vh        = mcstep * 20
-  dstep%crh       = mcstep * 20
-  dstep%mnh       = mcstep * 20
-  dstep%coh       = mcstep * 20
-  dstep%nih       = mcstep * 20
-  dstep%cuh       = mcstep * 100
-  dstep%rbh       = mcstep * 200
-  dstep%srh       = mcstep * 200
-  dstep%yh        = mcstep * 200
-  dstep%zrh       = mcstep * 200
-  dstep%bah       = mcstep * 200
-  dstep%euh       = mcstep * 200
-  dstep%teff      = mcstep * 800
-  dstep%imf1      = mcstep * 100
-  dstep%imf2      = mcstep * 100
-  dstep%logfy     = mcstep * 100
-  dstep%logm7g    = mcstep * 100
-  dstep%hotteff   = mcstep * 100
-  dstep%loghot    = mcstep * 100
-  dstep%sigma     = mcstep * 100
-  dstep%sigma2    = mcstep * 100
-  dstep%velz      = mcstep * 50
-  dstep%velz2     = mcstep * 50
-  dstep%logemnorm = mcstep * 100
-  dstep%logcoeff  = mcstep * 100
 
   !priors (low)
   prlo%logage    = LOG10(0.5)

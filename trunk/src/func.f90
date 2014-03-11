@@ -9,9 +9,9 @@ FUNCTION FUNC(nposarr,spec,funit)
   IMPLICIT NONE
 
   REAL(DP), DIMENSION(:), INTENT(inout) :: nposarr
-  REAL(DP), DIMENSION(:), OPTIONAL :: spec
+  REAL(DP), DIMENSION(nl), OPTIONAL :: spec
   INTEGER, INTENT(in), OPTIONAL :: funit
-  REAL(DP) :: func,pr,tchi2,ml
+  REAL(DP) :: func,pr,tchi2,ml,tl1,tl2
   REAL(DP), DIMENSION(nl)   :: mspec,mflx,dflx,poly
   REAL(DP), DIMENSION(ndat) :: tlam
   REAL(DP), DIMENSION(ncoeff) :: tcoeff
@@ -42,27 +42,31 @@ FUNCTION FUNC(nposarr,spec,funit)
   !compute chi2, looping over wavelength intervals
   DO i=1,nlint
 
-     !if wavelength interval exceeds data range, then skip
-     IF ((tlam(datmax).LT.l2(i)).OR.(tlam(1).GT.l1(i))) CYCLE
-     i1 = MIN(MAX(locate(sspgrid%lam,l1(i)),1),nl-1)
-     i2 = MIN(MAX(locate(sspgrid%lam,l2(i)),2),nl)
-     ml = (l1(i)+l2(i))/2.0
+     tl1 = MAX(l1(i),tlam(1))
+     tl2 = MIN(l2(i),tlam(datmax))
+     !if wavelength interval falls completely outside 
+     !of the range of the data, then skip
+     IF (tl1.GE.tl2) CYCLE
+
+     i1 = MIN(MAX(locate(sspgrid%lam,tl1),1),nl-1)
+     i2 = MIN(MAX(locate(sspgrid%lam,tl2),2),nl)
+     ml = (tl1+tl2)/2.0
 
      IF (fitpoly.EQ.1) THEN
         CALL CONTNORMSPEC(sspgrid%lam,idata%flx/mspec,idata%err,&
-             l1(i),l2(i),mflx,coeff=tcoeff)
+             tl1,tl2,mflx,coeff=tcoeff)
         poly = 0.0
-        npow = MIN(NINT((l2(i)-l1(i))/100.0),14)
+        npow = MIN(NINT((tl2-tl1)/100.0),14)
         DO j=1,npow+1 
            poly = poly + tcoeff(j)*(sspgrid%lam-ml)**(j-1)
         ENDDO
-        mflx = mspec * poly
-        dflx = idata%flx
+        mflx  = mspec * poly
+        dflx  = idata%flx
         tchi2 = SUM((dflx(i1:i2)-mflx(i1:i2))**2/idata(i1:i2)%err**2)
      ELSE
-        CALL CONTNORMSPEC(sspgrid%lam,idata%flx,idata%err,l1(i),l2(i),dflx)
+        CALL CONTNORMSPEC(sspgrid%lam,idata%flx,idata%err,tl1,tl2,dflx)
         CALL CONTNORMSPEC(sspgrid%lam,mspec,idata%wgt*SQRT(mspec),&
-             l1(i),l2(i),mflx)
+             tl1,tl2,mflx)
         tchi2 = SUM(idata(i1:i2)%flx**2/idata(i1:i2)%err**2*&
              (dflx(i1:i2)-mflx(i1:i2))**2)
     ENDIF
@@ -71,7 +75,7 @@ FUNCTION FUNC(nposarr,spec,funit)
 
      IF (PRESENT(funit)) THEN
         !write final results to screen and file
-        WRITE(*,'("  rms:",F5.2,"%")') &
+        WRITE(*,'(2x,F4.2,"-",F4.2,":"," rms:",F5.2,"%")') tl1/1E4,tl2/1E4,&
              SQRT( SUM( (dflx(i1:i2)/mflx(i1:i2)-1)**2 )/(i2-i1+1) )*100
         DO j=i1,i2
            WRITE(funit,'(F9.2,3ES12.4)') sspgrid%lam(j),mflx(j),&
@@ -95,16 +99,16 @@ FUNCTION FUNC(nposarr,spec,funit)
   ELSE 
      func = func -2*LOG(pr)
   ENDIF
-   
+
   !for testing purposes
   IF (1.EQ.0) THEN
      WRITE(*,'(2ES10.3,2F12.2,99F7.3)') &
           func,pr,npos%velz,npos%sigma,npos%logage,npos%feh,npos%ah,&
           npos%nhe,npos%ch,npos%nh,npos%nah,npos%mgh,npos%sih,npos%kh,&
-          npos%cah,npos%tih,npos%vh,npos%crh,npos%mnh,npos%coh,npos%nih,&
-          npos%rbh,npos%srh,npos%yh,npos%zrh,npos%bah,npos%euh,npos%teff,&
-          npos%imf1,npos%imf2,npos%logfy,npos%velz,npos%logm7g,npos%hotteff,&
-          npos%loghot
+          npos%cah,npos%tih,npos%vh,npos%crh,npos%mnh,npos%coh,npos%nih !,&
+     !     npos%rbh,npos%srh,npos%yh,npos%zrh,npos%bah,npos%euh,npos%teff,&
+     !     npos%imf1,npos%imf2,npos%logfy,npos%velz,npos%logm7g,npos%hotteff,&
+     !     npos%loghot
   ENDIF
 
 END FUNCTION FUNC

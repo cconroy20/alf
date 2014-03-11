@@ -40,7 +40,7 @@ MODULE SFUTILS
      FUNCTION FUNC(nposarr,spec,funit)
        USE sfvars
        REAL(DP), DIMENSION(:), INTENT(in) :: nposarr
-       REAL(DP), DIMENSION(:), OPTIONAL :: spec
+       REAL(DP), DIMENSION(nl), OPTIONAL :: spec
        INTEGER, INTENT(in), OPTIONAL :: funit
        REAL(DP) :: func
      END FUNCTION FUNC
@@ -122,16 +122,9 @@ MODULE SFUTILS
   END INTERFACE
 
   INTERFACE
-     SUBROUTINE SET_WAVE_LIMITS(file)
+     SUBROUTINE SETUP_PARAMS(pos,prlo,prhi,velz)
        USE sfvars
-       CHARACTER(50), INTENT(in) :: file
-     END SUBROUTINE SET_WAVE_LIMITS
-  END INTERFACE
-
-  INTERFACE
-     SUBROUTINE SETUP_PARAMS(pos,dstep,prlo,prhi,velz)
-       USE sfvars
-       TYPE(PARAMS), INTENT(inout) :: pos,prlo,prhi,dstep
+       TYPE(PARAMS), INTENT(inout) :: pos,prlo,prhi
        REAL(DP), OPTIONAL :: velz
      END SUBROUTINE SETUP_PARAMS
   END INTERFACE
