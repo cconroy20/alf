@@ -11,7 +11,7 @@ PROGRAM SPECFIT
   !number of chain steps to run
   INTEGER, PARAMETER :: nmcmc=1E4
   !length of burn-in
-  INTEGER, PARAMETER :: nburn=2E6
+  INTEGER, PARAMETER :: nburn=2E4
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !number of walkers for emcee
@@ -74,7 +74,7 @@ PROGRAM SPECFIT
 
   !read in the data and wavelength boundaries
   CALL READ_DATA(file)
-  WRITE(*,'(" Using ",I2," wave intervals")') nlint
+  WRITE(*,'(" Using ",I1," wave intervals")') nlint
 
   IF (l2(nlint).GT.lam(nl).OR.l1(1).LT.lam(1)) THEN
      WRITE(*,*) 'ERROR: wave boundaries exceed model wavelength grid'
@@ -133,6 +133,10 @@ PROGRAM SPECFIT
      opos%imf1 = 1.3
      opos%imf2 = 2.3
      CALL STR2ARR(1,opos,oposarr) !str->arr
+
+     WRITE(*,'(" Best velocity: ",F6.1)') opos%velz
+     WRITE(*,'(" Best sigma:    ",F6.1)') opos%sigma
+
 
   ENDIF
 
