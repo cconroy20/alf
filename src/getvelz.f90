@@ -17,10 +17,7 @@ FUNCTION GETVELZ()
   REAL(DP), DIMENSION(ndat) :: tlam
 
   !------------------------------------------------------!
-
-  lo = l1(1)+100
-  hi = l2(1)-100
-
+ 
   chi2 = huge_number
 
   DO i=1,nv
@@ -33,6 +30,10 @@ FUNCTION GETVELZ()
      idata%err = linterp(tlam,data%err,sspgrid%lam)
      idata%wgt = linterp(tlam,data%wgt,sspgrid%lam)
      
+     lo = MAX(l1(1),tlam(1))+50
+     hi = MIN(l2(1),tlam(datmax))-50
+     IF (lo.GE.hi) CYCLE
+
      CALL CONTNORMSPEC(sspgrid%lam,idata%flx,idata%wgt,lo,hi,dflx)
      CALL CONTNORMSPEC(sspgrid%lam,10**sspgrid%logfkrpa(nage,:),&
           idata%wgt,lo,hi,mflx)
