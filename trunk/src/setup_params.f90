@@ -95,7 +95,7 @@ SUBROUTINE SETUP_PARAMS(pos,prlo,prhi,velz)
   prlo%sigma     = 20.0
   prlo%sigma2    = 20.0
   prlo%velz      = -1E4
-  prlo%velz2     = -1E4
+  prlo%velz2     = -1E3
   prlo%logemnorm = -5.0
   prlo%logcoeff  = -30.
 
@@ -134,7 +134,7 @@ SUBROUTINE SETUP_PARAMS(pos,prlo,prhi,velz)
   prhi%sigma     = 1E4
   prhi%sigma2    = 1E4
   prhi%velz      = 1E4
-  prhi%velz2     = 1E4
+  prhi%velz2     = 1E3
   prhi%logemnorm = 1.0
   prhi%logcoeff  = 10.
 

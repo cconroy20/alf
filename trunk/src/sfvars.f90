@@ -17,7 +17,7 @@ MODULE SFVARS
 
   !fit only a subset of the full model parameters 
   !e.g., no IMF, no nuisance parameters, no "exotic" elements
-  INTEGER, PARAMETER :: fitsimple=1
+  INTEGER, PARAMETER :: fitsimple=0
   !force [Na/H]=[Mg/H]
   INTEGER, PARAMETER :: force_nah=0
   !force the IMF to be a MW IMF if set
@@ -46,7 +46,7 @@ MODULE SFVARS
   !nstart and nend allow us to use only a subset of 
   !the full wavelength array
   INTEGER, PARAMETER :: nstart = 2100
-  INTEGER, PARAMETER :: nend   = 4200 !14125 !7700  !7700 !4200 
+  INTEGER, PARAMETER :: nend   = 7700 !14125 !7700  !7700 !4200 
   !number of spectral elements in SSPs
   INTEGER, PARAMETER :: nl = nend-nstart+1
   !(max) number of wavelength intervals
