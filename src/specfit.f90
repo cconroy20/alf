@@ -11,7 +11,7 @@ PROGRAM SPECFIT
   !number of chain steps to run
   INTEGER, PARAMETER :: nmcmc=1E4
   !length of burn-in
-  INTEGER, PARAMETER :: nburn=2E4
+  INTEGER, PARAMETER :: nburn=2E5
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !number of walkers for emcee
@@ -136,7 +136,6 @@ PROGRAM SPECFIT
 
      WRITE(*,'(" Best velocity: ",F6.1)') opos%velz
      WRITE(*,'(" Best sigma:    ",F6.1)') opos%sigma
-
 
   ENDIF
 
