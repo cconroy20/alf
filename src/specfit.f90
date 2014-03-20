@@ -61,7 +61,7 @@ PROGRAM SPECFIT
   WRITE(*,'("  age-dep Rf =",I2)') use_age_dep_resp_fcns
   WRITE(*,'("  Nburn      = ",I7)') nburn
   WRITE(*,'("  Nchain     = ",I7)') nmcmc
-  WRITE(*,'("  filename   = ",A22)') TRIM(file)//TRIM(tag)
+  WRITE(*,'("  filename   = ",A)') TRIM(file)//TRIM(tag)
   WRITE(*,'("****************************************")') 
  
   CALL date_and_time(TIME=time)
@@ -75,11 +75,17 @@ PROGRAM SPECFIT
   !read in the data and wavelength boundaries
   CALL READ_DATA(file)
   WRITE(*,'(" Using ",I1," wave intervals")') nlint
-
   IF (l2(nlint).GT.lam(nl).OR.l1(1).LT.lam(1)) THEN
      WRITE(*,*) 'ERROR: wave boundaries exceed model wavelength grid'
      STOP
   ENDIF
+
+  !define the log wavelength grid used in velbroad.f90
+  nl_fit = MIN(MAX(locate(lam,l2(nlint)+100.0),1),nl)
+  dlstep = (LOG(sspgrid%lam(nl_fit))-LOG(sspgrid%lam(1)))/nl_fit
+  DO i=1,nl_fit
+     lnlam(i) = i*dlstep+LOG(sspgrid%lam(1))
+  ENDDO
 
   !masked regions have wgt=0.0.  We'll use wgt as an error
   !array in contnormspec, so turn those into large numbers
