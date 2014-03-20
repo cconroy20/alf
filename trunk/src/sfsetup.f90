@@ -202,12 +202,6 @@ SUBROUTINE SFSETUP()
   !hot star Teff in kK
   sspgrid%teffarrhot = (/8.0,10.,20.,30./)
 
-  !logarithmic wavelength grid used in velbroad.f90
-  dlstep = (LOG(MAXVAL(sspgrid%lam(1:nl)))-LOG(MINVAL(sspgrid%lam(1:nl))))/nl
-  DO i=1,nl
-     lnlam(i) = i*dlstep+LOG(MINVAL(sspgrid%lam(1:nl)))
-  ENDDO
-
   !define central wavelengths of emission lines (in vacuum)
   emlines(1)  = 3728.38  ! [OII]  the other line is at 3730.29
   emlines(2)  = 3868.00  ! [NeIII]

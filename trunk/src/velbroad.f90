@@ -52,8 +52,11 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl)
   !actually, this way is faster than the one above!
   ELSE
 
-     tspec = linterp(LOG(lambda(1:nl)),spec(1:nl),lnlam)
-     
+     tspec = 0.0
+     nspec = 0.0
+     tspec(1:nl_fit) = &
+          linterp(LOG(lambda(1:nl_fit)),spec(1:nl_fit),lnlam(1:nl_fit))
+
      fwhm   = sigma*2.35482/clight*1E5/dlstep
      psig   = fwhm/2.d0/SQRT(-2.d0*LOG(0.5d0)) ! equivalent sigma for kernel
      grange = FLOOR(m*psig)	               ! range for kernel (-range:range)
@@ -63,12 +66,13 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl)
      ENDDO
      psf(1:2*grange+1) = psf(1:2*grange+1) / SUM(psf(1:2*grange+1))
      
-     DO i=grange+1,nl-grange
+     DO i=grange+1,nl_fit-grange
         nspec(i) = SUM( psf(1:2*grange+1)*tspec(i-grange:i+grange) )
      ENDDO
      
      !interpolate back to the main array
-     spec = linterp(EXP(lnlam(1:nl)),nspec(1:nl),lambda)
+     spec(1:nl_fit) = &
+          linterp(EXP(lnlam(1:nl_fit)),nspec(1:nl_fit),lambda(1:nl_fit))
   
   ENDIF
 
