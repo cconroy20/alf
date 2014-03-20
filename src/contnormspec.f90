@@ -18,7 +18,8 @@ SUBROUTINE CONTNORMSPEC(lam,flx,err,il1,il2,flxout,coeff)
 
   !routine to continuum normalize a spectrum by a high-order
   !polynomial.  The order of the polynomial is determined by
-  !n=(lam_max-lam_min)/100.
+  !n=(lam_max-lam_min)/100.  only normalized over the input
+  !min/max wavelength range
 
   USE sfvars; USE nr, ONLY : locate, lfit, svdfit
   IMPLICIT NONE

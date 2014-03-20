@@ -11,7 +11,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   TYPE(PARAMS), INTENT(in) :: pos
   REAL(DP), DIMENSION(nl), INTENT(out) :: spec
   INTEGER, OPTIONAL :: mw
-  REAL(DP), DIMENSION(nl) :: tmp,tmpr
+  REAL(DP), DIMENSION(nl) :: tmp,tmpr,yspec
   INTEGER :: vt,vv1,vv2,i,vr
   REAL(DP) :: dt,fy,dx1,dx2,lsig,vz,dr
 
@@ -88,9 +88,14 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      CALL ADD_RESPONSE(spec,pos%teff,50.,1.d0,nage_rfcn-1,sspgrid%solar,&
           sspgrid%teffp,sspgrid%teffm)
      
-     !vary young (3 Gyr) population
-     fy = MAX(MIN(10**pos%logfy,1.0),0.0)
-     spec = (1-fy)*spec + fy*10**sspgrid%logfkrpa(2,:)
+     !vary young population
+     fy    = MAX(MIN(10**pos%logfy,1.0),0.0)
+     vt    = MAX(MIN(locate(sspgrid%logagegrid,pos%fy_logage),nage-1),1)
+     dt    = (pos%fy_logage-sspgrid%logagegrid(vt))/&
+             (sspgrid%logagegrid(vt+1)-sspgrid%logagegrid(vt))
+     dt    = MAX(dt,-0.25) !no extrapolation younger than 0.5 Gyr
+     yspec = 10**(dt*sspgrid%logfkrpa(vt+1,:) + (1-dt)*sspgrid%logfkrpa(vt,:))
+     spec  = (1-fy)*spec + fy*yspec
      
      !add a hot star
      vt = MAX(MIN(locate(sspgrid%teffarrhot,pos%hotteff),3),1)
@@ -169,7 +174,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
 
   !velocity broaden the model
   IF (pos%sigma.GT.20.0) &
-       CALL VELBROAD(sspgrid%lam,spec,pos%sigma,MINVAL(l1),MAXVAL(l2))
+       CALL VELBROAD(sspgrid%lam,spec,pos%sigma,l1(1),l2(nlint))
 
   IF (apply_temperrfcn.EQ.1) THEN
      spec = spec / temperrfcn

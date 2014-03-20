@@ -46,7 +46,8 @@ MODULE SFVARS
   !nstart and nend allow us to use only a subset of 
   !the full wavelength array
   INTEGER, PARAMETER :: nstart = 2100
-  INTEGER, PARAMETER :: nend   = 7700 !14125 !7700  !7700 !4200 
+  !14125 (2.4um) !7700 (1um) !4200 (5500A)
+  INTEGER, PARAMETER :: nend   = 4200
   !number of spectral elements in SSPs
   INTEGER, PARAMETER :: nl = nend-nstart+1
   !(max) number of wavelength intervals
@@ -58,7 +59,7 @@ MODULE SFVARS
   !number of coefficients for the polynomial fitting
   INTEGER, PARAMETER :: ncoeff = 30
   !number of parameters (minus em lines and polynomial)
-  INTEGER, PARAMETER :: npar1 = 35
+  INTEGER, PARAMETER :: npar1 = 36
   !number of ages in the empirical SSP grid
   INTEGER, PARAMETER :: nage = 7
   !number of ages in the response functions
@@ -135,12 +136,12 @@ MODULE SFVARS
   !structure for the set of parameters necessary to generate a model
   TYPE PARAMS
      REAL(DP) :: velz=0.0,sigma=0.0,logage=1.0,feh=0.0,ah=0.0,&
-          nhe=0.0,ch=0.0,nh=0.0,nah=0.0,&
-          mgh=0.0,sih=0.0,kh=0.0,cah=0.0,tih=0.0,vh=0.0,crh=0.0,&
-          mnh=0.0,coh=0.0,nih=0.0,cuh=0.0,rbh=0.0,srh=0.0,yh=0.0,zrh=0.0,&
-          bah=0.0,euh=0.0,teff=0.0,imf1=1.3,imf2=2.3,logfy=-5.0,&
-          sigma2=0.0,velz2=0.0,logm7g=-5.0,hotteff=20.0,loghot=-5.0
-     REAL(DP), DIMENSION(neml) :: logemnorm=-5.0
+          nhe=0.0,ch=0.0,nh=0.0,nah=0.0,mgh=0.0,sih=0.0,kh=0.0,&
+          cah=0.0,tih=0.0,vh=0.0,crh=0.0,mnh=0.0,coh=0.0,nih=0.0,&
+          cuh=0.0,rbh=0.0,srh=0.0,yh=0.0,zrh=0.0,bah=0.0,euh=0.0,&
+          teff=0.0,imf1=1.3,imf2=2.3,logfy=-5.0,sigma2=0.0,velz2=0.0,&
+          logm7g=-5.0,hotteff=20.0,loghot=-5.0,fy_logage=0.0
+     REAL(DP), DIMENSION(neml)   :: logemnorm=-5.0
      REAL(DP), DIMENSION(ncoeff) :: logcoeff=-10.0
      REAL(DP) :: chi2=huge_number
   END TYPE PARAMS
