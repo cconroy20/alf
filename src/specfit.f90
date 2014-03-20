@@ -11,7 +11,7 @@ PROGRAM SPECFIT
   !number of chain steps to run
   INTEGER, PARAMETER :: nmcmc=2E4
   !length of burn-in
-  INTEGER, PARAMETER :: nburn=2E5
+  INTEGER, PARAMETER :: nburn=1E5
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !number of walkers for emcee
