@@ -58,6 +58,7 @@ SUBROUTINE STR2ARR(switch,str,arr)
      arr(33) = str%logm7g
      arr(34) = str%hotteff
      arr(35) = str%loghot
+     arr(36) = str%fy_logage
      DO i=1,neml
         arr(npar1+i) = str%logemnorm(i)
      ENDDO
@@ -114,6 +115,7 @@ SUBROUTINE STR2ARR(switch,str,arr)
      str%logm7g = arr(33)
      str%hotteff = arr(34)
      str%loghot = arr(35)
+     str%fy_logage = arr(36)
      DO i=1,neml
         str%logemnorm(i) = arr(npar1+i)
      ENDDO
