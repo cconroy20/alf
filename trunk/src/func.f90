@@ -130,7 +130,7 @@ FUNCTION FUNC(nposarr,spec,funit)
         WRITE(*,'(2ES10.3,2F12.2,99F7.3)') &
              func,pr,npos%velz,npos%sigma,npos%logage,npos%feh,npos%ah,&
              npos%nhe,npos%ch,npos%nh,npos%nah,npos%mgh,npos%sih,npos%kh,&
-             npos%cah,npos%tih,npos%vh,npos%crh,npos%mnh,npos%coh,npos%nih !,&
+             npos%cah,npos%tih!,npos%vh,npos%crh,npos%mnh,npos%coh,npos%nih !,&
         !     npos%rbh,npos%srh,npos%yh,npos%zrh,npos%bah,npos%euh,npos%teff,&
         !     npos%imf1,npos%imf2,npos%logfy,npos%velz,npos%logm7g,npos%hotteff,&
         !     npos%loghot
