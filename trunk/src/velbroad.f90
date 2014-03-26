@@ -18,6 +18,11 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl)
   
   IF (sigma.EQ.0) RETURN
 
+  IF (sigma.GE.1E4) THEN
+     WRITE(*,*) "VELBROAD ERROR: sigma>1E4 km/s - what the hell are you doing?!"
+     STOP
+  ENDIF
+
   !compute smoothing the fast (and slightly less accurate) way
   IF (velbroad_simple.EQ.1) THEN
 

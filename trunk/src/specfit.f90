@@ -11,7 +11,7 @@ PROGRAM SPECFIT
   !number of chain steps to run
   INTEGER, PARAMETER :: nmcmc=2E4
   !length of burn-in
-  INTEGER, PARAMETER :: nburn=1E5
+  INTEGER, PARAMETER :: nburn=2E6
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !number of walkers for emcee
@@ -38,6 +38,10 @@ PROGRAM SPECFIT
   !---------------------------------------------------------------!
   !---------------------------Setup-------------------------------!
   !---------------------------------------------------------------!
+
+  !simple mode: fit only a subset of the full model parameters 
+  !e.g., no IMF, no nuisance parameters, no "exotic" elements
+  fitsimple = 0
 
   !initialize the random number generator
   CALL INIT_RANDOM_SEED()
@@ -74,14 +78,14 @@ PROGRAM SPECFIT
 
   !read in the data and wavelength boundaries
   CALL READ_DATA(file)
-  WRITE(*,'(" Using ",I1," wave intervals")') nlint
+  WRITE(*,'("  Using ",I1," wave intervals")') nlint
   IF (l2(nlint).GT.lam(nl).OR.l1(1).LT.lam(1)) THEN
      WRITE(*,*) 'ERROR: wave boundaries exceed model wavelength grid'
      STOP
   ENDIF
 
   !define the log wavelength grid used in velbroad.f90
-  nl_fit = MIN(MAX(locate(lam,l2(nlint)+100.0),1),nl)
+  nl_fit = MIN(MAX(locate(lam,l2(nlint)+500.0),1),nl)
   dlstep = (LOG(sspgrid%lam(nl_fit))-LOG(sspgrid%lam(1)))/nl_fit
   DO i=1,nl_fit
      lnlam(i) = i*dlstep+LOG(sspgrid%lam(1))
@@ -98,11 +102,13 @@ PROGRAM SPECFIT
 
   !make an initial estimate of the redshift
   !we do this to help Powell minimization
-  WRITE(*,*) 'Finding redshift...'
+  WRITE(*,*) ' Finding redshift...'
   velz = getvelz()
+  !velz = 0.0
   opos%velz = velz
-  WRITE(*,'(" Best velocity: ",F6.1)') velz
+  WRITE(*,'("   Best velocity: ",F6.1)') velz
   
+
   !convert the structures into their equivalent arrays
   CALL STR2ARR(1,prlo,prloarr)   !str->arr
   CALL STR2ARR(1,prhi,prhiarr)   !str->arr
@@ -114,8 +120,9 @@ PROGRAM SPECFIT
 
   IF (dopowell.EQ.1) THEN 
 
-     WRITE(*,*) 'Running Powell...'
-     DO j=1,2
+     WRITE(*,*) ' Running Powell...'
+     powell_fitting = 1
+     DO j=1,10
         xi=0.0
         DO i=1,npar
            xi(i,i) = 1E-2
@@ -123,7 +130,7 @@ PROGRAM SPECFIT
         fret = huge_number
         CALL SETUP_PARAMS(opos,prlo,prhi,velz=velz)
         CALL STR2ARR(1,opos,oposarr) !str->arr
-        CALL POWELL(oposarr,xi,ftol,iter,fret)
+        CALL POWELL(oposarr(1:npowell),xi(1:npowell,1:npowell),ftol,iter,fret)
         CALL STR2ARR(2,opos,oposarr) !arr->str
         IF (fret.LT.bret) THEN
            bposarr = oposarr
@@ -131,17 +138,14 @@ PROGRAM SPECFIT
            bret    = fret
         ENDIF
      ENDDO
+     powell_fitting = 0
 
      !use the best-fit Powell position for the first MCMC position
      CALL STR2ARR(2,opos,bposarr) !arr->str
-     !Powell doesn't seem to do a good first-guess for these
-     !params, so set them to defaults
-     opos%imf1 = 1.3
-     opos%imf2 = 2.3
      CALL STR2ARR(1,opos,oposarr) !str->arr
 
-     WRITE(*,'(" Best velocity: ",F6.1)') opos%velz
-     WRITE(*,'(" Best sigma:    ",F6.1)') opos%sigma
+     WRITE(*,'("   Best velocity: ",F6.1)') opos%velz
+     WRITE(*,'("   Best sigma:    ",F6.1)') opos%sigma
 
   ENDIF
 
@@ -156,7 +160,7 @@ PROGRAM SPECFIT
   !-----------------------------MCMC------------------------------!
   !---------------------------------------------------------------!
 
-  WRITE(*,*) 'Running emcee...'
+  WRITE(*,*) ' Running emcee...'
 
   !open output file
   OPEN(12,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
@@ -230,8 +234,7 @@ PROGRAM SPECFIT
   CALL date_and_time(TIME=time)
   WRITE(*,*) 'End Time   '//time(1:2)//':'//time(3:4)
   WRITE(*,*) 
-  WRITE(*,'("  facc: ",F5.2)') REAL(totacc)/REAL(nmcmc)
-  WRITE(*,*) 
+  WRITE(*,'("  Facc: ",F5.2)') REAL(totacc)/REAL(nmcmc)
 
   !---------------------------------------------------------------!
   !--------------------Write results to file----------------------!

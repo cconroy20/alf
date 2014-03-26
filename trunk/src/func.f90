@@ -14,6 +14,7 @@ FUNCTION FUNC(nposarr,spec,funit)
   REAL(DP) :: func,pr,tchi2,ml,tl1,tl2
   REAL(DP), DIMENSION(nl)   :: mspec,mflx,dflx,poly
   REAL(DP), DIMENSION(ndat) :: tlam
+  REAL(DP), DIMENSION(npar) :: tposarr=0.0
   REAL(DP), DIMENSION(ncoeff) :: tcoeff
   INTEGER  :: i,i1,i2,j,npow,tpow
   TYPE(PARAMS)   :: npos
@@ -24,7 +25,13 @@ FUNCTION FUNC(nposarr,spec,funit)
   func = 0.0
   tpow = 0
 
-  CALL STR2ARR(2,npos,nposarr) !arr->str
+  IF (SIZE(nposarr).LT.npar) THEN
+     tposarr(1:5) = nposarr(1:5)
+  ELSE
+     tposarr = nposarr
+  ENDIF
+
+  CALL STR2ARR(2,npos,tposarr) !arr->str
 
   !get a new model spectrum
   CALL GETMODEL(npos,mspec)
@@ -71,12 +78,25 @@ FUNCTION FUNC(nposarr,spec,funit)
              (dflx(i1:i2)-mflx(i1:i2))**2)
     ENDIF
 
-     func  = func + tchi2
+    !error checking
+    IF (isnan(tchi2)) THEN
+       WRITE(*,'(" FUNC ERROR: chi2 returned a NaN")') 
+       WRITE(*,'(" error occured at wavelength interval: ",I1)') i
+       WRITE(*,'("data:",2000F14.2)') dflx(i1:i2)
+       WRITE(*,*)
+       WRITE(*,'("model:",2000F14.2)') mspec(i1:i2)*1E3
+       WRITE(*,*)
+       WRITE(*,'("errors:",2000F14.2)') idata(i1:i2)%err
+       STOP
+    ENDIF
+
+    func  = func + tchi2
 
      IF (PRESENT(funit)) THEN
         !write final results to screen and file
-        WRITE(*,'(2x,F4.2,"-",F4.2,":"," rms:",F5.2,"%")') tl1/1E4,tl2/1E4,&
-             SQRT( SUM( (dflx(i1:i2)/mflx(i1:i2)-1)**2 )/(i2-i1+1) )*100
+        WRITE(*,'(2x,F4.2,"um-",F4.2,"um:"," rms:",F5.1,"%, ","Chi2/dof:",F5.1)') &
+             tl1/1E4,tl2/1E4,SQRT( SUM( (dflx(i1:i2)/mflx(i1:i2)-1)**2 )/&
+             (i2-i1+1) )*100, tchi2/(i2-i1)
         DO j=i1,i2
            WRITE(funit,'(F9.2,3ES12.4)') sspgrid%lam(j),mflx(j),&
                 dflx(j),idata(j)%flx/idata(j)%err
@@ -89,12 +109,13 @@ FUNCTION FUNC(nposarr,spec,funit)
   !include priors
   pr = 1.0
   DO i=1,npar
+     IF (i.GT.npowell.AND.powell_fitting.EQ.1) CYCLE
      IF (nposarr(i).GT.prhiarr(i)) &
           pr = pr*EXP(-(nposarr(i)-prhiarr(i))**2/2/0.01)
      IF (nposarr(i).LT.prloarr(i)) &
           pr = pr*EXP(-(nposarr(i)-prloarr(i))**2/2/0.01)
   ENDDO
-  IF (pr.LT.tiny_number) THEN 
+  IF (pr.LE.tiny_number) THEN 
      func = huge_number 
   ELSE 
      func = func -2*LOG(pr)
@@ -102,13 +123,18 @@ FUNCTION FUNC(nposarr,spec,funit)
 
   !for testing purposes
   IF (1.EQ.0) THEN
-     WRITE(*,'(2ES10.3,2F12.2,99F7.3)') &
-          func,pr,npos%velz,npos%sigma,npos%logage,npos%feh,npos%ah,&
-          npos%nhe,npos%ch,npos%nh,npos%nah,npos%mgh,npos%sih,npos%kh,&
-          npos%cah,npos%tih,npos%vh,npos%crh,npos%mnh,npos%coh,npos%nih !,&
-     !     npos%rbh,npos%srh,npos%yh,npos%zrh,npos%bah,npos%euh,npos%teff,&
-     !     npos%imf1,npos%imf2,npos%logfy,npos%velz,npos%logm7g,npos%hotteff,&
-     !     npos%loghot
+     IF (powell_fitting.EQ.1) THEN
+        WRITE(*,'(2ES10.3,2F12.2,99F7.3)') &
+             func,pr,npos%velz,npos%sigma,npos%logage,npos%feh
+     ELSE
+        WRITE(*,'(2ES10.3,2F12.2,99F7.3)') &
+             func,pr,npos%velz,npos%sigma,npos%logage,npos%feh,npos%ah,&
+             npos%nhe,npos%ch,npos%nh,npos%nah,npos%mgh,npos%sih,npos%kh,&
+             npos%cah,npos%tih,npos%vh,npos%crh,npos%mnh,npos%coh,npos%nih !,&
+        !     npos%rbh,npos%srh,npos%yh,npos%zrh,npos%bah,npos%euh,npos%teff,&
+        !     npos%imf1,npos%imf2,npos%logfy,npos%velz,npos%logm7g,npos%hotteff,&
+        !     npos%loghot
+     ENDIF
   ENDIF
 
 END FUNCTION FUNC
