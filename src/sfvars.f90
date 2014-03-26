@@ -22,7 +22,7 @@ MODULE SFVARS
   INTEGER :: powell_fitting=0
   !force the IMF to be a MW IMF if set
   !this is automatically assumed if fitsimple=1
-  INTEGER, PARAMETER :: mwimf=0
+  INTEGER :: mwimf=0
   !force [Na/H]=[Mg/H]
   INTEGER, PARAMETER :: force_nah=0
 
@@ -47,7 +47,7 @@ MODULE SFVARS
 
   !nstart and nend allow us to use only a subset of 
   !the full wavelength array
-  INTEGER, PARAMETER :: nstart = 2100   ! 0.39 um
+  INTEGER, PARAMETER :: nstart = 2000   ! 0.38 um
   INTEGER, PARAMETER :: nend   = 14125  ! 2.4 um
   !number of spectral elements in SSPs
   INTEGER, PARAMETER :: nl = nend-nstart+1

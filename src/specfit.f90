@@ -11,7 +11,7 @@ PROGRAM SPECFIT
   !number of chain steps to run
   INTEGER, PARAMETER :: nmcmc=2E4
   !length of burn-in
-  INTEGER, PARAMETER :: nburn=2E6
+  INTEGER, PARAMETER :: nburn=1E5
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !number of walkers for emcee
@@ -42,6 +42,7 @@ PROGRAM SPECFIT
   !simple mode: fit only a subset of the full model parameters 
   !e.g., no IMF, no nuisance parameters, no "exotic" elements
   fitsimple = 0
+  IF (fitsimple.EQ.1) mwimf=1
 
   !initialize the random number generator
   CALL INIT_RANDOM_SEED()
@@ -57,7 +58,7 @@ PROGRAM SPECFIT
   ENDIF
 
   WRITE(*,*) 
-  WRITE(*,'("****************************************")') 
+  WRITE(*,'(" ************************************")') 
   WRITE(*,'("   dopowell  =",I2)') dopowell
   WRITE(*,'("  fitsimple  =",I2)') fitsimple
   WRITE(*,'("      mwimf  =",I2)') mwimf
@@ -66,7 +67,7 @@ PROGRAM SPECFIT
   WRITE(*,'("  Nburn      = ",I7)') nburn
   WRITE(*,'("  Nchain     = ",I7)') nmcmc
   WRITE(*,'("  filename   = ",A)') TRIM(file)//TRIM(tag)
-  WRITE(*,'("****************************************")') 
+  WRITE(*,'(" ************************************")') 
  
   CALL date_and_time(TIME=time)
   WRITE(*,*) 
@@ -78,9 +79,10 @@ PROGRAM SPECFIT
 
   !read in the data and wavelength boundaries
   CALL READ_DATA(file)
-  WRITE(*,'("  Using ",I1," wave intervals")') nlint
+  WRITE(*,'("  Using ",I1," wavelength intervals")') nlint
   IF (l2(nlint).GT.lam(nl).OR.l1(1).LT.lam(1)) THEN
      WRITE(*,*) 'ERROR: wave boundaries exceed model wavelength grid'
+     WRITE(*,'(4F8.1)') l2(nlint),lam(nl_fit),l1(1),lam(1)
      STOP
   ENDIF
 
@@ -91,7 +93,7 @@ PROGRAM SPECFIT
      lnlam(i) = i*dlstep+LOG(sspgrid%lam(1))
   ENDDO
 
-  !masked regions have wgt=0.0.  We'll use wgt as an error
+  !masked regions have wgt=0.0.  We'll use wgt as a pseudo-error
   !array in contnormspec, so turn those into large numbers
   data%wgt = MIN(1/data%wgt,huge_number)
   !fold the masked regions into the errors
@@ -104,7 +106,6 @@ PROGRAM SPECFIT
   !we do this to help Powell minimization
   WRITE(*,*) ' Finding redshift...'
   velz = getvelz()
-  !velz = 0.0
   opos%velz = velz
   WRITE(*,'("   Best velocity: ",F6.1)') velz
   
@@ -161,6 +162,7 @@ PROGRAM SPECFIT
   !---------------------------------------------------------------!
 
   WRITE(*,*) ' Running emcee...'
+  CALL FLUSH()
 
   !open output file
   OPEN(12,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
@@ -187,12 +189,14 @@ PROGRAM SPECFIT
   ENDDO
   
   !burn-in
+  WRITE(*,*) '  burning in...'
   DO i=1,nburn/nwalkers
      CALL EMCEE_ADVANCE(npar,nwalkers,2.d0,pos_emcee,&
           lp_emcee,pos_emcee,lp_emcee,accept_emcee)
   ENDDO
   
   !Run a production chain
+  WRITE(*,*) '  production run...'
   DO i=1,nmcmc/nwalkers
      
      CALL EMCEE_ADVANCE(npar,nwalkers,2.d0,pos_emcee,&
