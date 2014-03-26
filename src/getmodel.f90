@@ -40,49 +40,55 @@ SUBROUTINE GETMODEL(pos,spec,mw)
 
   !vary [Fe/H]
   CALL ADD_RESPONSE(spec,pos%feh,0.3,dr,vr,sspgrid%solar,sspgrid%fep,sspgrid%fem)
-  !vary [O/H]
-  CALL ADD_RESPONSE(spec,pos%ah,0.3,dr,vr,sspgrid%solar,sspgrid%ap)
-  !vary [C/H]
-  CALL ADD_RESPONSE(spec,pos%ch,0.15,dr,vr,sspgrid%solar,sspgrid%cp,sspgrid%cm)
-  !vary [N/H]
-  CALL ADD_RESPONSE(spec,pos%nh,0.3,dr,vr,sspgrid%solar,sspgrid%np,sspgrid%nm)
-  !vary [Mg/H]
-  CALL ADD_RESPONSE(spec,pos%mgh,0.3,dr,vr,sspgrid%solar,sspgrid%mgp,sspgrid%mgm)
-  !vary [Si/H]
-  CALL ADD_RESPONSE(spec,pos%sih,0.3,dr,vr,sspgrid%solar,sspgrid%sip,sspgrid%sim)
-  !vary [Ca/H]
-  CALL ADD_RESPONSE(spec,pos%cah,0.3,dr,vr,sspgrid%solar,sspgrid%cap,sspgrid%cam)
-  !vary [Ti/H]
-  CALL ADD_RESPONSE(spec,pos%tih,0.3,dr,vr,sspgrid%solar,sspgrid%tip,sspgrid%tim)
 
-  !vary [Na/H] (special case)
-  IF (pos%nah.GT.0.0.AND.pos%nah.LT.0.3) THEN
-     tmpr = dr*sspgrid%nap(vr+1,:)/sspgrid%solar(vr+1,:) + &
-          (1-dr)*sspgrid%nap(vr,:)/sspgrid%solar(vr,:)
-     tmp  = 1 + (tmpr-1)*pos%nah/0.3
-     spec = spec * tmp
-  ELSE IF (pos%nah.GE.0.3.AND.pos%nah.LT.0.6) THEN
-     tmpr = dr*sspgrid%nap(vr+1,:)/sspgrid%solar(vr+1,:) + &
-          (1-dr)*sspgrid%nap(vr,:)/sspgrid%solar(vr,:)
-     tmp = dr * (sspgrid%nap6(vr+1,:)-sspgrid%nap(vr+1,:))/sspgrid%solar(vr+1,:) + &
-          (1-dr)*(sspgrid%nap6(vr,:)-sspgrid%nap(vr,:))/sspgrid%solar(vr,:)
-     spec = spec * ( tmpr + tmp*(pos%nah-0.3)/0.3 )
-  ELSE IF (pos%nah.GE.0.6) THEN
-     tmpr = dr*sspgrid%nap6(vr+1,:)/sspgrid%solar(vr+1,:) + &
-          (1-dr)*sspgrid%nap6(vr,:)/sspgrid%solar(vr,:)
-     tmp = dr * (sspgrid%nap9(vr+1,:)-sspgrid%nap6(vr+1,:))/sspgrid%solar(vr+1,:) + &
-          (1-dr)*(sspgrid%nap9(vr,:)-sspgrid%nap6(vr,:))/sspgrid%solar(vr,:)
-     spec = spec * ( tmpr + tmp*(pos%nah-0.6)/0.6 )
-  ELSE IF (pos%nah.LT.0.0) THEN
-     tmpr = dr*sspgrid%nam(vr+1,:)/sspgrid%solar(vr+1,:) + &
-          (1-dr)*sspgrid%nam(vr,:)/sspgrid%solar(vr,:)
-     tmp  = 1 + (tmpr-1)*ABS(pos%nah)/0.3
-     spec = spec * tmp
+  !NB: when we are fitting in Powell mode, we only fit 
+  !sigma, velz, logage, and [Fe/H]
+  IF (powell_fitting.EQ.0) THEN
+
+     !vary [O/H]
+     CALL ADD_RESPONSE(spec,pos%ah,0.3,dr,vr,sspgrid%solar,sspgrid%ap)
+     !vary [C/H]
+     CALL ADD_RESPONSE(spec,pos%ch,0.15,dr,vr,sspgrid%solar,sspgrid%cp,sspgrid%cm)
+     !vary [N/H]
+     CALL ADD_RESPONSE(spec,pos%nh,0.3,dr,vr,sspgrid%solar,sspgrid%np,sspgrid%nm)
+     !vary [Mg/H]
+     CALL ADD_RESPONSE(spec,pos%mgh,0.3,dr,vr,sspgrid%solar,sspgrid%mgp,sspgrid%mgm)
+     !vary [Si/H]
+     CALL ADD_RESPONSE(spec,pos%sih,0.3,dr,vr,sspgrid%solar,sspgrid%sip,sspgrid%sim)
+     !vary [Ca/H]
+     CALL ADD_RESPONSE(spec,pos%cah,0.3,dr,vr,sspgrid%solar,sspgrid%cap,sspgrid%cam)
+     !vary [Ti/H]
+     CALL ADD_RESPONSE(spec,pos%tih,0.3,dr,vr,sspgrid%solar,sspgrid%tip,sspgrid%tim)
+     
+     !vary [Na/H] (special case)
+     IF (pos%nah.GT.0.0.AND.pos%nah.LT.0.3) THEN
+        tmpr = dr*sspgrid%nap(vr+1,:)/sspgrid%solar(vr+1,:) + &
+             (1-dr)*sspgrid%nap(vr,:)/sspgrid%solar(vr,:)
+        tmp  = 1 + (tmpr-1)*pos%nah/0.3
+        spec = spec * tmp
+     ELSE IF (pos%nah.GE.0.3.AND.pos%nah.LT.0.6) THEN
+        tmpr = dr*sspgrid%nap(vr+1,:)/sspgrid%solar(vr+1,:) + &
+             (1-dr)*sspgrid%nap(vr,:)/sspgrid%solar(vr,:)
+        tmp = dr * (sspgrid%nap6(vr+1,:)-sspgrid%nap(vr+1,:))/sspgrid%solar(vr+1,:) + &
+             (1-dr)*(sspgrid%nap6(vr,:)-sspgrid%nap(vr,:))/sspgrid%solar(vr,:)
+        spec = spec * ( tmpr + tmp*(pos%nah-0.3)/0.3 )
+     ELSE IF (pos%nah.GE.0.6) THEN
+        tmpr = dr*sspgrid%nap6(vr+1,:)/sspgrid%solar(vr+1,:) + &
+             (1-dr)*sspgrid%nap6(vr,:)/sspgrid%solar(vr,:)
+        tmp = dr * (sspgrid%nap9(vr+1,:)-sspgrid%nap6(vr+1,:))/sspgrid%solar(vr+1,:) + &
+             (1-dr)*(sspgrid%nap9(vr,:)-sspgrid%nap6(vr,:))/sspgrid%solar(vr,:)
+        spec = spec * ( tmpr + tmp*(pos%nah-0.6)/0.6 )
+     ELSE IF (pos%nah.LT.0.0) THEN
+        tmpr = dr*sspgrid%nam(vr+1,:)/sspgrid%solar(vr+1,:) + &
+             (1-dr)*sspgrid%nam(vr,:)/sspgrid%solar(vr,:)
+        tmp  = 1 + (tmpr-1)*ABS(pos%nah)/0.3
+        spec = spec * tmp
+     ENDIF
+     
   ENDIF
 
-
   !only include these parameters in the "full" model
-  IF (fitsimple.EQ.0) THEN
+  IF (fitsimple.EQ.0.AND.powell_fitting.EQ.0) THEN
 
      !vary Teff (special case - force use of the 13 Gyr model)
      CALL ADD_RESPONSE(spec,pos%teff,50.,1.d0,nage_rfcn-1,sspgrid%solar,&
@@ -136,9 +142,8 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      !vary [Eu/H]
      CALL ADD_RESPONSE(spec,pos%euh,0.3,dr,vr,sspgrid%solar,sspgrid%eup)
 
+     !vary IMF
      IF (.NOT.PRESENT(mw)) THEN
-        
-        !vary IMF
         vv1 = MAX(MIN(locate(sspgrid%imfx,pos%imf1),nimf-1),1)
         dx1 = (pos%imf1-sspgrid%imfx(vv1))/(sspgrid%imfx(vv1+1)-sspgrid%imfx(vv1))
         dx1 = MAX(MIN(dx1,1.0),-1.0)
@@ -150,26 +155,24 @@ SUBROUTINE GETMODEL(pos,spec,mw)
              (1-dx1)*dx2*sspgrid%imf(vv1,vv2+1,:)+&
              dx1*dx2*sspgrid%imf(vv1+1,vv2+1,:)
         tmp = tmp/sspgrid%imf(i13,i23,:)
-
         !turn off IMF sensitivity at lambda<7000A
         !wh = where(la LT 7E3)
         !tmp[wh] = 1.0
         spec = spec * tmp
-
      ENDIF
 
-  ENDIF
-
-  IF (maskem.EQ.0) THEN
      !add emission lines
-     DO i=1,neml
-        !allow the em lines to be offset in velocity from the continuum
-        !NB: velz2 is a *relative* shift between continuum and lines
-        vz   = emlines(i) / (1+pos%velz2/clight*1E5)
-        lsig = MAX(vz*pos%sigma2/clight*1E5,1.0)
-        spec = spec + 10**pos%logemnorm(i) * &
-             EXP(-(sspgrid%lam-vz)**2/lsig**2/2.0)
-     ENDDO
+     IF (maskem.EQ.0) THEN
+        DO i=1,neml
+           !allow the em lines to be offset in velocity from the continuum
+           !NB: velz2 is a *relative* shift between continuum and lines
+           vz   = emlines(i) / (1+pos%velz2/clight*1E5)
+           lsig = MAX(vz*pos%sigma2/clight*1E5,1.0)
+           spec = spec + 10**pos%logemnorm(i) * &
+                EXP(-(sspgrid%lam-vz)**2/lsig**2/2.0)
+        ENDDO
+     ENDIF
+
   ENDIF
 
   !velocity broaden the model

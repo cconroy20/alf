@@ -15,14 +15,16 @@ MODULE SFVARS
 
   !flags for the user to choose:
 
-  !fit only a subset of the full model parameters 
+  !simple mode: fit only a subset of the full model parameters 
   !e.g., no IMF, no nuisance parameters, no "exotic" elements
-  INTEGER, PARAMETER :: fitsimple=0
-  !force [Na/H]=[Mg/H]
-  INTEGER, PARAMETER :: force_nah=0
+  INTEGER :: fitsimple=0
+  !flag used to tell the code if we are fitting in powell mode or not
+  INTEGER :: powell_fitting=0
   !force the IMF to be a MW IMF if set
   !this is automatically assumed if fitsimple=1
   INTEGER, PARAMETER :: mwimf=0
+  !force [Na/H]=[Mg/H]
+  INTEGER, PARAMETER :: force_nah=0
 
   !fit a polynomial to the ratio of model and data
   !if zero, then both data and model are continuum divided
@@ -45,8 +47,8 @@ MODULE SFVARS
 
   !nstart and nend allow us to use only a subset of 
   !the full wavelength array
-  INTEGER, PARAMETER :: nstart = 2100  ! 0.39 um
-  INTEGER, PARAMETER :: nend   = 14125 ! 2.4 um
+  INTEGER, PARAMETER :: nstart = 2100   ! 0.39 um
+  INTEGER, PARAMETER :: nend   = 14125  ! 2.4 um
   !number of spectral elements in SSPs
   INTEGER, PARAMETER :: nl = nend-nstart+1
   !number actually used over the range to be fit
@@ -63,6 +65,8 @@ MODULE SFVARS
   INTEGER, PARAMETER :: npar1 = 36
   !number of ages in the empirical SSP grid
   INTEGER, PARAMETER :: nage = 7
+  !number of parameters used when fitting in Powell model
+  INTEGER, PARAMETER :: npowell = 4
   !number of ages in the response functions
   INTEGER, PARAMETER :: nage_rfcn = 5
   !number of IMF values in the SSP grid
@@ -153,9 +157,9 @@ MODULE SFVARS
      REAL(DP), DIMENSION(nage_rfcn,nl) :: solar,hep,hem,nap,nam,cap,cam,&
           fep,fem,cp,cm,ap,np,nm,tip,tim,mgp,mgm,sip,sim,crp,mnp,bap,bam,&
           nip,cup,cop,eup,srp,kp,vp,yp,zp,zm,zrp,rbp,teffp,teffm,nap6,nap9
-     REAL(DP), DIMENSION(nage_rfcn)   :: logagegrid_rfcn
-     REAL(DP), DIMENSION(nage)    :: logagegrid
-     REAL(DP), DIMENSION(nage,nl) :: logfkrpa
+     REAL(DP), DIMENSION(nage_rfcn) :: logagegrid_rfcn
+     REAL(DP), DIMENSION(nage)      :: logagegrid
+     REAL(DP), DIMENSION(nage,nl)   :: logfkrpa
      REAL(DP), DIMENSION(nimf,nimf,nl) :: imf
      REAL(DP), DIMENSION(nimf) :: imfx
      REAL(DP), DIMENSION(4,nl) :: hotspec
