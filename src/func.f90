@@ -33,80 +33,7 @@ FUNCTION FUNC(nposarr,spec,funit)
 
   CALL STR2ARR(2,npos,tposarr) !arr->str
 
-  !get a new model spectrum
-  CALL GETMODEL(npos,mspec)
-
-  IF (PRESENT(spec)) THEN
-     spec = mspec
-  ENDIF
-
-  !de-redshift the data and interpolate to model wave array
-  tlam      = data%lam / (1+npos%velz/clight*1E5)
-  idata%flx = linterp(tlam,data%flx,sspgrid%lam)
-  idata%err = linterp(tlam,data%err,sspgrid%lam)
-  idata%wgt = linterp(tlam,data%wgt,sspgrid%lam)
-
-  !compute chi2, looping over wavelength intervals
-  DO i=1,nlint
-
-     tl1 = MAX(l1(i),tlam(1))
-     tl2 = MIN(l2(i),tlam(datmax))
-     !if wavelength interval falls completely outside 
-     !of the range of the data, then skip
-     IF (tl1.GE.tl2) CYCLE
-
-     i1 = MIN(MAX(locate(sspgrid%lam,tl1),1),nl-1)
-     i2 = MIN(MAX(locate(sspgrid%lam,tl2),2),nl)
-     ml = (tl1+tl2)/2.0
-
-     IF (fitpoly.EQ.1) THEN
-        CALL CONTNORMSPEC(sspgrid%lam,idata%flx/mspec,idata%err,&
-             tl1,tl2,mflx,coeff=tcoeff)
-        poly = 0.0
-        npow = MIN(NINT((tl2-tl1)/100.0),14)
-        DO j=1,npow+1 
-           poly = poly + tcoeff(j)*(sspgrid%lam-ml)**(j-1)
-        ENDDO
-        mflx  = mspec * poly
-        dflx  = idata%flx
-        tchi2 = SUM((dflx(i1:i2)-mflx(i1:i2))**2/idata(i1:i2)%err**2)
-     ELSE
-        CALL CONTNORMSPEC(sspgrid%lam,idata%flx,idata%err,tl1,tl2,dflx)
-        CALL CONTNORMSPEC(sspgrid%lam,mspec,idata%wgt*SQRT(mspec),&
-             tl1,tl2,mflx)
-        tchi2 = SUM(idata(i1:i2)%flx**2/idata(i1:i2)%err**2*&
-             (dflx(i1:i2)-mflx(i1:i2))**2)
-    ENDIF
-
-    !error checking
-    IF (isnan(tchi2)) THEN
-       WRITE(*,'(" FUNC ERROR: chi2 returned a NaN")') 
-       WRITE(*,'(" error occured at wavelength interval: ",I1)') i
-       WRITE(*,'("data:",2000F14.2)') dflx(i1:i2)
-       WRITE(*,*)
-       WRITE(*,'("model:",2000F14.2)') mspec(i1:i2)*1E3
-       WRITE(*,*)
-       WRITE(*,'("errors:",2000F14.2)') idata(i1:i2)%err
-       STOP
-    ENDIF
-
-    func  = func + tchi2
-
-     IF (PRESENT(funit)) THEN
-        !write final results to screen and file
-        WRITE(*,'(2x,F4.2,"um-",F4.2,"um:"," rms:",F5.1,"%, ","Chi2/dof:",F5.1)') &
-             tl1/1E4,tl2/1E4,SQRT( SUM( (dflx(i1:i2)/mflx(i1:i2)-1)**2 )/&
-             (i2-i1+1) )*100, tchi2/(i2-i1)
-        DO j=i1,i2
-           WRITE(funit,'(F9.2,3ES12.4)') sspgrid%lam(j),mflx(j),&
-                dflx(j),idata(j)%flx/idata(j)%err
-        ENDDO
-     ENDIF
-
-  ENDDO
-
-  
-  !include priors
+  !compute priors
   pr = 1.0
   DO i=1,npar
      IF (i.GT.npowell.AND.powell_fitting.EQ.1) CYCLE
@@ -115,6 +42,85 @@ FUNCTION FUNC(nposarr,spec,funit)
      IF (nposarr(i).LT.prloarr(i)) &
           pr = pr*EXP(-(nposarr(i)-prloarr(i))**2/2/0.01)
   ENDDO
+
+  !only compute the model and chi2 if the priors are >0.0
+  IF (pr.GE.tiny_number) THEN
+
+     !get a new model spectrum
+     CALL GETMODEL(npos,mspec)
+     
+     IF (PRESENT(spec)) THEN
+        spec = mspec
+     ENDIF
+
+     !de-redshift the data and interpolate to model wave array
+     tlam      = data%lam / (1+npos%velz/clight*1E5)
+     idata%flx = linterp(tlam,data%flx,sspgrid%lam)
+     idata%err = linterp(tlam,data%err,sspgrid%lam)
+     idata%wgt = linterp(tlam,data%wgt,sspgrid%lam)
+
+     !compute chi2, looping over wavelength intervals
+     DO i=1,nlint
+        
+        tl1 = MAX(l1(i),tlam(1))
+        tl2 = MIN(l2(i),tlam(datmax))
+        !if wavelength interval falls completely outside 
+        !of the range of the data, then skip
+        IF (tl1.GE.tl2) CYCLE
+        
+        i1 = MIN(MAX(locate(sspgrid%lam,tl1),1),nl-1)
+        i2 = MIN(MAX(locate(sspgrid%lam,tl2),2),nl)
+        ml = (tl1+tl2)/2.0
+        
+        IF (fitpoly.EQ.1) THEN
+           CALL CONTNORMSPEC(sspgrid%lam,idata%flx/mspec,idata%err,&
+                tl1,tl2,mflx,coeff=tcoeff)
+           poly = 0.0
+           npow = MIN(NINT((tl2-tl1)/100.0),14)
+           DO j=1,npow+1 
+              poly = poly + tcoeff(j)*(sspgrid%lam-ml)**(j-1)
+           ENDDO
+           mflx  = mspec * poly
+           dflx  = idata%flx
+           tchi2 = SUM((dflx(i1:i2)-mflx(i1:i2))**2/idata(i1:i2)%err**2)
+        ELSE
+           CALL CONTNORMSPEC(sspgrid%lam,idata%flx,idata%err,tl1,tl2,dflx)
+           CALL CONTNORMSPEC(sspgrid%lam,mspec,idata%wgt*SQRT(mspec),&
+                tl1,tl2,mflx)
+           tchi2 = SUM(idata(i1:i2)%flx**2/idata(i1:i2)%err**2*&
+                (dflx(i1:i2)-mflx(i1:i2))**2)
+        ENDIF
+        
+        !error checking
+        IF (isnan(tchi2)) THEN
+           WRITE(*,'(" FUNC ERROR: chi2 returned a NaN")') 
+           WRITE(*,'(" error occured at wavelength interval: ",I1)') i
+           WRITE(*,'("data:",2000F14.2)') dflx(i1:i2)
+           WRITE(*,*)
+           WRITE(*,'("model:",2000F14.2)') mspec(i1:i2)*1E3
+           WRITE(*,*)
+           WRITE(*,'("errors:",2000F14.2)') idata(i1:i2)%err
+           STOP
+        ENDIF
+        
+        func  = func + tchi2
+        
+        IF (PRESENT(funit)) THEN
+           !write final results to screen and file
+           WRITE(*,'(2x,F4.2,"um-",F4.2,"um:"," rms:",F5.1,"%, ","Chi2/dof:",F5.1)') &
+                tl1/1E4,tl2/1E4,SQRT( SUM( (dflx(i1:i2)/mflx(i1:i2)-1)**2 )/&
+                (i2-i1+1) )*100, tchi2/(i2-i1)
+           DO j=i1,i2
+              WRITE(funit,'(F9.2,3ES12.4)') sspgrid%lam(j),mflx(j),&
+                   dflx(j),idata(j)%flx/idata(j)%err
+           ENDDO
+        ENDIF
+
+     ENDDO
+  
+  ENDIF
+
+  !include priors
   IF (pr.LE.tiny_number) THEN 
      func = huge_number 
   ELSE 
@@ -122,7 +128,7 @@ FUNCTION FUNC(nposarr,spec,funit)
   ENDIF
 
   !for testing purposes
-  IF (1.EQ.0) THEN
+  IF (1.EQ.1) THEN
      IF (powell_fitting.EQ.1) THEN
         WRITE(*,'(2ES10.3,2F12.2,99F7.3)') &
              func,pr,npos%velz,npos%sigma,npos%logage,npos%feh
