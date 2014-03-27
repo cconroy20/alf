@@ -23,7 +23,7 @@ FUNCTION GETVELZ()
 
   DO i=1,nv
 
-     tvz(i) = REAL(i)*15-1E3
+     tvz(i) = REAL(i)*11-1E3
 
      !de-redshift the data and interpolate to model wave array
      tlam      = data%lam / (1+tvz(i)/clight*1E5)
@@ -36,9 +36,9 @@ FUNCTION GETVELZ()
      IF (lo.GE.hi) CYCLE
 
      CALL CONTNORMSPEC(sspgrid%lam,idata%flx,idata%err,lo,hi,dflx)
-     !use a 7 Gyr Zsol SSP
+     !use a 5 Gyr Zsol SSP
      CALL CONTNORMSPEC(sspgrid%lam,10**sspgrid%logfkrpa(4,:),&
-          idata%wgt*SQRT(10**sspgrid%logfkrpa(4,:)),lo,hi,mflx)
+          idata%wgt*SQRT(10**sspgrid%logfkrpa(3,:)),lo,hi,mflx)
 
      i1 = MIN(MAX(locate(sspgrid%lam,lo),1),nl-1)
      i2 = MIN(MAX(locate(sspgrid%lam,hi),2),nl)
