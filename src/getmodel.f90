@@ -167,7 +167,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
            !allow the em lines to be offset in velocity from the continuum
            !NB: velz2 is a *relative* shift between continuum and lines
            vz   = emlines(i) / (1+pos%velz2/clight*1E5)
-           lsig = MAX(vz*pos%sigma2/clight*1E5,1.0)
+           lsig = MAX(vz*pos%sigma2/clight*1E5,0.5)
            spec = spec + 10**pos%logemnorm(i) * &
                 EXP(-(sspgrid%lam-vz)**2/lsig**2/2.0)
         ENDDO

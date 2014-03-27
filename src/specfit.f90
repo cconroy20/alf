@@ -11,7 +11,7 @@ PROGRAM SPECFIT
   !number of chain steps to run
   INTEGER, PARAMETER :: nmcmc=2E4
   !length of burn-in
-  INTEGER, PARAMETER :: nburn=1E5
+  INTEGER, PARAMETER :: nburn=1E6
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !number of walkers for emcee
@@ -105,7 +105,11 @@ PROGRAM SPECFIT
   !make an initial estimate of the redshift
   !we do this to help Powell minimization
   WRITE(*,*) ' Finding redshift...'
-  velz = getvelz()
+  IF (file(1:4).EQ.'cdfs') THEN
+     velz = 0.0 
+  ELSE 
+     velz = getvelz()
+  ENDIF
   opos%velz = velz
   WRITE(*,'("   Best velocity: ",F6.1)') velz
   
@@ -141,10 +145,11 @@ PROGRAM SPECFIT
      ENDDO
      powell_fitting = 0
 
+     bposarr(2) = 100.
+
      !use the best-fit Powell position for the first MCMC position
      CALL STR2ARR(2,opos,bposarr) !arr->str
-     CALL STR2ARR(1,opos,oposarr) !str->arr
-
+ 
      WRITE(*,'("   Best velocity: ",F6.1)') opos%velz
      WRITE(*,'("   Best sigma:    ",F6.1)') opos%sigma
 
@@ -218,7 +223,6 @@ PROGRAM SPECFIT
         ENDIF
         WRITE(12,'(ES12.5,1x,99(F9.4,1x))') -2.0*lp_emcee(j),&
              pos_emcee(:, j),m2l,m2lmw
-        CALL FLUSH(12)
         !keep the model with the lowest chi2
         IF (-2.0*lp_emcee(j).LT.minchi2) THEN
            bposarr = pos_emcee(:, j)
@@ -226,6 +230,7 @@ PROGRAM SPECFIT
         ENDIF
         CALL UPDATE_RUNTOT(runtot,pos_emcee(:,j),m2l,m2lmw)
      ENDDO
+     CALL FLUSH(12)
      
   ENDDO
   
