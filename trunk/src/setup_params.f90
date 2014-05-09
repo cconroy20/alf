@@ -130,7 +130,7 @@ SUBROUTINE SETUP_PARAMS(pos,prlo,prhi,velz)
   prhi%imf1      = 3.5
   prhi%imf2      = 3.5
   prhi%logfy     = -0.1
-  prhi%fy_logage = LOG10(3.0)
+  prhi%fy_logage = LOG10(20.0)
   prhi%logm7g    = -0.1
   prhi%hotteff   = 30.0
   prhi%loghot    = -0.1
