@@ -10,25 +10,25 @@ FUNCTION LOCATE(xx,x)
 
   n = SIZE(xx)
   ascnd = (xx(n) >= xx(1))
-  jl=0
-  ju=n+1
+  jl = 0
+  ju = n+1
 
-  do
-     if (ju-jl <= 1) exit
-     jm=(ju+jl)/2
-     if (ascnd .eqv. (x >= xx(jm))) then
+  DO
+     IF (ju-jl <= 1) EXIT
+     jm = (ju+jl)/2
+     IF (ascnd .EQV. (x >= xx(jm))) THEN
         jl=jm
-     else
+     ELSE
         ju=jm
-     end if
-  end do
+     ENDIF
+  ENDDO
 
-  if (x == xx(1)) then
+  IF (x == xx(1)) THEN
      locate=1
-  else if (x == xx(n)) then
+  ELSE IF (x == xx(n)) THEN
      locate=n-1
-  else
+  ELSE
      locate=jl
-  end if
+  ENDIF
 
 END FUNCTION locate

@@ -27,9 +27,12 @@ FUNCTION GETVELZ()
 
      !de-redshift the data and interpolate to model wave array
      tlam      = data%lam / (1+tvz(i)/clight*1E5)
-     idata%flx = linterp(tlam,data%flx,sspgrid%lam)
-     idata%err = linterp(tlam,data%err,sspgrid%lam)
-     idata%wgt = linterp(tlam,data%wgt,sspgrid%lam)
+     idata(1:nl_fit)%flx = linterp(tlam(1:datmax),&
+          data(1:datmax)%flx,sspgrid%lam(1:nl_fit))
+     idata(1:nl_fit)%err = linterp(tlam(1:datmax),&
+          data(1:datmax)%err,sspgrid%lam(1:nl_fit))
+     idata(1:nl_fit)%wgt = linterp(tlam(1:datmax),&
+          data(1:datmax)%wgt,sspgrid%lam(1:nl_fit))
      
      lo = MAX(l1(1),tlam(1))+50
      hi = MIN(l2(1),tlam(datmax))-50
@@ -40,11 +43,12 @@ FUNCTION GETVELZ()
      CALL CONTNORMSPEC(sspgrid%lam,10**sspgrid%logfkrpa(4,:),&
           idata%wgt*SQRT(10**sspgrid%logfkrpa(3,:)),lo,hi,mflx)
 
-     i1 = MIN(MAX(locate(sspgrid%lam,lo),1),nl-1)
-     i2 = MIN(MAX(locate(sspgrid%lam,hi),2),nl)
+     i1 = MIN(MAX(locate(sspgrid%lam,lo),1),nl_fit-1)
+     i2 = MIN(MAX(locate(sspgrid%lam,hi),2),nl_fit)
      tchi2(i) = SUM(idata(i1:i2)%flx**2/idata(i1:i2)%err**2*&
           (dflx(i1:i2)-mflx(i1:i2))**2) / (i2-i1)
 
+     
      IF (tchi2(i).LT.chi2) THEN
         chi2    = tchi2(i)
         getvelz = tvz(i)

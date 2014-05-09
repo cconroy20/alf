@@ -22,9 +22,9 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   vt   = MAX(MIN(locate(sspgrid%logagegrid,pos%logage),nage-1),1)
   dt   = (pos%logage-sspgrid%logagegrid(vt))/&
        (sspgrid%logagegrid(vt+1)-sspgrid%logagegrid(vt))
-  dt   = MAX(dt,-0.25) !no extrapolation younger than 0.5 Gyr
-  spec = dt*sspgrid%logfkrpa(vt+1,:) + (1-dt)*sspgrid%logfkrpa(vt,:)
-  spec = 10**spec
+  dt   = MAX(dt,-0.3) !no extrapolation younger than 0.5 Gyr
+  spec(1:nl_fit) = 10**(dt*sspgrid%logfkrpa(vt+1,1:nl_fit) + &
+       (1-dt)*sspgrid%logfkrpa(vt,1:nl_fit))
 
   !vary age in the response functions
   IF (use_age_dep_resp_fcns.EQ.0) THEN
@@ -62,27 +62,29 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      
      !vary [Na/H] (special case)
      IF (pos%nah.GT.0.0.AND.pos%nah.LT.0.3) THEN
-        tmpr = dr*sspgrid%nap(vr+1,:)/sspgrid%solar(vr+1,:) + &
-             (1-dr)*sspgrid%nap(vr,:)/sspgrid%solar(vr,:)
-        tmp  = 1 + (tmpr-1)*pos%nah/0.3
-        spec = spec * tmp
+        tmpr(1:nl_fit) = dr*sspgrid%nap(vr+1,1:nl_fit)/sspgrid%solar(vr+1,1:nl_fit) + &
+             (1-dr)*sspgrid%nap(vr,1:nl_fit)/sspgrid%solar(vr,1:nl_fit)
+        tmp(1:nl_fit)  = 1 + (tmpr(1:nl_fit)-1)*pos%nah/0.3
+        spec(1:nl_fit) = spec(1:nl_fit) * tmp(1:nl_fit)
      ELSE IF (pos%nah.GE.0.3.AND.pos%nah.LT.0.6) THEN
-        tmpr = dr*sspgrid%nap(vr+1,:)/sspgrid%solar(vr+1,:) + &
-             (1-dr)*sspgrid%nap(vr,:)/sspgrid%solar(vr,:)
-        tmp = dr * (sspgrid%nap6(vr+1,:)-sspgrid%nap(vr+1,:))/sspgrid%solar(vr+1,:) + &
-             (1-dr)*(sspgrid%nap6(vr,:)-sspgrid%nap(vr,:))/sspgrid%solar(vr,:)
-        spec = spec * ( tmpr + tmp*(pos%nah-0.3)/0.3 )
+        tmpr(1:nl_fit) = dr*sspgrid%nap(vr+1,1:nl_fit)/sspgrid%solar(vr+1,1:nl_fit) + &
+             (1-dr)*sspgrid%nap(vr,1:nl_fit)/sspgrid%solar(vr,1:nl_fit)
+        tmp(1:nl_fit) = dr*(sspgrid%nap6(vr+1,1:nl_fit)-sspgrid%nap(vr+1,1:nl_fit))/&
+             sspgrid%solar(vr+1,1:nl_fit)+(1-dr)*(sspgrid%nap6(vr,1:nl_fit)-&
+             sspgrid%nap(vr,1:nl_fit))/sspgrid%solar(vr,1:nl_fit)
+        spec(1:nl_fit) = spec(1:nl_fit) * (tmpr(1:nl_fit)+tmp(1:nl_fit)*(pos%nah-0.3)/0.3 )
      ELSE IF (pos%nah.GE.0.6) THEN
-        tmpr = dr*sspgrid%nap6(vr+1,:)/sspgrid%solar(vr+1,:) + &
+        tmpr(1:nl_fit) = dr*sspgrid%nap6(vr+1,:)/sspgrid%solar(vr+1,:) + &
              (1-dr)*sspgrid%nap6(vr,:)/sspgrid%solar(vr,:)
-        tmp = dr * (sspgrid%nap9(vr+1,:)-sspgrid%nap6(vr+1,:))/sspgrid%solar(vr+1,:) + &
-             (1-dr)*(sspgrid%nap9(vr,:)-sspgrid%nap6(vr,:))/sspgrid%solar(vr,:)
-        spec = spec * ( tmpr + tmp*(pos%nah-0.6)/0.6 )
+        tmp(1:nl_fit) = dr*(sspgrid%nap9(vr+1,1:nl_fit)-sspgrid%nap6(vr+1,1:nl_fit))/&
+             sspgrid%solar(vr+1,1:nl_fit)+(1-dr)*(sspgrid%nap9(vr,:)-&
+             sspgrid%nap6(vr,1:nl_fit))/sspgrid%solar(vr,1:nl_fit)
+        spec(1:nl_fit) = spec(1:nl_fit) * (tmpr(1:nl_fit)+tmp*(pos%nah-0.6)/0.6 )
      ELSE IF (pos%nah.LT.0.0) THEN
-        tmpr = dr*sspgrid%nam(vr+1,:)/sspgrid%solar(vr+1,:) + &
-             (1-dr)*sspgrid%nam(vr,:)/sspgrid%solar(vr,:)
-        tmp  = 1 + (tmpr-1)*ABS(pos%nah)/0.3
-        spec = spec * tmp
+        tmpr(1:nl_fit) = dr*sspgrid%nam(vr+1,1:nl_fit)/sspgrid%solar(vr+1,1:nl_fit) + &
+             (1-dr)*sspgrid%nam(vr,1:nl_fit)/sspgrid%solar(vr,1:nl_fit)
+        tmp(1:nl_fit)  = 1 + (tmpr(1:nl_fit)-1)*ABS(pos%nah)/0.3
+        spec(1:nl_fit) = spec(1:nl_fit) * tmp(1:nl_fit)
      ENDIF
      
   ENDIF
@@ -94,26 +96,28 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      CALL ADD_RESPONSE(spec,pos%teff,50.,1.d0,nage_rfcn-1,sspgrid%solar,&
           sspgrid%teffp,sspgrid%teffm)
      
-     !vary young population
+     !vary young population - both fraction and age
      fy    = MAX(MIN(10**pos%logfy,1.0),0.0)
      vt    = MAX(MIN(locate(sspgrid%logagegrid,pos%fy_logage),nage-1),1)
      dt    = (pos%fy_logage-sspgrid%logagegrid(vt))/&
              (sspgrid%logagegrid(vt+1)-sspgrid%logagegrid(vt))
      dt    = MAX(dt,-0.25) !no extrapolation younger than 0.5 Gyr
-     yspec = 10**(dt*sspgrid%logfkrpa(vt+1,:) + (1-dt)*sspgrid%logfkrpa(vt,:))
-     spec  = (1-fy)*spec + fy*yspec
+     yspec(1:nl_fit) = 10**(dt*sspgrid%logfkrpa(vt+1,1:nl_fit) + &
+          (1-dt)*sspgrid%logfkrpa(vt,1:nl_fit))
+     spec(1:nl_fit)  = (1-fy)*spec(1:nl_fit) + fy*yspec(1:nl_fit)
      
      !add a hot star
      vt = MAX(MIN(locate(sspgrid%teffarrhot,pos%hotteff),3),1)
      dt = (pos%hotteff-sspgrid%teffarrhot(vt))/&
           (sspgrid%teffarrhot(vt+1)-sspgrid%teffarrhot(vt))
      fy = MAX(MIN(10**pos%loghot,1.0),0.0)
-     tmp  = dt*sspgrid%hotspec(vt+1,:) + (1-dt)*sspgrid%hotspec(vt,:)
-     spec = (1-fy)*spec + fy*tmp
+     tmp(1:nl_fit)  = dt*sspgrid%hotspec(vt+1,1:nl_fit) + &
+          (1-dt)*sspgrid%hotspec(vt,1:nl_fit)
+     spec(1:nl_fit) = (1-fy)*spec(1:nl_fit) + fy*tmp(1:nl_fit)
      
      !add in an M7 giant
      fy = MAX(MIN(10**pos%logm7g,1.0),0.0)
-     spec = (1-fy)*spec + fy*sspgrid%m7g
+     spec(1:nl_fit) = (1-fy)*spec(1:nl_fit) + fy*sspgrid%m7g(1:nl_fit)
 
      !vary [K/H]
      CALL ADD_RESPONSE(spec,pos%kh,0.3,dr,vr,sspgrid%solar,sspgrid%kp)
@@ -150,15 +154,15 @@ SUBROUTINE GETMODEL(pos,spec,mw)
         vv2 = MAX(MIN(locate(sspgrid%imfx,pos%imf2),nimf-1),1)
         dx2 = (pos%imf2-sspgrid%imfx(vv2))/(sspgrid%imfx(vv2+1)-sspgrid%imfx(vv2))
         dx2 = MAX(MIN(dx2,1.0),-1.0)
-        tmp = (1-dx1)*(1-dx2)*sspgrid%imf(vv1,vv2,:)+&
-             dx1*(1-dx2)*sspgrid%imf(vv1+1,vv2,:)+&
-             (1-dx1)*dx2*sspgrid%imf(vv1,vv2+1,:)+&
-             dx1*dx2*sspgrid%imf(vv1+1,vv2+1,:)
-        tmp = tmp/sspgrid%imf(i13,i23,:)
+        tmp(1:nl_fit) = (1-dx1)*(1-dx2)*sspgrid%imf(vv1,vv2,1:nl_fit)+&
+             dx1*(1-dx2)*sspgrid%imf(vv1+1,vv2,1:nl_fit)+&
+             (1-dx1)*dx2*sspgrid%imf(vv1,vv2+1,1:nl_fit)+&
+             dx1*dx2*sspgrid%imf(vv1+1,vv2+1,1:nl_fit)
+        tmp(1:nl_fit) = tmp(1:nl_fit)/sspgrid%imf(i13,i23,1:nl_fit)
         !turn off IMF sensitivity at lambda<7000A
         !wh = where(la LT 7E3)
         !tmp[wh] = 1.0
-        spec = spec * tmp
+        spec(1:nl_fit) = spec(1:nl_fit) * tmp(1:nl_fit)
      ENDIF
 
      !add emission lines
@@ -168,8 +172,8 @@ SUBROUTINE GETMODEL(pos,spec,mw)
            !NB: velz2 is a *relative* shift between continuum and lines
            vz   = emlines(i) / (1+pos%velz2/clight*1E5)
            lsig = MAX(vz*pos%sigma2/clight*1E5,0.5)
-           spec = spec + 10**pos%logemnorm(i) * &
-                EXP(-(sspgrid%lam-vz)**2/lsig**2/2.0)
+           spec(1:nl_fit) = spec(1:nl_fit) + 10**pos%logemnorm(i) * &
+                EXP(-(sspgrid%lam(1:nl_fit)-vz)**2/lsig**2/2.0)
         ENDDO
      ENDIF
 
@@ -180,7 +184,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
        CALL VELBROAD(sspgrid%lam,spec,pos%sigma,l1(1),l2(nlint))
 
   IF (apply_temperrfcn.EQ.1) THEN
-     spec = spec / temperrfcn
+     spec(1:nl_fit) = spec(1:nl_fit) / temperrfcn(1:nl_fit)
   ENDIF
 
 
