@@ -61,7 +61,7 @@ MODULE SFVARS
   INTEGER, PARAMETER :: neml = 13
   !number of coefficients for the polynomial fitting
   INTEGER, PARAMETER :: ncoeff = 30
-  !number of parameters (minus em lines and polynomial)
+  !number of parameters (minus em lines)
   INTEGER, PARAMETER :: npar1 = 36
   !number of ages in the empirical SSP grid
   INTEGER, PARAMETER :: nage = 7
@@ -74,7 +74,9 @@ MODULE SFVARS
   !max number of data wavelength points
   INTEGER, PARAMETER :: ndat = 1E5
   !total number of model parameters
-  INTEGER, PARAMETER :: npar = npar1 + neml !+ ncoeff
+  INTEGER, PARAMETER :: npar = npar1 + neml
+  !total number of parameters in the simple model
+  INTEGER, PARAMETER :: nparsimp = 14
   !number of filters
   INTEGER, PARAMETER :: nfil=3
   !mag of sun in r,I,K filters (AB mag)

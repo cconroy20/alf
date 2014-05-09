@@ -16,7 +16,7 @@ FUNCTION FUNC(nposarr,spec,funit)
   REAL(DP), DIMENSION(ndat) :: tlam
   REAL(DP), DIMENSION(npar) :: tposarr=0.0
   REAL(DP), DIMENSION(ncoeff) :: tcoeff
-  INTEGER  :: i,i1,i2,j,npow,tpow
+  INTEGER  :: i,i1,i2,j,npow,tpow,np2
   TYPE(PARAMS)   :: npos
   TYPE(TDATA), DIMENSION(nl) :: idata
 
@@ -24,6 +24,12 @@ FUNCTION FUNC(nposarr,spec,funit)
 
   func = 0.0
   tpow = 0
+
+  IF (fitsimple.EQ.1) THEN
+     np2 = nparsimp
+  ELSE
+     np2 = npar
+  ENDIF
 
   IF (SIZE(nposarr).LT.npar) THEN
      tposarr(1:5) = nposarr(1:5)
@@ -33,9 +39,10 @@ FUNCTION FUNC(nposarr,spec,funit)
 
   CALL STR2ARR(2,npos,tposarr) !arr->str
 
-  !compute priors
+  !compute priors (don't count all the priors if fitting
+  !in simple mode)
   pr = 1.0
-  DO i=1,npar
+  DO i=1,np2
      IF (i.GT.npowell.AND.powell_fitting.EQ.1) CYCLE
      IF (nposarr(i).GT.prhiarr(i)) &
           pr = pr*EXP(-(nposarr(i)-prhiarr(i))**2/2/0.01)
@@ -55,10 +62,13 @@ FUNCTION FUNC(nposarr,spec,funit)
 
      !de-redshift the data and interpolate to model wave array
      tlam      = data%lam / (1+npos%velz/clight*1E5)
-     idata%flx = linterp(tlam,data%flx,sspgrid%lam)
-     idata%err = linterp(tlam,data%err,sspgrid%lam)
-     idata%wgt = linterp(tlam,data%wgt,sspgrid%lam)
-
+     idata(1:nl_fit)%flx = linterp(tlam(1:datmax),&
+          data(1:datmax)%flx,sspgrid%lam(1:nl_fit))
+     idata(1:nl_fit)%err = linterp(tlam(1:datmax),&
+          data(1:datmax)%err,sspgrid%lam(1:nl_fit))
+     idata(1:nl_fit)%wgt = linterp(tlam(1:datmax),&
+          data(1:datmax)%wgt,sspgrid%lam(1:nl_fit))
+ 
      !compute chi2, looping over wavelength intervals
      DO i=1,nlint
         
@@ -128,7 +138,7 @@ FUNCTION FUNC(nposarr,spec,funit)
   ENDIF
 
   !for testing purposes
-  IF (1.EQ.1) THEN
+  IF (1.EQ.0) THEN
      IF (powell_fitting.EQ.1) THEN
         WRITE(*,'(2ES10.3,2F12.2,99F7.3)') &
              func,pr,npos%velz,npos%sigma,npos%logage,npos%feh

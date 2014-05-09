@@ -37,6 +37,7 @@ SUBROUTINE STR2ARR(switch,str,arr)
      arr(12) = str%kh
      arr(13) = str%cah
      arr(14) = str%tih
+
      arr(15) = str%vh
      arr(16) = str%crh
      arr(17) = str%mnh
@@ -62,10 +63,7 @@ SUBROUTINE STR2ARR(switch,str,arr)
      DO i=1,neml
         arr(npar1+i) = str%logemnorm(i)
      ENDDO
-     !DO i=1,ncoeff
-     !   arr(npar1+neml+i) = str%logcoeff(i)
-     !ENDDO
-
+ 
   ELSE
 
      !arr->str
@@ -113,10 +111,7 @@ SUBROUTINE STR2ARR(switch,str,arr)
      DO i=1,neml
         str%logemnorm(i) = arr(npar1+i)
      ENDDO
-     !DO i=1,ncoeff
-     !    str%logcoeff(i) = arr(npar1+neml+i)
-     !ENDDO
-
+ 
   ENDIF
 
 

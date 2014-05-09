@@ -14,7 +14,7 @@ F90 = gfortran
 #  (Uncomment only one)
 #========================
 # GNU
-F90FLAGS = -O3 -fno-strict-overflow
+F90FLAGS = -O3 -fno-strict-overflow #-fopenmp
 #---------------------
 # Intel 
 #F90FLAGS = -O3 -assume byterecl
@@ -38,7 +38,7 @@ clean :
 	rm -rf *.o *.mod *.MOD *~
 
 specfit : specfit.o $(COMMON) 
-	$(F90) -o specfit.exe specfit.o $(COMMON)
+	$(F90) $(F90FLAGS) -o specfit.exe specfit.o $(COMMON)
 
 write_a_model : write_a_model.o $(COMMON) 
 	$(F90) -o write_a_model.exe write_a_model.o $(COMMON)

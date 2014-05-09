@@ -9,9 +9,9 @@ PROGRAM SPECFIT
   IMPLICIT NONE
 
   !number of chain steps to run
-  INTEGER, PARAMETER :: nmcmc=2E4
+  INTEGER, PARAMETER :: nmcmc=1E4
   !length of burn-in
-  INTEGER, PARAMETER :: nburn=1E6
+  INTEGER, PARAMETER :: nburn=1E5
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !number of walkers for emcee
@@ -41,7 +41,7 @@ PROGRAM SPECFIT
 
   !simple mode: fit only a subset of the full model parameters 
   !e.g., no IMF, no nuisance parameters, no "exotic" elements
-  fitsimple = 0
+  fitsimple = 1
   IF (fitsimple.EQ.1) mwimf=1
 
   !initialize the random number generator
@@ -81,8 +81,8 @@ PROGRAM SPECFIT
   CALL READ_DATA(file)
   WRITE(*,'("  Using ",I1," wavelength intervals")') nlint
   IF (l2(nlint).GT.lam(nl).OR.l1(1).LT.lam(1)) THEN
-     WRITE(*,*) 'ERROR: wave boundaries exceed model wavelength grid'
-     WRITE(*,'(4F8.1)') l2(nlint),lam(nl_fit),l1(1),lam(1)
+     WRITE(*,*) 'ERROR: wavelength boundaries exceed model wavelength grid'
+     WRITE(*,'(4F8.1)') l2(nlint),lam(nl),l1(1),lam(1)
      STOP
   ENDIF
 
@@ -111,7 +111,7 @@ PROGRAM SPECFIT
      velz = getvelz()
   ENDIF
   opos%velz = velz
-  WRITE(*,'("   Best velocity: ",F6.1)') velz
+  WRITE(*,'("    Best velocity: ",F6.1)') velz
   
 
   !convert the structures into their equivalent arrays
@@ -145,13 +145,11 @@ PROGRAM SPECFIT
      ENDDO
      powell_fitting = 0
 
-     bposarr(2) = 100.
-
      !use the best-fit Powell position for the first MCMC position
      CALL STR2ARR(2,opos,bposarr) !arr->str
  
-     WRITE(*,'("   Best velocity: ",F6.1)') opos%velz
-     WRITE(*,'("   Best sigma:    ",F6.1)') opos%sigma
+     WRITE(*,'("    Best velocity: ",F6.1)') opos%velz
+     WRITE(*,'("    Best sigma:    ",F6.1)') opos%sigma
 
   ENDIF
 
@@ -194,14 +192,14 @@ PROGRAM SPECFIT
   ENDDO
   
   !burn-in
-  WRITE(*,*) '  burning in...'
+  WRITE(*,*) '   burning in...'
   DO i=1,nburn/nwalkers
      CALL EMCEE_ADVANCE(npar,nwalkers,2.d0,pos_emcee,&
           lp_emcee,pos_emcee,lp_emcee,accept_emcee)
   ENDDO
   
   !Run a production chain
-  WRITE(*,*) '  production run...'
+  WRITE(*,*) '   production run...'
   DO i=1,nmcmc/nwalkers
      
      CALL EMCEE_ADVANCE(npar,nwalkers,2.d0,pos_emcee,&

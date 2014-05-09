@@ -3,7 +3,8 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl)
   !routine to compute velocity broadening of an input spectrum
   !the PSF kernel has a width of m*sigma, where m=4
 
-  USE sfvars; USE nr, ONLY : locate; USE sfutils, ONLY : linterp,tsum
+  USE sfvars; USE nr, ONLY : locate
+  USE sfutils, ONLY : linterp,tsum
   IMPLICIT NONE
   
   REAL(DP), INTENT(in), DIMENSION(nl) :: lambda
@@ -16,10 +17,11 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl)
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
   
-  IF (sigma.EQ.0) RETURN
+  IF (sigma.LE.tiny_number) RETURN
 
   IF (sigma.GE.1E4) THEN
-     WRITE(*,*) "VELBROAD ERROR: sigma>1E4 km/s - what the hell are you doing?!"
+     WRITE(*,*) "VELBROAD ERROR: sigma>1E4 km/s - you've '//&
+          'probably done something wrong..."
      STOP
   ENDIF
 
