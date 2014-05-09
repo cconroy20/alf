@@ -38,6 +38,19 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      dr = MAX(MIN(dr,1.0),0.0)
   ENDIF
 
+  !only include these parameters in the "full" model
+  IF (fitsimple.EQ.0.AND.powell_fitting.EQ.0) THEN
+     !vary young population - both fraction and age
+     fy    = MAX(MIN(10**pos%logfy,1.0),0.0)
+     vt    = MAX(MIN(locate(sspgrid%logagegrid,pos%fy_logage),nage-1),1)
+     dt    = (pos%fy_logage-sspgrid%logagegrid(vt))/&
+          (sspgrid%logagegrid(vt+1)-sspgrid%logagegrid(vt))
+     dt    = MAX(dt,-0.25) !no extrapolation younger than 0.5 Gyr
+     yspec(1:nl_fit) = 10**(dt*sspgrid%logfkrpa(vt+1,1:nl_fit) + &
+          (1-dt)*sspgrid%logfkrpa(vt,1:nl_fit))
+     spec(1:nl_fit)  = (1-fy)*spec(1:nl_fit) + fy*yspec(1:nl_fit)
+  ENDIF
+  
   !vary [Fe/H]
   CALL ADD_RESPONSE(spec,pos%feh,0.3,dr,vr,sspgrid%solar,sspgrid%fep,sspgrid%fem)
 
@@ -95,17 +108,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      !vary Teff (special case - force use of the 13 Gyr model)
      CALL ADD_RESPONSE(spec,pos%teff,50.,1.d0,nage_rfcn-1,sspgrid%solar,&
           sspgrid%teffp,sspgrid%teffm)
-     
-     !vary young population - both fraction and age
-     fy    = MAX(MIN(10**pos%logfy,1.0),0.0)
-     vt    = MAX(MIN(locate(sspgrid%logagegrid,pos%fy_logage),nage-1),1)
-     dt    = (pos%fy_logage-sspgrid%logagegrid(vt))/&
-             (sspgrid%logagegrid(vt+1)-sspgrid%logagegrid(vt))
-     dt    = MAX(dt,-0.25) !no extrapolation younger than 0.5 Gyr
-     yspec(1:nl_fit) = 10**(dt*sspgrid%logfkrpa(vt+1,1:nl_fit) + &
-          (1-dt)*sspgrid%logfkrpa(vt,1:nl_fit))
-     spec(1:nl_fit)  = (1-fy)*spec(1:nl_fit) + fy*yspec(1:nl_fit)
-     
+          
      !add a hot star
      vt = MAX(MIN(locate(sspgrid%teffarrhot,pos%hotteff),3),1)
      dt = (pos%hotteff-sspgrid%teffarrhot(vt))/&
