@@ -31,6 +31,8 @@ FUNCTION FUNC(nposarr,spec,funit)
      np2 = npar
   ENDIF
 
+  np2 = npar
+
   IF (SIZE(nposarr).LT.npar) THEN
      tposarr(1:5) = nposarr(1:5)
   ELSE
