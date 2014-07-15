@@ -43,7 +43,7 @@ SUBROUTINE SETUP_PARAMS(pos,prlo,prhi,velz)
   pos%imf2      = myran()*0.8-0.4 + 2.3
   pos%logfy     = myran()*2-3
   pos%fy_logage = myran()*0.4-0.2
-  pos%logm7g    = myran()*2-3
+  pos%logm7g    = -4.0 !myran()*2-3
   pos%hotteff   = myran()*5+15
   pos%loghot    = myran()*2-3
   pos%chi2      = huge_number
@@ -131,7 +131,7 @@ SUBROUTINE SETUP_PARAMS(pos,prlo,prhi,velz)
   prhi%imf2      = 3.5
   prhi%logfy     = -0.1
   prhi%fy_logage = LOG10(20.0)
-  prhi%logm7g    = -0.1
+  prhi%logm7g    = -3.0 !-0.1
   prhi%hotteff   = 30.0
   prhi%loghot    = -0.1
   prhi%sigma     = 1E3
