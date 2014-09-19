@@ -9,7 +9,7 @@ PROGRAM SPECFIT
   IMPLICIT NONE
 
   !number of chain steps to run
-  INTEGER, PARAMETER :: nmcmc=1E4
+  INTEGER, PARAMETER :: nmcmc=5E4
   !length of burn-in
   INTEGER, PARAMETER :: nburn=1E6
   !start w/ powell minimization?
@@ -21,7 +21,7 @@ PROGRAM SPECFIT
 
   INTEGER  :: i,j,k,totacc=0,stat,iter=30
   REAL(DP) :: mass=0.0,mwmass=0.0,bret=huge_number,deltachi2=0.0
-  REAL(DP) :: velz=0.0,msto=0.0,minchi2=huge_number,fret
+  REAL(DP) :: velz=0.0,msto=0.0,minchi2=huge_number,fret,wdth
   REAL(DP), DIMENSION(nl)   :: mspec=0.0,mspecmw=0.0,lam=0.0
   REAL(DP), DIMENSION(nfil) :: m2l=0.0,m2lmw=0.0
   REAL(DP), DIMENSION(npar) :: oposarr=0.,nposarr=0.,bposarr=0.0
@@ -41,7 +41,7 @@ PROGRAM SPECFIT
 
   !simple mode: fit only a subset of the full model parameters 
   !e.g., no IMF, no nuisance parameters, no "exotic" elements
-  fitsimple = 0
+  fitsimple = 1
   IF (fitsimple.EQ.1) mwimf=1
 
   !initialize the random number generator
@@ -87,7 +87,8 @@ PROGRAM SPECFIT
   ENDIF
 
   !define the log wavelength grid used in velbroad.f90
-  nl_fit = MIN(MAX(locate(lam,l2(nlint)+500.0),1),nl)
+  !nl_fit = MIN(MAX(locate(lam,l2(nlint)+500.0),1),nl)
+  nl_fit = MIN(MAX(locate(lam,15000.d0),1),nl)
   dlstep = (LOG(sspgrid%lam(nl_fit))-LOG(sspgrid%lam(1)))/nl_fit
   DO i=1,nl_fit
      lnlam(i) = i*dlstep+LOG(sspgrid%lam(1))
@@ -174,16 +175,21 @@ PROGRAM SPECFIT
   !initialize the walkers
   DO j=1,nwalkers
      
+     !random initialization of each walker
+     CALL SETUP_PARAMS(opos,prlo,prhi,velz=velz)
+     CALL STR2ARR(1,opos,pos_emcee(:,j))
+
      IF (dopowell.EQ.1) THEN
         !use the best-fit position from Powell, with small
-        !random offsets to set up all the walkers
-        DO i=1,npar
-           pos_emcee(i,j) = bposarr(i) + 0.2*(2.*myran()-1.0)
+        !random offsets to set up all the walkers, but only
+        !do this for the params actually fit in Powell!
+        !the first two params are velz and sigma so give them
+        !larger variation.
+        DO i=1,npowell
+           IF (i.LE.2) wdth=10.0 
+           IF (i.GT.2) wdth=0.1
+           pos_emcee(i,j) = bposarr(i) + wdth*(2.*myran()-1.0)
         ENDDO
-     ELSE
-        !random initialization of each walker
-        CALL SETUP_PARAMS(opos,prlo,prhi,velz=velz)
-        CALL STR2ARR(1,opos,pos_emcee(:,j))
      ENDIF
 
      !Compute the initial log-probability for each walker
@@ -207,7 +213,9 @@ PROGRAM SPECFIT
      totacc = totacc + SUM(accept_emcee)
      
      DO j=1,nwalkers
+
         CALL STR2ARR(2,opos,pos_emcee(:,j)) !arr->str
+
         !compute the main sequence turn-off mass
         msto = 10**( msto_fit0 + msto_fit1*opos%logage )
         msto = MIN(MAX(msto,0.6),10.)
@@ -218,15 +226,22 @@ PROGRAM SPECFIT
            CALL GETM2L(msto,lam,mspec,opos,m2l) ! compute M/L
         ELSE
            m2l = m2lmw
+           !these parameters aren't actually being updated
+           pos_emcee(nparsimp+1:,j) = 0.0 
         ENDIF
+
+        !write the chain element to file
         WRITE(12,'(ES12.5,1x,99(F9.4,1x))') -2.0*lp_emcee(j),&
              pos_emcee(:, j),m2l,m2lmw
+
         !keep the model with the lowest chi2
         IF (-2.0*lp_emcee(j).LT.minchi2) THEN
            bposarr = pos_emcee(:, j)
            minchi2 = -2.0*lp_emcee(j)
         ENDIF
+
         CALL UPDATE_RUNTOT(runtot,pos_emcee(:,j),m2l,m2lmw)
+
      ENDDO
      CALL FLUSH(12)
      

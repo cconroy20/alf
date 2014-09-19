@@ -139,7 +139,7 @@ SUBROUTINE SFSETUP()
   i23 = locate(sspgrid%imfx,t23+1E-3)
 
 
-  !read in M7III star, normalized to an SSP at 1um
+  !read in M7III star, normalized to a 13 Gyr SSP at 1um
   OPEN(22,FILE=TRIM(SPECFIT_HOME)//'/infiles/M7III.spec.s100',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   DO i=1,nstart-1
@@ -195,7 +195,7 @@ SUBROUTINE SFSETUP()
  
   !normalize to 5000A
   vv = locate(sspgrid%lam(1:nl),l5000)
-  DO i=1,3
+  DO i=1,nhot
      sspgrid%hotspec(i,:) = sspgrid%hotspec(i,:)/sspgrid%hotspec(i,vv)*&
           10**sspgrid%logfkrpa(6,vv)
   ENDDO
@@ -229,7 +229,5 @@ SUBROUTINE SFSETUP()
   ENDDO
   CLOSE(22)
  
-
-
 
 END SUBROUTINE SFSETUP

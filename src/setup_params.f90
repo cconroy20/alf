@@ -39,19 +39,19 @@ SUBROUTINE SETUP_PARAMS(pos,prlo,prhi,velz)
   pos%bah       = myran()*1.0-0.5
   pos%euh       = myran()*1.0-0.5
   pos%teff      = myran()*80-40
-  pos%imf1      = myran()*0.8-0.4 + 1.3
-  pos%imf2      = myran()*0.8-0.4 + 2.3
+  pos%imf1      = myran()*0.6-0.3 + 1.3
+  pos%imf2      = myran()*0.6-0.3 + 2.3
   pos%logfy     = myran()*2-3
   pos%fy_logage = myran()*0.4-0.2
-  pos%logm7g    = -4.0 !myran()*2-3
+  pos%logm7g    = myran()*2-4
   pos%hotteff   = myran()*5+15
   pos%loghot    = myran()*2-3
   pos%chi2      = huge_number
-  pos%sigma     = myran()*100+100.0
-  pos%sigma2    = myran()*100+100.0
+  pos%sigma     = myran()*100+100
+  pos%sigma2    = myran()*100+100
   pos%velz2     = myran()*10-5
   DO i=1,neml
-     pos%logemnorm(i) = myran()*2-3
+     pos%logemnorm(i) = myran()*2-4
   ENDDO
 
   IF (PRESENT(velz)) THEN
@@ -92,13 +92,13 @@ SUBROUTINE SETUP_PARAMS(pos,prlo,prhi,velz)
   prlo%logfy     = -5.0
   prlo%fy_logage = LOG10(0.5)
   prlo%logm7g    = -5.0
-  prlo%hotteff   = 10.0
+  prlo%hotteff   = 8.0
   prlo%loghot    = -5.0
   prlo%sigma     = 20.0
   prlo%sigma2    = 20.0
   prlo%velz      = -1E3
   prlo%velz2     = -1E3
-  prlo%logemnorm = -5.0
+  prlo%logemnorm = -8.0
   prlo%logcoeff  = -30.
 
   !priors (high)
@@ -129,16 +129,16 @@ SUBROUTINE SETUP_PARAMS(pos,prlo,prhi,velz)
   prhi%teff      = 100.0
   prhi%imf1      = 3.5
   prhi%imf2      = 3.5
-  prhi%logfy     = -0.1
+  prhi%logfy     = -0.3
   prhi%fy_logage = LOG10(20.0)
-  prhi%logm7g    = -3.0 !-0.1
+  prhi%logm7g    = -0.5
   prhi%hotteff   = 30.0
   prhi%loghot    = -0.1
   prhi%sigma     = 1E3
   prhi%sigma2    = 1E3
   prhi%velz      = 1E4
   prhi%velz2     = 1E3
-  prhi%logemnorm = 1.0
+  prhi%logemnorm = 2.0
   prhi%logcoeff  = 10.
 
 END SUBROUTINE SETUP_PARAMS

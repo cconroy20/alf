@@ -1,7 +1,8 @@
 FUNCTION FUNC(nposarr,spec,funit)
 
   !routine to get a new model and compute chi^2.  Optionally,
-  !the model spectrum is returned (spec)
+  !the model spectrum is returned (spec).  The model priors
+  !are computed in this routine.
 
   USE sfvars; USE nr, ONLY : locate
   USE sfutils, ONLY : linterp,contnormspec,getmass,&
@@ -31,8 +32,6 @@ FUNCTION FUNC(nposarr,spec,funit)
      np2 = npar
   ENDIF
 
-  np2 = npar
-
   IF (SIZE(nposarr).LT.npar) THEN
      tposarr(1:5) = nposarr(1:5)
   ELSE
@@ -42,7 +41,7 @@ FUNCTION FUNC(nposarr,spec,funit)
   CALL STR2ARR(2,npos,tposarr) !arr->str
 
   !compute priors (don't count all the priors if fitting
-  !in simple mode)
+  !in simple mode or in powell fitting mode)
   pr = 1.0
   DO i=1,np2
      IF (i.GT.npowell.AND.powell_fitting.EQ.1) CYCLE
@@ -53,7 +52,7 @@ FUNCTION FUNC(nposarr,spec,funit)
   ENDDO
 
   !only compute the model and chi2 if the priors are >0.0
-  IF (pr.GE.tiny_number) THEN
+  IF (pr.GT.tiny_number) THEN
 
      !get a new model spectrum
      CALL GETMODEL(npos,mspec)
