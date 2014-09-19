@@ -110,7 +110,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
           sspgrid%teffp,sspgrid%teffm)
           
      !add a hot star
-     vt = MAX(MIN(locate(sspgrid%teffarrhot,pos%hotteff),3),1)
+     vt = MAX(MIN(locate(sspgrid%teffarrhot,pos%hotteff),nhot-1),1)
      dt = (pos%hotteff-sspgrid%teffarrhot(vt))/&
           (sspgrid%teffarrhot(vt+1)-sspgrid%teffarrhot(vt))
      fy = MAX(MIN(10**pos%loghot,1.0),0.0)

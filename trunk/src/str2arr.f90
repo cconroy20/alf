@@ -37,6 +37,7 @@ SUBROUTINE STR2ARR(switch,str,arr)
      arr(12) = str%kh
      arr(13) = str%cah
      arr(14) = str%tih
+     !end of the simple model parameters
 
      arr(15) = str%vh
      arr(16) = str%crh
@@ -44,12 +45,14 @@ SUBROUTINE STR2ARR(switch,str,arr)
      arr(18) = str%coh
      arr(19) = str%nih
      arr(20) = str%cuh
+  
      arr(21) = str%rbh
      arr(22) = str%srh
      arr(23) = str%yh
      arr(24) = str%zrh
      arr(25) = str%bah
      arr(26) = str%euh
+
      arr(27) = str%teff
      arr(28) = str%imf1
      arr(29) = str%imf2
@@ -86,6 +89,7 @@ SUBROUTINE STR2ARR(switch,str,arr)
      str%kh     = arr(12)
      str%cah    = arr(13)
      str%tih    = arr(14)
+
      str%vh     = arr(15)
      str%crh    = arr(16)
      str%mnh    = arr(17)
@@ -98,15 +102,16 @@ SUBROUTINE STR2ARR(switch,str,arr)
      str%zrh    = arr(24)
      str%bah    = arr(25)
      str%euh    = arr(26)
-     str%teff   = arr(27)
-     str%imf1   = arr(28)
-     str%imf2   = arr(29)
-     str%logfy  = arr(30)
-     str%sigma2 = arr(31)
-     str%velz2  = arr(32)
-     str%logm7g = arr(33)
-     str%hotteff = arr(34)
-     str%loghot = arr(35)
+
+     str%teff      = arr(27)
+     str%imf1      = arr(28)
+     str%imf2      = arr(29)
+     str%logfy     = arr(30)
+     str%sigma2    = arr(31)
+     str%velz2     = arr(32)
+     str%logm7g    = arr(33)
+     str%hotteff   = arr(34)
+     str%loghot    = arr(35)
      str%fy_logage = arr(36)
      DO i=1,neml
         str%logemnorm(i) = arr(npar1+i)

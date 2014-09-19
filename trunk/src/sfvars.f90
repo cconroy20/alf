@@ -15,17 +15,6 @@ MODULE SFVARS
 
   !flags for the user to choose:
 
-  !simple mode: fit only a subset of the full model parameters 
-  !e.g., no IMF, no nuisance parameters, no "exotic" elements
-  INTEGER :: fitsimple=0
-  !flag used to tell the code if we are fitting in powell mode or not
-  INTEGER :: powell_fitting=0
-  !force the IMF to be a MW IMF if set
-  !this is automatically assumed if fitsimple=1
-  INTEGER :: mwimf=0
-  !force [Na/H]=[Mg/H]
-  INTEGER, PARAMETER :: force_nah=0
-
   !fit a polynomial to the ratio of model and data
   !if zero, then both data and model are continuum divided
   INTEGER, PARAMETER :: fitpoly=1
@@ -39,6 +28,15 @@ MODULE SFVARS
   INTEGER, PARAMETER :: velbroad_simple=0
   !turn on the use of age-dependent response functions
   INTEGER, PARAMETER :: use_age_dep_resp_fcns=1
+
+  !simple mode: fit only a subset of the full model parameters 
+  !e.g., no IMF, no nuisance parameters, no "exotic" elements
+  INTEGER :: fitsimple=0
+  !force the IMF to be a MW IMF if set
+  !this is automatically assumed if fitsimple=1
+  INTEGER :: mwimf=0
+  !force [Na/H]=[Mg/H]
+  INTEGER, PARAMETER :: force_nah=0
 
   !--------------------------------------------------------!
   ! the parameters below should not be modified unless you !
@@ -79,8 +77,12 @@ MODULE SFVARS
   INTEGER, PARAMETER :: nparsimp = 14
   !number of filters
   INTEGER, PARAMETER :: nfil=3
+  !number of hot stars
+  INTEGER, PARAMETER :: nhot=4
   !mag of sun in r,I,K filters (AB mag)
   REAL(DP), PARAMETER, DIMENSION(3) :: magsun = (/4.64,4.52,5.14/)
+  !mag of sun in r,I,J filters (AB mag)
+  !REAL(DP), PARAMETER, DIMENSION(3) :: magsun = (/4.64,4.52,4.56/)
   !lower and upper limits for the IMF
   REAL(DP), PARAMETER :: imflo=0.08,imfhi=100.0
   !power-law slopes for a Kroupa IMF
@@ -91,6 +93,9 @@ MODULE SFVARS
   INTEGER :: datmax=0
 
   !----------Setup a common block of arrays and vars-------------!
+
+  !flag used to tell the code if we are fitting in powell mode or not
+  INTEGER :: powell_fitting=0
 
   !common array for filters
   REAL(DP), DIMENSION(nfil,nl) :: fil=0.0
