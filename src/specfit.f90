@@ -9,9 +9,9 @@ PROGRAM SPECFIT
   IMPLICIT NONE
 
   !number of chain steps to run
-  INTEGER, PARAMETER :: nmcmc=5E4
+  INTEGER, PARAMETER :: nmcmc=1E4
   !length of burn-in
-  INTEGER, PARAMETER :: nburn=1E6
+  INTEGER, PARAMETER :: nburn=1E5
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !number of walkers for emcee
@@ -41,7 +41,7 @@ PROGRAM SPECFIT
 
   !simple mode: fit only a subset of the full model parameters 
   !e.g., no IMF, no nuisance parameters, no "exotic" elements
-  fitsimple = 1
+  fitsimple = 0
   IF (fitsimple.EQ.1) mwimf=1
 
   !initialize the random number generator
@@ -87,8 +87,8 @@ PROGRAM SPECFIT
   ENDIF
 
   !define the log wavelength grid used in velbroad.f90
-  !nl_fit = MIN(MAX(locate(lam,l2(nlint)+500.0),1),nl)
-  nl_fit = MIN(MAX(locate(lam,15000.d0),1),nl)
+  nl_fit = MIN(MAX(locate(lam,l2(nlint)+500.0),1),nl)
+  !nl_fit = MIN(MAX(locate(lam,15000.d0),1),nl)
   dlstep = (LOG(sspgrid%lam(nl_fit))-LOG(sspgrid%lam(1)))/nl_fit
   DO i=1,nl_fit
      lnlam(i) = i*dlstep+LOG(sspgrid%lam(1))
@@ -112,7 +112,7 @@ PROGRAM SPECFIT
      velz = getvelz()
   ENDIF
   opos%velz = velz
-  WRITE(*,'("    Best velocity: ",F6.1)') velz
+  WRITE(*,'("    best velocity: ",F6.1)') velz
   
 
   !convert the structures into their equivalent arrays
@@ -149,8 +149,8 @@ PROGRAM SPECFIT
      !use the best-fit Powell position for the first MCMC position
      CALL STR2ARR(2,opos,bposarr) !arr->str
  
-     WRITE(*,'("    Best velocity: ",F6.1)') opos%velz
-     WRITE(*,'("    Best sigma:    ",F6.1)') opos%sigma
+     WRITE(*,'("    best velocity: ",F6.1)') opos%velz
+     WRITE(*,'("    best sigma:    ",F6.1)') opos%sigma
 
   ENDIF
 
