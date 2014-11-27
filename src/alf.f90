@@ -1,16 +1,29 @@
 PROGRAM ALF
 
-  ! Master program to fit the continuum-normalized spectrum
-  ! of an old (>1 Gyr), metal-rich ([Fe/H]>-0.3) stellar
-  ! population to the CvD model suite.
+  !  Master program to fit the absorption line spectrum (ALF)
+  !  of an old (>~1 Gyr), metal-rich ([Fe/H]>~-0.3) stellar
+  !  population to the CvD model SSPs.
+
+  !Some things to keep in mind:
+  !1. The prior bounds on the parameters are specified in setup_params. 
+  !   Always make sure that the output parameters are not hitting a prior.
+  !2. Make sure that the chain is converged in all relevant parameters
+  !   by plotting the chain trace (parameter vs. chain step).
+  !3. Never ever ever use this code blindly.  Fitting spectra is a 
+  !   subtle art and the code can easily fool you if you don't know
+  !   what you're doing.  Make sure you understand *why* the code is 
+  !   settling on a particular parameter value.  
+  
+  !---------------------------------------------------------------!
+  !---------------------------------------------------------------!
 
   USE sfvars; USE nr, ONLY : ran,locate,powell,ran1
   USE ran_state, ONLY : ran_seed,ran_init; USE sfutils
   IMPLICIT NONE
 
-  !number of chain steps to run
+  !number of chain steps to print to file
   INTEGER, PARAMETER :: nmcmc=1E4
-  !length of burn-in
+  !length of chain burn-in
   INTEGER, PARAMETER :: nburn=1E6
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
@@ -39,16 +52,19 @@ PROGRAM ALF
   !---------------------------Setup-------------------------------!
   !---------------------------------------------------------------!
 
-  !simple mode: fit only a subset of the full model parameters 
-  !e.g., no IMF, no nuisance parameters, no "exotic" elements
+  !flag determining the level of complexity
+  !0=full, 1=simple, 2=super-simple.  See sfvars for details
   fitsimple = 0
-  IF (fitsimple.EQ.1) mwimf=1
+  IF (fitsimple.EQ.1.OR.fitsimple.EQ.2) mwimf=1
+
+  !prhi%logm7g = -2.0
 
   !initialize the random number generator
   CALL INIT_RANDOM_SEED()
 
   IF (IARGC().LT.1) THEN
-     file(1:5) = 'sdss6'
+     WRITE(*,*) 'ALF ERROR: You need to specify an input file'
+     RETURN
   ELSE
      CALL GETARG(1,file)
   ENDIF
@@ -57,6 +73,7 @@ PROGRAM ALF
      CALL GETARG(2,tag(2:))
   ENDIF
 
+  !write some important variables to screen
   WRITE(*,*) 
   WRITE(*,'(" ************************************")') 
   WRITE(*,'("   dopowell  =",I2)') dopowell
@@ -95,8 +112,8 @@ PROGRAM ALF
   ENDDO
 
   !masked regions have wgt=0.0.  We'll use wgt as a pseudo-error
-  !array in contnormspec, so turn those into large numbers
-  data%wgt = MIN(1/data%wgt,huge_number)
+  !array in contnormspec, so turn these into large numbers
+  data%wgt = MIN(1/(data%wgt+tiny_number),huge_number)
   !fold the masked regions into the errors
   data%err = data%err * data%wgt
 
@@ -136,7 +153,8 @@ PROGRAM ALF
         fret = huge_number
         CALL SETUP_PARAMS(opos,prlo,prhi,velz=velz)
         CALL STR2ARR(1,opos,oposarr) !str->arr
-        CALL POWELL(oposarr(1:npowell),xi(1:npowell,1:npowell),ftol,iter,fret)
+        CALL POWELL(oposarr(1:npowell),xi(1:npowell,1:npowell),&
+             ftol,iter,fret)
         CALL STR2ARR(2,opos,oposarr) !arr->str
         IF (fret.LT.bret) THEN
            bposarr = oposarr
@@ -186,8 +204,8 @@ PROGRAM ALF
         !the first two params are velz and sigma so give them
         !larger variation.
         DO i=1,npowell
-           IF (i.LE.2) wdth=10.0 
-           IF (i.GT.2) wdth=0.1
+           IF (i.LE.2) wdth=10.0
+           IF (i.GT.2) wdth=0.3
            pos_emcee(i,j) = bposarr(i) + wdth*(2.*myran()-1.0)
         ENDDO
      ENDIF
@@ -219,7 +237,7 @@ PROGRAM ALF
         !compute the main sequence turn-off mass
         msto = 10**( msto_fit0 + msto_fit1*opos%logage )
         msto = MIN(MAX(msto,0.6),10.)
-        CALL GETMODEL(opos,mspecmw,mw=1)     ! get spectra for MW IMF
+        CALL GETMODEL(opos,mspecmw,mw=1)     !get spectra for MW IMF
         CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
         IF (fitsimple.EQ.0.AND.mwimf.EQ.0) THEN
            CALL GETMODEL(opos,mspec)

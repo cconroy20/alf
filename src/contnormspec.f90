@@ -18,7 +18,7 @@ SUBROUTINE CONTNORMSPEC(lam,flx,err,il1,il2,flxout,coeff)
 
   !routine to continuum normalize a spectrum by a high-order
   !polynomial.  The order of the polynomial is determined by
-  !n=(lam_max-lam_min)/100.  only normalized over the input
+  !n=(lam_max-lam_min)/100.  Only normalized over the input
   !min/max wavelength range
 
   USE sfvars; USE nr, ONLY : locate, lfit, svdfit
@@ -50,8 +50,8 @@ SUBROUTINE CONTNORMSPEC(lam,flx,err,il1,il2,flxout,coeff)
   !---------------------------------------------------------------!
 
   !divide by a power-law of degree npow. one degree per 100A.
-  !don't let things get out of hand (force Npow<=14)
-  npow = MIN(NINT((il2-il1)/100.0),14)
+  !don't let things get out of hand (force Npow<=npolymax)
+  npow = MIN(NINT((il2-il1)/100.0),npolymax)
   
   i1 = MIN(MAX(locate(lam,il1-buff),1),nl-1)
   i2 = MIN(MAX(locate(lam,il2+buff),2),nl)
@@ -70,5 +70,7 @@ SUBROUTINE CONTNORMSPEC(lam,flx,err,il1,il2,flxout,coeff)
      poly = poly + tcoeff(i)*(lam-ml)**(i-1)
   ENDDO
   flxout = flx / poly
+
+
 
 END SUBROUTINE CONTNORMSPEC

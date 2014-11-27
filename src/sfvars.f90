@@ -29,11 +29,12 @@ MODULE SFVARS
   !turn on the use of age-dependent response functions
   INTEGER, PARAMETER :: use_age_dep_resp_fcns=1
 
-  !simple mode: fit only a subset of the full model parameters 
-  !e.g., no IMF, no nuisance parameters, no "exotic" elements
+  !0: fit the full model (IMF, all abundances, nuisance params, etc)
+  !1: only fit velz, sigma, SSP age, Fe,C,N,O,Mg,Si,Ca,Ti,Na
+  !2: only fit velz, sigma, SSP age, Fe
   INTEGER :: fitsimple=0
   !force the IMF to be a MW IMF if set
-  !this is automatically assumed if fitsimple=1
+  !this is automatically assumed if fitsimple>0
   INTEGER :: mwimf=0
   !force [Na/H]=[Mg/H]
   INTEGER, PARAMETER :: force_nah=0
@@ -69,6 +70,8 @@ MODULE SFVARS
   INTEGER, PARAMETER :: nage_rfcn = 5
   !number of IMF values in the SSP grid
   INTEGER, PARAMETER :: nimf = 35
+  !max degree of polynomial used for continuum fitting
+  INTEGER, PARAMETER :: npolymax = 14
   !max number of data wavelength points
   INTEGER, PARAMETER :: ndat = 1E5
   !total number of model parameters
@@ -89,6 +92,7 @@ MODULE SFVARS
   REAL(DP), PARAMETER :: krpa_imf1=1.3,krpa_imf2=2.3,krpa_imf3=2.3
   !linear fit to log(age) vs. log(MS TO mass)
   REAL(DP), PARAMETER :: msto_fit0=0.290835,msto_fit1=-0.301566
+
   !length of input data
   INTEGER :: datmax=0
 
@@ -113,6 +117,8 @@ MODULE SFVARS
 
   !Kroupa-like IMF slopes
   REAL(DP), DIMENSION(3) :: imf_alpha=(/1.3,2.3,2.3/)
+  !this flag allows us to tell the IMF routine to
+  !compute m*dn/dm rather than dn/dm
   REAL(DP) :: imf_flag=0
 
   !array of central wavelengths for emission lines
@@ -129,15 +135,15 @@ MODULE SFVARS
   !-------in cgs units where applicable----------!
 
   !pi
-  REAL(DP), PARAMETER :: mypi    = 3.14159265
+  REAL(DP), PARAMETER :: mypi   = 3.14159265
   !speed of light (cm/s)
-  REAL(DP), PARAMETER :: clight  = 2.9979E10
+  REAL(DP), PARAMETER :: clight = 2.9979E10
   !Solar mass in grams
-  REAL(DP), PARAMETER :: msun    = 1.989E33
+  REAL(DP), PARAMETER :: msun   = 1.989E33
   !Solar luminosity in erg/s
-  REAL(DP), PARAMETER :: lsun    = 3.839E33
+  REAL(DP), PARAMETER :: lsun   = 3.839E33
   !cm in a pc
-  REAL(DP), PARAMETER :: pc2cm   = 3.08568E18
+  REAL(DP), PARAMETER :: pc2cm  = 3.08568E18
   
   !define small and large numbers
   REAL(DP), PARAMETER :: huge_number = 1E33
@@ -154,7 +160,6 @@ MODULE SFVARS
           teff=0.0,imf1=1.3,imf2=2.3,logfy=-5.0,sigma2=0.0,velz2=0.0,&
           logm7g=-5.0,hotteff=20.0,loghot=-5.0,fy_logage=0.0
      REAL(DP), DIMENSION(neml)   :: logemnorm=-5.0
-     REAL(DP), DIMENSION(ncoeff) :: logcoeff=-10.0
      REAL(DP) :: chi2=huge_number
   END TYPE PARAMS
   
@@ -164,22 +169,23 @@ MODULE SFVARS
      REAL(DP), DIMENSION(nage_rfcn,nl) :: solar,hep,hem,nap,nam,cap,cam,&
           fep,fem,cp,cm,ap,np,nm,tip,tim,mgp,mgm,sip,sim,crp,mnp,bap,bam,&
           nip,cup,cop,eup,srp,kp,vp,yp,zp,zm,zrp,rbp,teffp,teffm,nap6,nap9
-     REAL(DP), DIMENSION(nage_rfcn) :: logagegrid_rfcn
-     REAL(DP), DIMENSION(nage)      :: logagegrid
-     REAL(DP), DIMENSION(nage,nl)   :: logfkrpa
+     REAL(DP), DIMENSION(nage_rfcn)    :: logagegrid_rfcn
+     REAL(DP), DIMENSION(nage)         :: logagegrid
+     REAL(DP), DIMENSION(nage,nl)      :: logfkrpa
      REAL(DP), DIMENSION(nimf,nimf,nl) :: imf
-     REAL(DP), DIMENSION(nimf) :: imfx
-     REAL(DP), DIMENSION(4,nl) :: hotspec
-     REAL(DP), DIMENSION(4)    :: teffarrhot
+     REAL(DP), DIMENSION(nimf)         :: imfx
+     REAL(DP), DIMENSION(4,nl)         :: hotspec
+     REAL(DP), DIMENSION(4)            :: teffarrhot
   END TYPE SSP
 
   !structure for the data
   TYPE TDATA
-     REAL(DP) :: lam=1E6,flx=0.,err=0.,wgt=0.0
+     REAL(DP) :: lam=1E6,flx=0.0,err=0.0,wgt=0.0
   END TYPE TDATA
 
   !define the actual SSP grid to be shared between the routines
   TYPE(SSP) :: sspgrid
+
   !define the actual variable for the raw data array
   TYPE(TDATA), DIMENSION(ndat) :: data
 
