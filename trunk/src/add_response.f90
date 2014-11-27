@@ -34,5 +34,4 @@ SUBROUTINE ADD_RESPONSE(spec,pos,range,dr,vr,solar,plus,minus)
  
   ENDIF
 
-
 END SUBROUTINE ADD_RESPONSE

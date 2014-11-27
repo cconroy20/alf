@@ -1,12 +1,15 @@
 SUBROUTINE SETUP_PARAMS(pos,prlo,prhi,velz)
 
-  !define the first position (pos), the step size (dstep),
-  !and the lower and upper bounds on the priors (prlo, prhi)
+  !define the first position (pos), and the lower and upper bounds 
+  !on the priors (prlo, prhi).  The priors are defined in such a way
+  !that if the user defines a prior limit that is **different from
+  !the default parameter set**, then that value overrides the defaults below
 
   USE sfvars; USE sfutils, ONLY : myran
   IMPLICIT NONE
 
   TYPE(PARAMS), INTENT(inout) :: pos,prlo,prhi
+  TYPE(PARAMS) :: test
   REAL(DP), OPTIONAL :: velz
   INTEGER :: i
   
@@ -53,7 +56,6 @@ SUBROUTINE SETUP_PARAMS(pos,prlo,prhi,velz)
   DO i=1,neml
      pos%logemnorm(i) = myran()*2-4
   ENDDO
-
   IF (PRESENT(velz)) THEN
      pos%velz  = velz + (myran()*10-5)
   ELSE
@@ -62,83 +64,86 @@ SUBROUTINE SETUP_PARAMS(pos,prlo,prhi,velz)
 
 
   !priors (low)
-  prlo%logage    = LOG10(0.5)
-  prlo%feh       = -1.0
-  prlo%ah        = -1.0
-  prlo%nhe       = -1.0
-  prlo%ch        = -1.0
-  prlo%nh        = -1.0
-  prlo%nah       = -1.0
-  prlo%mgh       = -1.0
-  prlo%sih       = -1.0
-  prlo%kh        = -1.0
-  prlo%cah       = -1.0
-  prlo%tih       = -1.0
-  prlo%vh        = -1.0
-  prlo%crh       = -1.0
-  prlo%mnh       = -1.0
-  prlo%coh       = -1.0
-  prlo%nih       = -1.0
-  prlo%cuh       = -1.0
-  prlo%rbh       = -1.0
-  prlo%srh       = -1.0
-  prlo%yh        = -1.0
-  prlo%zrh       = -1.0
-  prlo%bah       = -1.0
-  prlo%euh       = -1.0
-  prlo%teff      = -100.0
-  prlo%imf1      = 0.5
-  prlo%imf2      = 0.5
-  prlo%logfy     = -5.0
-  prlo%fy_logage = LOG10(0.5)
-  prlo%logm7g    = -5.0
-  prlo%hotteff   = 8.0
-  prlo%loghot    = -5.0
-  prlo%sigma     = 20.0
-  prlo%sigma2    = 20.0
-  prlo%velz      = -1E3
-  prlo%velz2     = -1E3
-  prlo%logemnorm = -8.0
-  prlo%logcoeff  = -30.
+  IF (prlo%logage.EQ.test%logage) prlo%logage = LOG10(0.5)
+  IF (prlo%feh.EQ.test%feh) prlo%feh          = -1.0
+  IF (prlo%ah.EQ.test%ah) prlo%ah             = -1.0
+  IF (prlo%nhe.EQ.test%nhe) prlo%nhe          = -1.0
+  IF (prlo%ch.EQ.test%ch) prlo%ch             = -1.0
+  IF (prlo%nh.EQ.test%nh) prlo%nh             = -1.0
+  IF (prlo%nah.EQ.test%nah) prlo%nah          = -1.0
+  IF (prlo%mgh.EQ.test%mgh) prlo%mgh          = -1.0
+  IF (prlo%sih.EQ.test%sih) prlo%sih          = -1.0
+  IF (prlo%kh.EQ.test%kh) prlo%kh             = -1.0
+  IF (prlo%cah.EQ.test%cah) prlo%cah          = -1.0
+  IF (prlo%tih.EQ.test%tih) prlo%tih          = -1.0
+  IF (prlo%vh.EQ.test%vh) prlo%vh             = -1.0
+  IF (prlo%crh.EQ.test%crh) prlo%crh          = -1.0
+  IF (prlo%mnh.EQ.test%mnh) prlo%mnh          = -1.0
+  IF (prlo%coh.EQ.test%coh) prlo%coh          = -1.0
+  IF (prlo%nih.EQ.test%nih) prlo%nih          = -1.0
+  IF (prlo%cuh.EQ.test%cuh) prlo%cuh          = -1.0
+  IF (prlo%rbh.EQ.test%rbh) prlo%rbh          = -1.0
+  IF (prlo%srh.EQ.test%srh) prlo%srh          = -1.0
+  IF (prlo%yh.EQ.test%yh) prlo%yh             = -1.0
+  IF (prlo%zrh.EQ.test%zrh) prlo%zrh          = -1.0
+  IF (prlo%feh.EQ.test%feh) prlo%bah          = -1.0
+  IF (prlo%euh.EQ.test%euh) prlo%euh          = -1.0
+  IF (prlo%teff.EQ.test%teff) prlo%teff       = -100.0
+  IF (prlo%imf1.EQ.test%imf1) prlo%imf1       = 0.5
+  IF (prlo%imf2.EQ.test%imf2) prlo%imf2       = 0.5
+  IF (prlo%logfy.EQ.test%logfy) prlo%logfy    = -5.0
+  IF (prlo%fy_logage.EQ.test%fy_logage) prlo%fy_logage = LOG10(0.5)
+  IF (prlo%logm7g.EQ.test%logm7g) prlo%logm7g   = -5.0
+  IF (prlo%hotteff.EQ.test%hotteff) prlo%hotteff= 8.0
+  IF (prlo%loghot.EQ.test%loghot) prlo%loghot   = -5.0
+  IF (prlo%sigma.EQ.test%sigma) prlo%sigma      = 20.0
+  IF (prlo%sigma2.EQ.test%sigma2) prlo%sigma2   = 20.0
+  IF (prlo%velz.EQ.test%velz) prlo%velz         = -1E3
+  IF (prlo%velz2.EQ.test%velz2) prlo%velz2      = -1E3
+  DO i=1,neml 
+     IF (prlo%logemnorm(i).EQ.test%logemnorm(i)) prlo%logemnorm(i) = -8.0
+  ENDDO
 
   !priors (high)
-  prhi%logage    = LOG10(20.0)
-  prhi%feh       = 1.0
-  prhi%ah        = 1.0
-  prhi%nhe       = 1.0
-  prhi%ch        = 1.0
-  prhi%nh        = 1.0
-  prhi%nah       = 1.0
-  prhi%mgh       = 1.0
-  prhi%sih       = 1.0
-  prhi%kh        = 1.0
-  prhi%cah       = 1.0
-  prhi%tih       = 1.0
-  prhi%vh        = 1.0
-  prhi%crh       = 1.0
-  prhi%mnh       = 1.0
-  prhi%coh       = 1.0
-  prhi%nih       = 1.0
-  prhi%cuh       = 1.0
-  prhi%rbh       = 1.0
-  prhi%srh       = 1.0
-  prhi%yh        = 1.0
-  prhi%zrh       = 1.0
-  prhi%bah       = 1.0
-  prhi%euh       = 1.0
-  prhi%teff      = 100.0
-  prhi%imf1      = 3.5
-  prhi%imf2      = 3.5
-  prhi%logfy     = -0.3
-  prhi%fy_logage = LOG10(20.0)
-  prhi%logm7g    = -0.5
-  prhi%hotteff   = 30.0
-  prhi%loghot    = -0.1
-  prhi%sigma     = 1E3
-  prhi%sigma2    = 1E3
-  prhi%velz      = 1E4
-  prhi%velz2     = 1E3
-  prhi%logemnorm = 2.0
-  prhi%logcoeff  = 10.
+  !IF (prhi%logage.EQ.test%logage) prhi%logage = LOG10(20.0)
+  IF (prhi%logage.EQ.test%logage) prhi%logage = LOG10(13.7)
+  IF (prhi%feh.EQ.test%feh) prhi%feh          = 1.0
+  IF (prhi%ah.EQ.test%ah) prhi%ah             = 1.0
+  IF (prhi%nhe.EQ.test%nhe) prhi%nhe          = 1.0
+  IF (prhi%ch.EQ.test%ch) prhi%ch             = 1.0
+  IF (prhi%nh.EQ.test%nh) prhi%nh             = 1.0
+  IF (prhi%nah.EQ.test%nah) prhi%nah          = 1.0
+  IF (prhi%mgh.EQ.test%mgh) prhi%mgh          = 1.0
+  IF (prhi%sih.EQ.test%sih) prhi%sih          = 1.0
+  IF (prhi%kh.EQ.test%kh) prhi%kh             = 1.0
+  IF (prhi%cah.EQ.test%cah) prhi%cah          = 1.0
+  IF (prhi%tih.EQ.test%tih) prhi%tih          = 1.0
+  IF (prhi%vh.EQ.test%vh) prhi%vh             = 1.0
+  IF (prhi%crh.EQ.test%crh) prhi%crh          = 1.0
+  IF (prhi%mnh.EQ.test%mnh) prhi%mnh          = 1.0
+  IF (prhi%coh.EQ.test%coh) prhi%coh          = 1.0
+  IF (prhi%nih.EQ.test%nih) prhi%nih          = 1.0
+  IF (prhi%cuh.EQ.test%cuh) prhi%cuh          = 1.0
+  IF (prhi%rbh.EQ.test%rbh) prhi%rbh          = 1.0
+  IF (prhi%srh.EQ.test%srh) prhi%srh          = 1.0
+  IF (prhi%yh.EQ.test%yh) prhi%yh             = 1.0
+  IF (prhi%zrh.EQ.test%zrh) prhi%zrh          = 1.0
+  IF (prhi%feh.EQ.test%feh) prhi%bah          = 1.0
+  IF (prhi%euh.EQ.test%euh) prhi%euh          = 1.0
+  IF (prhi%teff.EQ.test%teff) prhi%teff       = 100.0
+  IF (prhi%imf1.EQ.test%imf1) prhi%imf1       = 3.5
+  IF (prhi%imf2.EQ.test%imf2) prhi%imf2       = 3.5
+  IF (prhi%logfy.EQ.test%logfy) prhi%logfy    = -0.3
+  IF (prhi%fy_logage.EQ.test%fy_logage) prhi%fy_logage = LOG10(20.0)
+  IF (prhi%logm7g.EQ.test%logm7g) prhi%logm7g   = -0.5
+  IF (prhi%hotteff.EQ.test%hotteff) prhi%hotteff= 30.0
+  IF (prhi%loghot.EQ.test%loghot) prhi%loghot   = -0.1
+  IF (prhi%sigma.EQ.test%sigma) prhi%sigma      = 1E3
+  IF (prhi%sigma2.EQ.test%sigma2) prhi%sigma2   = 1E3
+  IF (prhi%velz.EQ.test%velz) prhi%velz         = 1E4
+  IF (prhi%velz2.EQ.test%velz2) prhi%velz2      = 1E3
+  DO i=1,neml 
+     IF (prhi%logemnorm(i).EQ.test%logemnorm(i)) prhi%logemnorm(i) = 2.0
+  ENDDO
 
 END SUBROUTINE SETUP_PARAMS

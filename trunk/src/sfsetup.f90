@@ -50,7 +50,7 @@ SUBROUTINE SFSETUP()
         OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t13.abund.krpa.s100',&
              STATUS='OLD',iostat=stat,ACTION='READ')
      ENDIF
-           
+
      READ(20,*) !burn the header
      READ(20,*)
      DO i=1,nstart-1

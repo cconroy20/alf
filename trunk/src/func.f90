@@ -17,7 +17,7 @@ FUNCTION FUNC(nposarr,spec,funit)
   REAL(DP), DIMENSION(ndat) :: tlam
   REAL(DP), DIMENSION(npar) :: tposarr=0.0
   REAL(DP), DIMENSION(ncoeff) :: tcoeff
-  INTEGER  :: i,i1,i2,j,npow,tpow,np2
+  INTEGER  :: i,i1,i2,j,npow,tpow
   TYPE(PARAMS)   :: npos
   TYPE(TDATA), DIMENSION(nl) :: idata
 
@@ -25,12 +25,6 @@ FUNCTION FUNC(nposarr,spec,funit)
 
   func = 0.0
   tpow = 0
-
-  IF (fitsimple.EQ.1) THEN
-     np2 = nparsimp
-  ELSE
-     np2 = npar
-  ENDIF
 
   IF (SIZE(nposarr).LT.npar) THEN
      tposarr(1:5) = nposarr(1:5)
@@ -41,10 +35,11 @@ FUNCTION FUNC(nposarr,spec,funit)
   CALL STR2ARR(2,npos,tposarr) !arr->str
 
   !compute priors (don't count all the priors if fitting
-  !in simple mode or in powell fitting mode)
+  !in (super) simple mode or in powell fitting mode)
   pr = 1.0
-  DO i=1,np2
-     IF (i.GT.npowell.AND.powell_fitting.EQ.1) CYCLE
+  DO i=1,npar
+     IF (i.GT.npowell.AND.(powell_fitting.EQ.1.OR.fitsimple.EQ.2)) CYCLE
+     IF (fitsimple.EQ.1.AND.i.GT.nparsimp) CYCLE
      IF (nposarr(i).GT.prhiarr(i)) &
           pr = pr*EXP(-(nposarr(i)-prhiarr(i))**2/2/0.01)
      IF (nposarr(i).LT.prloarr(i)) &
@@ -87,7 +82,7 @@ FUNCTION FUNC(nposarr,spec,funit)
            CALL CONTNORMSPEC(sspgrid%lam,idata%flx/mspec,idata%err,&
                 tl1,tl2,mflx,coeff=tcoeff)
            poly = 0.0
-           npow = MIN(NINT((tl2-tl1)/100.0),14)
+           npow = MIN(NINT((tl2-tl1)/100.0),npolymax)
            DO j=1,npow+1 
               poly = poly + tcoeff(j)*(sspgrid%lam-ml)**(j-1)
            ENDDO
@@ -122,8 +117,8 @@ FUNCTION FUNC(nposarr,spec,funit)
                 tl1/1E4,tl2/1E4,SQRT( SUM( (dflx(i1:i2)/mflx(i1:i2)-1)**2 )/&
                 (i2-i1+1) )*100, tchi2/(i2-i1)
            DO j=i1,i2
-              WRITE(funit,'(F9.2,3ES12.4)') sspgrid%lam(j),mflx(j),&
-                   dflx(j),idata(j)%flx/idata(j)%err
+              WRITE(funit,'(F9.2,4ES12.4)') sspgrid%lam(j),mflx(j),&
+                   dflx(j),idata(j)%flx/idata(j)%err,poly(j)
            ENDDO
         ENDIF
 
