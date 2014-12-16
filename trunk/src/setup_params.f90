@@ -45,7 +45,7 @@ SUBROUTINE SETUP_PARAMS(pos,prlo,prhi,velz)
   pos%imf1      = myran()*0.6-0.3 + 1.3
   pos%imf2      = myran()*0.6-0.3 + 2.3
   pos%logfy     = myran()*2-3
-  pos%fy_logage = myran()*0.4-0.2
+  pos%fy_logage = myran()*0.6-0.2
   pos%logm7g    = myran()*2-4
   pos%hotteff   = myran()*5+15
   pos%loghot    = myran()*2-3
@@ -105,7 +105,6 @@ SUBROUTINE SETUP_PARAMS(pos,prlo,prhi,velz)
   ENDDO
 
   !priors (high)
-  !IF (prhi%logage.EQ.test%logage) prhi%logage = LOG10(20.0)
   IF (prhi%logage.EQ.test%logage) prhi%logage = LOG10(13.7)
   IF (prhi%feh.EQ.test%feh) prhi%feh          = 1.0
   IF (prhi%ah.EQ.test%ah) prhi%ah             = 1.0
@@ -134,7 +133,7 @@ SUBROUTINE SETUP_PARAMS(pos,prlo,prhi,velz)
   IF (prhi%imf1.EQ.test%imf1) prhi%imf1       = 3.5
   IF (prhi%imf2.EQ.test%imf2) prhi%imf2       = 3.5
   IF (prhi%logfy.EQ.test%logfy) prhi%logfy    = -0.3
-  IF (prhi%fy_logage.EQ.test%fy_logage) prhi%fy_logage = LOG10(20.0)
+  IF (prhi%fy_logage.EQ.test%fy_logage) prhi%fy_logage = LOG10(5.0)
   IF (prhi%logm7g.EQ.test%logm7g) prhi%logm7g   = -0.5
   IF (prhi%hotteff.EQ.test%hotteff) prhi%hotteff= 30.0
   IF (prhi%loghot.EQ.test%loghot) prhi%loghot   = -0.1

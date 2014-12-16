@@ -8,8 +8,7 @@ FUNCTION GETMASS(mto,imf1,imf2,imf3)
   IMPLICIT NONE
 
   !turnoff mass
-  REAL(DP), INTENT(in) :: mto
-  REAL(DP), INTENT(in) :: imf1,imf2,imf3
+  REAL(DP), INTENT(in) :: mto,imf1,imf2,imf3
   REAL(DP) :: imfnorm, getmass
   REAL(DP), PARAMETER :: bhlim=40.0,nslim=8.5
 
