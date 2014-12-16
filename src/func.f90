@@ -137,10 +137,10 @@ FUNCTION FUNC(nposarr,spec,funit)
   IF (1.EQ.0) THEN
      IF (powell_fitting.EQ.1) THEN
         WRITE(*,'(2ES10.3,2F12.2,99F7.3)') &
-             func,pr,npos%velz,npos%sigma,npos%logage,npos%feh
+             func,pr,npos%velz,npos%sigma,10**npos%logage,npos%feh
      ELSE
         WRITE(*,'(2ES10.3,2F12.2,99F7.3)') &
-             func,pr,npos%velz,npos%sigma,npos%logage,npos%feh,npos%ah,&
+             func,pr,npos%velz,npos%sigma,10**npos%logage,npos%feh,npos%ah,&
              npos%nhe,npos%ch,npos%nh,npos%nah,npos%mgh,npos%sih,npos%kh,&
              npos%cah,npos%tih!,npos%vh,npos%crh,npos%mnh,npos%coh,npos%nih !,&
         !     npos%rbh,npos%srh,npos%yh,npos%zrh,npos%bah,npos%euh,npos%teff,&

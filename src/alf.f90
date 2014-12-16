@@ -1,6 +1,6 @@
 PROGRAM ALF
 
-  !  Master program to fit the absorption line spectrum (ALF)
+  !  Master program to fit the absorption line spectrum
   !  of an old (>~1 Gyr), metal-rich ([Fe/H]>~-0.3) stellar
   !  population to the CvD model SSPs.
 
@@ -24,7 +24,7 @@ PROGRAM ALF
   !number of chain steps to print to file
   INTEGER, PARAMETER :: nmcmc=1E4
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=1E6
+  INTEGER, PARAMETER :: nburn=1E4
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !number of walkers for emcee
@@ -81,7 +81,7 @@ PROGRAM ALF
   WRITE(*,'("      mwimf  =",I2)') mwimf
   WRITE(*,'("  force_nah  =",I2)') force_nah
   WRITE(*,'("  age-dep Rf =",I2)') use_age_dep_resp_fcns
-  WRITE(*,'("  Nburn      = ",I7)') nburn
+  WRITE(*,'("  Nburn      = ",I8)') nburn
   WRITE(*,'("  Nchain     = ",I7)') nmcmc
   WRITE(*,'("  filename   = ",A)') TRIM(file)//TRIM(tag)
   WRITE(*,'(" ************************************")') 
@@ -169,6 +169,7 @@ PROGRAM ALF
  
      WRITE(*,'("    best velocity: ",F6.1)') opos%velz
      WRITE(*,'("    best sigma:    ",F6.1)') opos%sigma
+     WRITE(*,'("    best age:      ",F6.1)') 10**opos%logage
 
   ENDIF
 
@@ -178,6 +179,7 @@ PROGRAM ALF
      !In full mode, the default is to actually *fit* for emissions lines.
      CALL MASKEMLINES(opos%velz,opos%sigma)
   ENDIF
+
 
   !---------------------------------------------------------------!
   !-----------------------------MCMC------------------------------!
@@ -217,9 +219,14 @@ PROGRAM ALF
   
   !burn-in
   WRITE(*,*) '   burning in...'
+  WRITE(*,'(A)',advance='no') '      Progress:'
   DO i=1,nburn/nwalkers
      CALL EMCEE_ADVANCE(npar,nwalkers,2.d0,pos_emcee,&
           lp_emcee,pos_emcee,lp_emcee,accept_emcee)
+     IF (i.EQ.nburn/nwalkers/4.*1) WRITE (*,'(A)',advance='no') ' ...25%'
+     IF (i.EQ.nburn/nwalkers/4.*2) WRITE (*,'(A)',advance='no') '...50%'
+     IF (i.EQ.nburn/nwalkers/4.*3) WRITE (*,'(A)',advance='no') '...75%'
+     IF (i.EQ.nburn/nwalkers/4.*4) WRITE (*,'(A)') '...100%'
   ENDDO
   
   !Run a production chain
@@ -236,7 +243,7 @@ PROGRAM ALF
 
         !compute the main sequence turn-off mass
         msto = 10**( msto_fit0 + msto_fit1*opos%logage )
-        msto = MIN(MAX(msto,0.6),10.)
+        msto = MIN(MAX(msto,0.90),3.)
         CALL GETMODEL(opos,mspecmw,mw=1)     !get spectra for MW IMF
         CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
         IF (fitsimple.EQ.0.AND.mwimf.EQ.0) THEN

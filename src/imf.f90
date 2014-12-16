@@ -11,8 +11,8 @@ FUNCTION IMF(mass)
 
   REAL(DP), DIMENSION(:), INTENT(in) :: mass
   REAL(DP), DIMENSION(SIZE(mass))    :: imf
-  INTEGER :: i,n
-  REAL(DP) :: imfcu, m1=0.08,m2=0.5,m3=1.0
+  INTEGER  :: i,n
+  REAL(DP) :: imfcu,m1=0.08,m2=0.5,m3=1.0
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -32,7 +32,7 @@ FUNCTION IMF(mass)
           mass(i)**(-imf_alpha(3))
   ENDDO
 
-  IF (imf_flag.EQ.10) imf = mass*imf
+  IF (imf_flag.EQ.10) imf(1:n) = mass(1:n)*imf(1:n)
   
 
 END FUNCTION IMF

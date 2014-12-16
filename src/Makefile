@@ -14,7 +14,7 @@ F90 = gfortran
 #  (Uncomment only one)
 #========================
 # GNU
-F90FLAGS = -O3 -fno-strict-overflow #-fopenmp
+F90FLAGS = -O2  -fno-strict-overflow #-fopenmp
 #---------------------
 # Intel 
 #F90FLAGS = -O3 -assume byterecl

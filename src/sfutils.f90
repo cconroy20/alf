@@ -60,8 +60,7 @@ MODULE SFUTILS
   INTERFACE
      FUNCTION GETMASS(mto,imf1,imf2,imf3)
        USE sfvars
-       REAL(DP), INTENT(in) :: mto
-       REAL(DP), INTENT(in) :: imf1,imf2,imf3
+       REAL(DP), INTENT(in) :: mto,imf1,imf2,imf3
        REAL(DP) :: getmass
      END FUNCTION GETMASS
   END INTERFACE
