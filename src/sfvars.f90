@@ -166,15 +166,15 @@ MODULE SFVARS
   !structure for the model SSPs
   TYPE SSP
      REAL(DP), DIMENSION(nl) :: lam,m7g
-     REAL(DP), DIMENSION(nage_rfcn,nl) :: solar,hep,hem,nap,nam,cap,cam,&
+     REAL(DP), DIMENSION(nl,nage_rfcn) :: solar,hep,hem,nap,nam,cap,cam,&
           fep,fem,cp,cm,ap,np,nm,tip,tim,mgp,mgm,sip,sim,crp,mnp,bap,bam,&
           nip,cup,cop,eup,srp,kp,vp,yp,zp,zm,zrp,rbp,teffp,teffm,nap6,nap9
      REAL(DP), DIMENSION(nage_rfcn)    :: logagegrid_rfcn
      REAL(DP), DIMENSION(nage)         :: logagegrid
-     REAL(DP), DIMENSION(nage,nl)      :: logfkrpa
-     REAL(DP), DIMENSION(nimf,nimf,nl) :: imf
+     REAL(DP), DIMENSION(nl,nage)      :: logfkrpa
+     REAL(DP), DIMENSION(nl,nimf,nimf) :: imf
      REAL(DP), DIMENSION(nimf)         :: imfx
-     REAL(DP), DIMENSION(4,nl)         :: hotspec
+     REAL(DP), DIMENSION(nl,4)         :: hotspec
      REAL(DP), DIMENSION(4)            :: teffarrhot
   END TYPE SSP
 

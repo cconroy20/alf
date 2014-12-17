@@ -7,8 +7,8 @@ MODULE SFUTILS
        REAL(SP), INTENT(in) :: range
        REAL(DP), INTENT(in) :: pos,dr
        REAL(DP), DIMENSION(nl), INTENT(inout) :: spec
-       REAL(DP), DIMENSION(nage_rfcn,nl), INTENT(in) :: plus,solar
-       REAL(DP), DIMENSION(nage_rfcn,nl), INTENT(in), OPTIONAL :: minus
+       REAL(DP), DIMENSION(nl,nage_rfcn), INTENT(in) :: plus,solar
+       REAL(DP), DIMENSION(nl,nage_rfcn), INTENT(in), OPTIONAL :: minus
      END SUBROUTINE ADD_RESPONSE
   END INTERFACE
 
