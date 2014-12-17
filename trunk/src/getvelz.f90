@@ -41,8 +41,8 @@ FUNCTION GETVELZ()
 
      CALL CONTNORMSPEC(sspgrid%lam,idata%flx,idata%err,lo,hi,dflx)
      !use a 5 Gyr Zsol SSP
-     CALL CONTNORMSPEC(sspgrid%lam,10**sspgrid%logfkrpa(4,:),&
-          idata%wgt*SQRT(10**sspgrid%logfkrpa(3,:)),lo,hi,mflx)
+     CALL CONTNORMSPEC(sspgrid%lam,10**sspgrid%logfkrpa(:,4),&
+          idata%wgt*SQRT(10**sspgrid%logfkrpa(:,3)),lo,hi,mflx)
 
      i1 = MIN(MAX(locate(sspgrid%lam,lo),1),nl_fit-1)
      i2 = MIN(MAX(locate(sspgrid%lam,hi),2),nl_fit)

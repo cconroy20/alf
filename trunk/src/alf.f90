@@ -24,7 +24,7 @@ PROGRAM ALF
   !number of chain steps to print to file
   INTEGER, PARAMETER :: nmcmc=10000
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=200000
+  INTEGER, PARAMETER :: nburn=20000
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !number of walkers for emcee

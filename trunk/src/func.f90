@@ -64,7 +64,7 @@ FUNCTION FUNC(nposarr,spec,funit)
           data(1:datmax)%err,sspgrid%lam(1:nl_fit))
      idata(1:nl_fit)%wgt = linterp(tlam(1:datmax),&
           data(1:datmax)%wgt,sspgrid%lam(1:nl_fit))
- 
+
      !compute chi2, looping over wavelength intervals
      DO i=1,nlint
         

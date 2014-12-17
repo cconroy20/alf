@@ -24,8 +24,8 @@ SUBROUTINE GETMODEL(pos,spec,mw)
        (sspgrid%logagegrid(vt+1)-sspgrid%logagegrid(vt))
   !no extrapolation younger than 0.5 Gyr or older than 13
   dt   = MAX(MIN(dt,1.0),-0.3) 
-  spec(1:nl_fit) = 10**(dt*sspgrid%logfkrpa(vt+1,1:nl_fit) + &
-       (1-dt)*sspgrid%logfkrpa(vt,1:nl_fit))
+  spec(1:nl_fit) = 10**(dt*sspgrid%logfkrpa(1:nl_fit,vt+1) + &
+       (1-dt)*sspgrid%logfkrpa(1:nl_fit,vt))
 
   !vary age in the response functions
   IF (use_age_dep_resp_fcns.EQ.0) THEN
@@ -48,8 +48,8 @@ SUBROUTINE GETMODEL(pos,spec,mw)
           (sspgrid%logagegrid(vt+1)-sspgrid%logagegrid(vt))
      !no extrapolation younger than 0.5 Gyr or older than 13
      dt    = MAX(MIN(dt,1.0),-0.3) 
-     yspec(1:nl_fit) = 10**(dt*sspgrid%logfkrpa(vt+1,1:nl_fit) + &
-          (1-dt)*sspgrid%logfkrpa(vt,1:nl_fit))
+     yspec(1:nl_fit) = 10**(dt*sspgrid%logfkrpa(1:nl_fit,vt+1) + &
+          (1-dt)*sspgrid%logfkrpa(1:nl_fit,vt))
      spec(1:nl_fit)  = (1-fy)*spec(1:nl_fit) + fy*yspec(1:nl_fit)
   ENDIF
   
@@ -77,27 +77,27 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      
      !vary [Na/H] (special case)
      IF (pos%nah.GT.0.0.AND.pos%nah.LT.0.3) THEN
-        tmpr(1:nl_fit) = dr*sspgrid%nap(vr+1,1:nl_fit)/sspgrid%solar(vr+1,1:nl_fit) + &
-             (1-dr)*sspgrid%nap(vr,1:nl_fit)/sspgrid%solar(vr,1:nl_fit)
+        tmpr(1:nl_fit) = dr*sspgrid%nap(1:nl_fit,vr+1)/sspgrid%solar(1:nl_fit,vr+1) + &
+             (1-dr)*sspgrid%nap(1:nl_fit,vr)/sspgrid%solar(1:nl_fit,vr)
         tmp(1:nl_fit)  = 1 + (tmpr(1:nl_fit)-1)*pos%nah/0.3
         spec(1:nl_fit) = spec(1:nl_fit) * tmp(1:nl_fit)
      ELSE IF (pos%nah.GE.0.3.AND.pos%nah.LT.0.6) THEN
-        tmpr(1:nl_fit) = dr*sspgrid%nap(vr+1,1:nl_fit)/sspgrid%solar(vr+1,1:nl_fit) + &
-             (1-dr)*sspgrid%nap(vr,1:nl_fit)/sspgrid%solar(vr,1:nl_fit)
-        tmp(1:nl_fit) = dr*(sspgrid%nap6(vr+1,1:nl_fit)-sspgrid%nap(vr+1,1:nl_fit))/&
-             sspgrid%solar(vr+1,1:nl_fit)+(1-dr)*(sspgrid%nap6(vr,1:nl_fit)-&
-             sspgrid%nap(vr,1:nl_fit))/sspgrid%solar(vr,1:nl_fit)
+        tmpr(1:nl_fit) = dr*sspgrid%nap(1:nl_fit,vr+1)/sspgrid%solar(1:nl_fit,vr+1) + &
+             (1-dr)*sspgrid%nap(1:nl_fit,vr)/sspgrid%solar(1:nl_fit,vr)
+        tmp(1:nl_fit) = dr*(sspgrid%nap6(1:nl_fit,vr+1)-sspgrid%nap(1:nl_fit,vr+1))/&
+             sspgrid%solar(1:nl_fit,vr+1)+(1-dr)*(sspgrid%nap6(1:nl_fit,vr)-&
+             sspgrid%nap(1:nl_fit,vr))/sspgrid%solar(1:nl_fit,vr)
         spec(1:nl_fit) = spec(1:nl_fit) * (tmpr(1:nl_fit)+tmp(1:nl_fit)*(pos%nah-0.3)/0.3 )
      ELSE IF (pos%nah.GE.0.6) THEN
-        tmpr(1:nl_fit) = dr*sspgrid%nap6(vr+1,:)/sspgrid%solar(vr+1,:) + &
-             (1-dr)*sspgrid%nap6(vr,:)/sspgrid%solar(vr,:)
-        tmp(1:nl_fit) = dr*(sspgrid%nap9(vr+1,1:nl_fit)-sspgrid%nap6(vr+1,1:nl_fit))/&
-             sspgrid%solar(vr+1,1:nl_fit)+(1-dr)*(sspgrid%nap9(vr,:)-&
-             sspgrid%nap6(vr,1:nl_fit))/sspgrid%solar(vr,1:nl_fit)
+        tmpr(1:nl_fit) = dr*sspgrid%nap6(1:nl_fit,vr+1)/sspgrid%solar(1:nl_fit,vr+1) + &
+             (1-dr)*sspgrid%nap6(1:nl_fit,vr)/sspgrid%solar(1:nl_fit,vr)
+        tmp(1:nl_fit) = dr*(sspgrid%nap9(1:nl_fit,vr+1)-sspgrid%nap6(1:nl_fit,vr+1))/&
+             sspgrid%solar(1:nl_fit,vr+1)+(1-dr)*(sspgrid%nap9(1:nl_fit,vr)-&
+             sspgrid%nap6(1:nl_fit,vr))/sspgrid%solar(1:nl_fit,vr)
         spec(1:nl_fit) = spec(1:nl_fit) * (tmpr(1:nl_fit)+tmp*(pos%nah-0.6)/0.6 )
      ELSE IF (pos%nah.LT.0.0) THEN
-        tmpr(1:nl_fit) = dr*sspgrid%nam(vr+1,1:nl_fit)/sspgrid%solar(vr+1,1:nl_fit) + &
-             (1-dr)*sspgrid%nam(vr,1:nl_fit)/sspgrid%solar(vr,1:nl_fit)
+        tmpr(1:nl_fit) = dr*sspgrid%nam(1:nl_fit,vr+1)/sspgrid%solar(1:nl_fit,vr+1) + &
+             (1-dr)*sspgrid%nam(1:nl_fit,vr)/sspgrid%solar(1:nl_fit,vr)
         tmp(1:nl_fit)  = 1 + (tmpr(1:nl_fit)-1)*ABS(pos%nah)/0.3
         spec(1:nl_fit) = spec(1:nl_fit) * tmp(1:nl_fit)
      ENDIF
@@ -116,8 +116,8 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      dt = (pos%hotteff-sspgrid%teffarrhot(vt))/&
           (sspgrid%teffarrhot(vt+1)-sspgrid%teffarrhot(vt))
      fy = MAX(MIN(10**pos%loghot,1.0),0.0)
-     tmp(1:nl_fit)  = dt*sspgrid%hotspec(vt+1,1:nl_fit) + &
-          (1-dt)*sspgrid%hotspec(vt,1:nl_fit)
+     tmp(1:nl_fit)  = dt*sspgrid%hotspec(1:nl_fit,vt+1) + &
+          (1-dt)*sspgrid%hotspec(1:nl_fit,vt)
      spec(1:nl_fit) = (1-fy)*spec(1:nl_fit) + fy*tmp(1:nl_fit)
      
      !add in an M7 giant
@@ -159,11 +159,11 @@ SUBROUTINE GETMODEL(pos,spec,mw)
         vv2 = MAX(MIN(locate(sspgrid%imfx,pos%imf2),nimf-1),1)
         dx2 = (pos%imf2-sspgrid%imfx(vv2))/(sspgrid%imfx(vv2+1)-sspgrid%imfx(vv2))
         dx2 = MAX(MIN(dx2,1.0),-1.0)
-        tmp(1:nl_fit) = (1-dx1)*(1-dx2)*sspgrid%imf(vv1,vv2,1:nl_fit)+&
-             dx1*(1-dx2)*sspgrid%imf(vv1+1,vv2,1:nl_fit)+&
-             (1-dx1)*dx2*sspgrid%imf(vv1,vv2+1,1:nl_fit)+&
-             dx1*dx2*sspgrid%imf(vv1+1,vv2+1,1:nl_fit)
-        tmp(1:nl_fit) = tmp(1:nl_fit)/sspgrid%imf(i13,i23,1:nl_fit)
+        tmp(1:nl_fit) = (1-dx1)*(1-dx2)*sspgrid%imf(1:nl_fit,vv1,vv2)+&
+             dx1*(1-dx2)*sspgrid%imf(1:nl_fit,vv1+1,vv2)+&
+             (1-dx1)*dx2*sspgrid%imf(1:nl_fit,vv1,vv2+1)+&
+             dx1*dx2*sspgrid%imf(1:nl_fit,vv1+1,vv2+1)
+        tmp(1:nl_fit) = tmp(1:nl_fit)/sspgrid%imf(1:nl_fit,i13,i23)
         !turn off IMF sensitivity at lambda<7000A
         !wh = where(la LT 7E3)
         !tmp[wh] = 1.0

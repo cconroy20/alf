@@ -57,17 +57,17 @@ SUBROUTINE SFSETUP()
         READ(20,*) 
      ENDDO
      DO i=1,nl
-        READ(20,*) sspgrid%lam(i),sspgrid%solar(j,i),sspgrid%nap(j,i),&
-             sspgrid%nam(j,i),sspgrid%cap(j,i),sspgrid%cam(j,i),sspgrid%fep(j,i),&
-             sspgrid%fem(j,i),sspgrid%cp(j,i),sspgrid%cm(j,i),d1,sspgrid%zp(j,i),&
-             sspgrid%zm(j,i),sspgrid%np(j,i),sspgrid%nm(j,i),sspgrid%ap(j,i),&
-             sspgrid%tip(j,i),sspgrid%tim(j,i),sspgrid%mgp(j,i),sspgrid%mgm(j,i),&
-             sspgrid%sip(j,i),sspgrid%sim(j,i),sspgrid%hep(j,i),sspgrid%hem(j,i),&
-             sspgrid%teffp(j,i),sspgrid%teffm(j,i),sspgrid%crp(j,i),sspgrid%mnp(j,i),&
-             sspgrid%bap(j,i),sspgrid%bam(j,i),sspgrid%nip(j,i),sspgrid%cop(j,i),&
-             sspgrid%eup(j,i),sspgrid%srp(j,i),sspgrid%kp(j,i),sspgrid%vp(j,i),&
-             sspgrid%yp(j,i),sspgrid%zrp(j,i),sspgrid%rbp(j,i),&
-             sspgrid%cup(j,i),sspgrid%nap6(j,i),sspgrid%nap9(j,i)
+        READ(20,*) sspgrid%lam(i),sspgrid%solar(i,j),sspgrid%nap(i,j),&
+             sspgrid%nam(i,j),sspgrid%cap(i,j),sspgrid%cam(i,j),sspgrid%fep(i,j),&
+             sspgrid%fem(i,j),sspgrid%cp(i,j),sspgrid%cm(i,j),d1,sspgrid%zp(i,j),&
+             sspgrid%zm(i,j),sspgrid%np(i,j),sspgrid%nm(i,j),sspgrid%ap(i,j),&
+             sspgrid%tip(i,j),sspgrid%tim(i,j),sspgrid%mgp(i,j),sspgrid%mgm(i,j),&
+             sspgrid%sip(i,j),sspgrid%sim(i,j),sspgrid%hep(i,j),sspgrid%hem(i,j),&
+             sspgrid%teffp(i,j),sspgrid%teffm(i,j),sspgrid%crp(i,j),sspgrid%mnp(i,j),&
+             sspgrid%bap(i,j),sspgrid%bam(i,j),sspgrid%nip(i,j),sspgrid%cop(i,j),&
+             sspgrid%eup(i,j),sspgrid%srp(i,j),sspgrid%kp(i,j),sspgrid%vp(i,j),&
+             sspgrid%yp(i,j),sspgrid%zrp(i,j),sspgrid%rbp(i,j),&
+             sspgrid%cup(i,j),sspgrid%nap6(i,j),sspgrid%nap9(i,j)
      ENDDO
      CLOSE(20)
 
@@ -105,14 +105,13 @@ SUBROUTINE SFSETUP()
      READ(21,*) 
   ENDDO
   DO i=1,nl
-     READ(21,*) d1,sspgrid%logfkrpa(1,i),sspgrid%logfkrpa(2,i),&
-          sspgrid%logfkrpa(3,i),sspgrid%logfkrpa(4,i),sspgrid%logfkrpa(5,i),&
-          sspgrid%logfkrpa(6,i),sspgrid%logfkrpa(7,i)
+     READ(21,*) d1,sspgrid%logfkrpa(i,1),sspgrid%logfkrpa(i,2),&
+          sspgrid%logfkrpa(i,3),sspgrid%logfkrpa(i,4),sspgrid%logfkrpa(i,5),&
+          sspgrid%logfkrpa(i,6),sspgrid%logfkrpa(i,7)
   ENDDO
   CLOSE(21)
   sspgrid%logfkrpa   = LOG10(sspgrid%logfkrpa+tiny_number)
   sspgrid%logagegrid = LOG10((/1.0,3.0,5.0,7.0,9.0,11.0,13.5/))
-
 
   !vary two power-law slopes, from 0.1<M<0.5 and 0.5<M<1.0
   OPEN(26,FILE=TRIM(SPECFIT_HOME)//'/infiles/CvD_t13.5.ssp.'//&
@@ -125,7 +124,7 @@ SUBROUTINE SFSETUP()
      ii=1
      DO j=1,nimf
         DO k=1,nimf
-           sspgrid%imf(j,k,i) = tmp(ii)
+           sspgrid%imf(i,j,k) = tmp(ii)
            ii=ii+1
         ENDDO
      ENDDO
@@ -137,7 +136,6 @@ SUBROUTINE SFSETUP()
   ENDDO
   i13 = locate(sspgrid%imfx,t13+1E-3)
   i23 = locate(sspgrid%imfx,t23+1E-3)
-
 
   !read in M7III star, normalized to a 13 Gyr SSP at 1um
   OPEN(22,FILE=TRIM(SPECFIT_HOME)//'/infiles/M7III.spec.s100',&
@@ -159,7 +157,7 @@ SUBROUTINE SFSETUP()
      READ(23,*) 
   ENDDO
   DO i=1,nl
-     READ(23,*) d1,sspgrid%hotspec(1,i)
+     READ(23,*) d1,sspgrid%hotspec(i,1)
   ENDDO
   CLOSE(23)
 
@@ -169,7 +167,7 @@ SUBROUTINE SFSETUP()
      READ(23,*) 
   ENDDO
   DO i=1,nl
-     READ(23,*) d1,sspgrid%hotspec(2,i)
+     READ(23,*) d1,sspgrid%hotspec(i,2)
   ENDDO
   CLOSE(23)
 
@@ -179,7 +177,7 @@ SUBROUTINE SFSETUP()
      READ(24,*) 
   ENDDO
   DO i=1,nl
-     READ(24,*) d1,sspgrid%hotspec(3,i)
+     READ(24,*) d1,sspgrid%hotspec(i,3)
   ENDDO
   CLOSE(24)
 
@@ -189,15 +187,15 @@ SUBROUTINE SFSETUP()
      READ(25,*) 
   ENDDO
   DO i=1,nl
-     READ(25,*) d1,sspgrid%hotspec(4,i)
+     READ(25,*) d1,sspgrid%hotspec(i,4)
   ENDDO
   CLOSE(25)
  
   !normalize to 5000A
   vv = locate(sspgrid%lam(1:nl),l5000)
   DO i=1,nhot
-     sspgrid%hotspec(i,:) = sspgrid%hotspec(i,:)/sspgrid%hotspec(i,vv)*&
-          10**sspgrid%logfkrpa(6,vv)
+     sspgrid%hotspec(i,:) = sspgrid%hotspec(i,:)/sspgrid%hotspec(vv,i)*&
+          10**sspgrid%logfkrpa(vv,6)
   ENDDO
   !hot star Teff in kK
   sspgrid%teffarrhot = (/8.0,10.,20.,30./)
