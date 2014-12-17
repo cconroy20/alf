@@ -20,6 +20,7 @@ FUNCTION GETVELZ()
   !------------------------------------------------------!
  
   chi2 = huge_number
+  getvelz = 0.0
 
   DO i=1,nv
 
@@ -47,7 +48,6 @@ FUNCTION GETVELZ()
      i2 = MIN(MAX(locate(sspgrid%lam,hi),2),nl_fit)
      tchi2(i) = SUM(idata(i1:i2)%flx**2/idata(i1:i2)%err**2*&
           (dflx(i1:i2)-mflx(i1:i2))**2) / (i2-i1)
-
      
      IF (tchi2(i).LT.chi2) THEN
         chi2    = tchi2(i)

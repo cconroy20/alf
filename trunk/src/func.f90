@@ -113,7 +113,7 @@ FUNCTION FUNC(nposarr,spec,funit)
         
         IF (PRESENT(funit)) THEN
            !write final results to screen and file
-           WRITE(*,'(2x,F4.2,"um-",F4.2,"um:"," rms:",F5.1,"%, ","Chi2/dof:",F5.1)') &
+           WRITE(*,'(2x,F5.2,"um-",F5.2,"um:"," rms:",F5.1,"%, ","Chi2/dof:",F5.1)') &
                 tl1/1E4,tl2/1E4,SQRT( SUM( (dflx(i1:i2)/mflx(i1:i2)-1)**2 )/&
                 (i2-i1+1) )*100, tchi2/(i2-i1)
            DO j=i1,i2

@@ -10,9 +10,9 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl)
   REAL(DP), INTENT(in), DIMENSION(nl) :: lambda
   REAL(DP), INTENT(inout), DIMENSION(nl) :: spec
   REAL(DP), INTENT(in) :: sigma,minl,maxl
-  REAL(DP), DIMENSION(nl) :: tspec,nspec,vel,func,gauss,psf
-  REAL(DP) :: xmax,xmin,fwhm,psig
-  INTEGER :: i,j,il,ih,m=4,grange
+  REAL(DP), DIMENSION(nl) :: tspec,nspec,vel,func,psf
+  REAL(DP) :: xmax,fwhm,psig
+  INTEGER :: i,il,ih,m=4,grange
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -20,8 +20,8 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl)
   IF (sigma.LE.tiny_number) RETURN
 
   IF (sigma.GE.1E4) THEN
-     WRITE(*,*) "VELBROAD ERROR: sigma>1E4 km/s - you've '//&
-          'probably done something wrong..."
+     WRITE(*,*) "VELBROAD ERROR: sigma>1E4 km/s - you've "//&
+          "probably done something wrong..."
      STOP
   ENDIF
 
@@ -66,7 +66,7 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl)
 
      fwhm   = sigma*2.35482/clight*1E5/dlstep
      psig   = fwhm/2.d0/SQRT(-2.d0*LOG(0.5d0)) ! equivalent sigma for kernel
-     grange = FLOOR(m*psig)	               ! range for kernel (-range:range)
+     grange = FLOOR(m*psig) ! range for kernel (-range:range)
      
      DO i=1,2*grange+1
         psf(i) = 1.d0/SQRT(2.d0*mypi)/psig*EXP(-((i-grange-1)/psig)**2/2.d0)

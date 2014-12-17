@@ -22,9 +22,9 @@ PROGRAM ALF
   IMPLICIT NONE
 
   !number of chain steps to print to file
-  INTEGER, PARAMETER :: nmcmc=1E4
+  INTEGER, PARAMETER :: nmcmc=10000
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=1E4
+  INTEGER, PARAMETER :: nburn=10000
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !number of walkers for emcee
@@ -32,17 +32,16 @@ PROGRAM ALF
   !Powell iteration tolerance
   REAL(DP), PARAMETER :: ftol=0.1
 
-  INTEGER  :: i,j,k,totacc=0,stat,iter=30
-  REAL(DP) :: mass=0.0,mwmass=0.0,bret=huge_number,deltachi2=0.0
-  REAL(DP) :: velz=0.0,msto=0.0,minchi2=huge_number,fret,wdth
+  INTEGER  :: i,j,totacc=0,iter=30
+  REAL(DP) :: velz,msto,minchi2=huge_number,fret,wdth,bret=huge_number
   REAL(DP), DIMENSION(nl)   :: mspec=0.0,mspecmw=0.0,lam=0.0
   REAL(DP), DIMENSION(nfil) :: m2l=0.0,m2lmw=0.0
-  REAL(DP), DIMENSION(npar) :: oposarr=0.,nposarr=0.,bposarr=0.0
+  REAL(DP), DIMENSION(npar) :: oposarr=0.,bposarr=0.0
   REAL(DP), DIMENSION(3,npar+2*nfil) :: runtot=0.0
   REAL(DP), DIMENSION(npar,npar)     :: xi=0.0
   CHARACTER(10) :: time=''
   CHARACTER(50) :: file='',tag=''
-  TYPE(PARAMS)  :: npos,opos,prlo,prhi,bpos
+  TYPE(PARAMS)  :: opos,prlo,prhi,bpos
   !the next three definitions are for emcee
   REAL(DP), DIMENSION(npar,nwalkers) :: pos_emcee
   REAL(DP), DIMENSION(nwalkers)      :: lp_emcee
@@ -64,7 +63,7 @@ PROGRAM ALF
 
   IF (IARGC().LT.1) THEN
      WRITE(*,*) 'ALF ERROR: You need to specify an input file'
-     RETURN
+     STOP
   ELSE
      CALL GETARG(1,file)
   ENDIF

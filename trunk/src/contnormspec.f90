@@ -32,11 +32,9 @@ SUBROUTINE CONTNORMSPEC(lam,flx,err,il1,il2,flxout,coeff)
   REAL(DP), DIMENSION(nl) :: poly
   REAL(DP), DIMENSION(20) :: tcoeff=0.0
   LOGICAL, DIMENSION(20)  :: mask=.TRUE.
-  REAL(DP), DIMENSION(20,20) :: covar,v
+  REAL(DP), DIMENSION(20,20) :: covar
   REAL(DP) :: ml,chi2sqr
   INTEGER  :: i1,i2,npow ,i
-  REAL(DP), DIMENSION(100) :: xx,yy,zz
-  REAL(DP), DIMENSION(3) :: cc
   INTERFACE
      SUBROUTINE NPOLY(x,arr)
        USE nrtype
