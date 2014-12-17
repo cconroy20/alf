@@ -46,23 +46,20 @@ SUBROUTINE STR2ARR(switch,str,arr)
      arr(19) = str%nih
      arr(20) = str%cuh
   
-     arr(21) = str%rbh
-     arr(22) = str%srh
-     arr(23) = str%yh
-     arr(24) = str%zrh
-     arr(25) = str%bah
-     arr(26) = str%euh
+     arr(21) = str%srh
+     arr(22) = str%bah
+     arr(23) = str%euh
 
-     arr(27) = str%teff
-     arr(28) = str%imf1
-     arr(29) = str%imf2
-     arr(30) = str%logfy
-     arr(31) = str%sigma2
-     arr(32) = str%velz2
-     arr(33) = str%logm7g
-     arr(34) = str%hotteff
-     arr(35) = str%loghot
-     arr(36) = str%fy_logage
+     arr(24) = str%teff
+     arr(25) = str%imf1
+     arr(26) = str%imf2
+     arr(27) = str%logfy
+     arr(28) = str%sigma2
+     arr(29) = str%velz2
+     arr(30) = str%logm7g
+     arr(31) = str%hotteff
+     arr(32) = str%loghot
+     arr(33) = str%fy_logage
      DO i=1,neml
         arr(npar1+i) = str%logemnorm(i)
      ENDDO
@@ -96,23 +93,20 @@ SUBROUTINE STR2ARR(switch,str,arr)
      str%coh    = arr(18)
      str%nih    = arr(19)
      str%cuh    = arr(20)
-     str%rbh    = arr(21)
-     str%srh    = arr(22)
-     str%yh     = arr(23)
-     str%zrh    = arr(24)
-     str%bah    = arr(25)
-     str%euh    = arr(26)
+     str%srh    = arr(21)
+     str%bah    = arr(22)
+     str%euh    = arr(23)
 
-     str%teff      = arr(27)
-     str%imf1      = arr(28)
-     str%imf2      = arr(29)
-     str%logfy     = arr(30)
-     str%sigma2    = arr(31)
-     str%velz2     = arr(32)
-     str%logm7g    = arr(33)
-     str%hotteff   = arr(34)
-     str%loghot    = arr(35)
-     str%fy_logage = arr(36)
+     str%teff      = arr(24)
+     str%imf1      = arr(25)
+     str%imf2      = arr(26)
+     str%logfy     = arr(27)
+     str%sigma2    = arr(28)
+     str%velz2     = arr(29)
+     str%logm7g    = arr(30)
+     str%hotteff   = arr(31)
+     str%loghot    = arr(32)
+     str%fy_logage = arr(33)
      DO i=1,neml
         str%logemnorm(i) = arr(npar1+i)
      ENDDO

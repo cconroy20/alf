@@ -57,11 +57,11 @@ MODULE SFVARS
   !actual number of wavelength intervals
   INTEGER :: nlint = 0  
   !number of emission lines to fit
-  INTEGER, PARAMETER :: neml = 13
+  INTEGER, PARAMETER :: neml = 11
   !number of coefficients for the polynomial fitting
   INTEGER, PARAMETER :: ncoeff = 30
   !number of parameters (minus em lines)
-  INTEGER, PARAMETER :: npar1 = 36
+  INTEGER, PARAMETER :: npar1 = 33
   !number of ages in the empirical SSP grid
   INTEGER, PARAMETER :: nage = 7
   !number of parameters used when fitting in Powell model
