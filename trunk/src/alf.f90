@@ -4,15 +4,15 @@ PROGRAM ALF
   !  of an old (>~1 Gyr), metal-rich ([Fe/H]>~-0.3) stellar
   !  population to the CvD model SSPs.
 
-  !Some things to keep in mind:
-  !1. The prior bounds on the parameters are specified in setup_params. 
-  !   Always make sure that the output parameters are not hitting a prior.
-  !2. Make sure that the chain is converged in all relevant parameters
-  !   by plotting the chain trace (parameter vs. chain step).
-  !3. Never ever ever use this code blindly.  Fitting spectra is a 
-  !   subtle art and the code can easily fool you if you don't know
-  !   what you're doing.  Make sure you understand *why* the code is 
-  !   settling on a particular parameter value.  
+  ! Some things to keep in mind:
+  ! 1. The prior bounds on the parameters are specified in setup_params. 
+  !    Always make sure that the output parameters are not hitting a prior.
+  ! 2. Make sure that the chain is converged in all relevant parameters
+  !    by plotting the chain trace (parameter vs. chain step).
+  ! 3. Never ever ever use this code blindly.  Fitting spectra is a 
+  !    subtle art and the code can easily fool you if you don't know
+  !    what you're doing.  Make sure you understand *why* the code is 
+  !    settling on a particular parameter value.  
   
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -24,7 +24,7 @@ PROGRAM ALF
   !number of chain steps to print to file
   INTEGER, PARAMETER :: nmcmc=10000
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=10000
+  INTEGER, PARAMETER :: nburn=200000
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !number of walkers for emcee
@@ -81,7 +81,7 @@ PROGRAM ALF
   WRITE(*,'("  force_nah  =",I2)') force_nah
   WRITE(*,'("  age-dep Rf =",I2)') use_age_dep_resp_fcns
   WRITE(*,'("  Nburn      = ",I8)') nburn
-  WRITE(*,'("  Nchain     = ",I7)') nmcmc
+  WRITE(*,'("  Nchain     = ",I8)') nmcmc
   WRITE(*,'("  filename   = ",A)') TRIM(file)//TRIM(tag)
   WRITE(*,'(" ************************************")') 
  
