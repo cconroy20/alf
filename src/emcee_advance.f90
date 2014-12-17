@@ -52,7 +52,7 @@ SUBROUTINE EMCEE_ADVANCE(ndim,nwalkers,a,pin,lpin,pout,lpout,accept)
   INTEGER, INTENT(out), DIMENSION(nwalkers) :: accept
   
   INTEGER :: k, ri
-  REAL(DP) :: r, z, lp, diff
+  REAL(DP) :: z, lp, diff
   REAL(DP), DIMENSION(ndim) :: q
  
   !---------------------------------------------------------------!

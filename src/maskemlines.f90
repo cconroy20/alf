@@ -6,8 +6,7 @@ SUBROUTINE MASKEMLINES(zred,sigma)
   IMPLICIT NONE
 
   REAL(DP), INTENT(in)      :: zred,sigma
-  REAL(DP), DIMENSION(ndat) :: tlam
-  REAL(DP), DIMENSION(neml)    :: wave0,wavel,waveh
+  REAL(DP), DIMENSION(neml) :: wave0,wavel,waveh
   INTEGER :: i,j, m=2
 
   !---------------------------------------------------------------!

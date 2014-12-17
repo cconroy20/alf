@@ -12,7 +12,7 @@ FUNCTION IMF(mass)
   REAL(DP), DIMENSION(:), INTENT(in) :: mass
   REAL(DP), DIMENSION(SIZE(mass))    :: imf
   INTEGER  :: i,n
-  REAL(DP) :: imfcu,m1=0.08,m2=0.5,m3=1.0
+  REAL(DP) :: m1=0.08,m2=0.5,m3=1.0
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!

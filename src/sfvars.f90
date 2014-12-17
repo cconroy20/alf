@@ -73,7 +73,7 @@ MODULE SFVARS
   !max degree of polynomial used for continuum fitting
   INTEGER, PARAMETER :: npolymax = 14
   !max number of data wavelength points
-  INTEGER, PARAMETER :: ndat = 1E5
+  INTEGER, PARAMETER :: ndat = 100000
   !total number of model parameters
   INTEGER, PARAMETER :: npar = npar1 + neml
   !total number of parameters in the simple model

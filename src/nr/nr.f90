@@ -1,7 +1,7 @@
 MODULE nr
-	INTERFACE
-		SUBROUTINE airy(x,ai,bi,aip,bip)
-		USE nrtype
+  INTERFACE
+     SUBROUTINE airy(x,ai,bi,aip,bip)
+       USE nrtype
 		REAL(SP), INTENT(IN) :: x
 		REAL(SP), INTENT(OUT) :: ai,bi,aip,bip
 		END SUBROUTINE airy
