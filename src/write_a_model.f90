@@ -25,14 +25,14 @@ PROGRAM WRITE_A_MODEL
   file = 'age+13.0_sn+100.spec'
   s2n  = 100.0
   lmin = 3900.
-  lmax = 5600.
+  lmax = 7000.
 
   !read in the SSPs and bandpass filters
   CALL SFSETUP()
   lam = sspgrid%lam
 
   pos%sigma   = 10.0
-  pos%logage  = LOG10(13.0)
+  pos%logage  = LOG10(8.0)
   pos%feh     = 0.0
   pos%ah      = 0.0
   pos%nhe     = 0.0
@@ -60,13 +60,13 @@ PROGRAM WRITE_A_MODEL
   pos%imf1    = 1.3
   pos%imf2    = 2.3
   pos%logfy   = -5.0
-  pos%sigma2  = 0.0
+  pos%sigma2  = 300.
   pos%velz    = 0.0
   pos%velz2   = 0.0
   pos%logm7g  = -5.0
   pos%hotteff = 20.0
   pos%loghot  = -5.0
-  pos%logemnorm = -5.0
+  pos%logemnorm = -1.0
 
   !get a model spectrum
   CALL GETMODEL(pos,mspec)

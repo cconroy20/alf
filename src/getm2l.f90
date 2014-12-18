@@ -38,4 +38,5 @@ SUBROUTINE GETM2L(msto,lam,spec,pos,m2l,mw)
      ENDIF
   ENDDO
 
+  
 END SUBROUTINE GETM2L

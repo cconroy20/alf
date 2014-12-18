@@ -24,7 +24,7 @@ PROGRAM ALF
   !number of chain steps to print to file
   INTEGER, PARAMETER :: nmcmc=10000
   !sampling of the walkers for print
-  INTEGER, PARAMETER :: nsample=10
+  INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
   INTEGER, PARAMETER :: nburn=1000000
   !start w/ powell minimization?
@@ -241,7 +241,7 @@ PROGRAM ALF
         CALL FLUSH
      ENDIF
   ENDDO
-  
+
   !Run a production chain
   WRITE(*,*) '   production run...'
   DO i=1,nmcmc/nwalkers
@@ -253,10 +253,11 @@ PROGRAM ALF
      DO j=1,nwalkers,nsample
 
         CALL STR2ARR(2,opos,pos_emcee(:,j)) !arr->str
+        opos%logemnorm = -8.0
 
         !compute the main sequence turn-off mass
         msto = 10**( msto_fit0 + msto_fit1*opos%logage )
-        msto = MIN(MAX(msto,0.90),3.)
+        msto = MIN(MAX(msto,0.80),3.)
         CALL GETMODEL(opos,mspecmw,mw=1)     !get spectra for MW IMF
         CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
         IF (fitsimple.EQ.0.AND.mwimf.EQ.0) THEN
