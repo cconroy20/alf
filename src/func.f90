@@ -5,7 +5,7 @@ FUNCTION FUNC(nposarr,spec,funit)
   !are computed in this routine.
 
   USE sfvars; USE nr, ONLY : locate
-  USE sfutils, ONLY : linterp,contnormspec,getmass,&
+  USE sfutils, ONLY : linterp3,contnormspec,getmass,&
        str2arr,getmodel
   IMPLICIT NONE
 
@@ -58,12 +58,10 @@ FUNCTION FUNC(nposarr,spec,funit)
 
      !de-redshift the data and interpolate to model wave array
      tlam      = data%lam / (1+npos%velz/clight*1E5)
-     idata(1:nl_fit)%flx = linterp(tlam(1:datmax),&
-          data(1:datmax)%flx,sspgrid%lam(1:nl_fit))
-     idata(1:nl_fit)%err = linterp(tlam(1:datmax),&
-          data(1:datmax)%err,sspgrid%lam(1:nl_fit))
-     idata(1:nl_fit)%wgt = linterp(tlam(1:datmax),&
-          data(1:datmax)%wgt,sspgrid%lam(1:nl_fit))
+     CALL LINTERP3(tlam(1:datmax),data(1:datmax)%flx,&
+          data(1:datmax)%err,data(1:datmax)%wgt,&
+          sspgrid%lam(1:nl_fit),idata(1:nl_fit)%flx,&
+          idata(1:nl_fit)%err,idata(1:nl_fit)%wgt)
 
      !compute chi2, looping over wavelength intervals
      DO i=1,nlint

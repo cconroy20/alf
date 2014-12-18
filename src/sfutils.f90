@@ -99,6 +99,14 @@ MODULE SFUTILS
   END INTERFACE
 
   INTERFACE
+     SUBROUTINE LINTERP3(xin,yin1,yin2,yin3,xout,yout1,yout2,yout3)
+       USE sfvars
+       REAL(DP), DIMENSION(:), INTENT(in) :: xin,yin1,yin2,yin3,xout
+       REAL(DP), DIMENSION(:), INTENT(inout) :: yout1,yout2,yout3
+     END SUBROUTINE LINTERP3
+  END INTERFACE
+
+  INTERFACE
      SUBROUTINE MASKEMLINES(zred,sigma)
        USE sfvars
        REAL(DP), INTENT(in) :: zred,sigma

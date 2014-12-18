@@ -31,4 +31,4 @@ FUNCTION LOCATE(xx,x)
      locate=jl
   ENDIF
 
-END FUNCTION locate
+END FUNCTION LOCATE

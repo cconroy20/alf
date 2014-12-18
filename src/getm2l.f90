@@ -6,14 +6,14 @@ SUBROUTINE GETM2L(msto,lam,spec,pos,m2l,mw)
   IMPLICIT NONE
 
   REAL(DP), DIMENSION(nl), INTENT(in) :: lam,spec
-  REAL(DP), INTENT(in) :: msto
-  TYPE(PARAMS), INTENT(in)   :: pos
+  REAL(DP), INTENT(in)      :: msto
+  TYPE(PARAMS), INTENT(in)  :: pos
   REAL(DP), DIMENSION(nfil), INTENT(out) :: m2l
+  INTEGER, OPTIONAL :: mw
   REAL(DP), DIMENSION(nfil) :: mag
   REAL(DP), DIMENSION(nl)   :: aspec
   REAL(DP) :: mass
-  INTEGER, OPTIONAL :: mw
-  INTEGER :: i
+  INTEGER  :: i
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -29,7 +29,7 @@ SUBROUTINE GETM2L(msto,lam,spec,pos,m2l,mw)
 
   !loop over the three filters
   DO i=1,3
-     mag(i) = tsum(lam,aspec*fil(i,:)/lam)
+     mag(i) = tsum(lam,aspec*filters(:,i)/lam)
      IF (mag(i).LE.0.0) THEN
         m2l(i) = 0.0
      ELSE 

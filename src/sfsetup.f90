@@ -26,7 +26,7 @@ SUBROUTINE SFSETUP()
      READ(11,*) 
   ENDDO
   DO i=1,nl
-     READ(11,*) d1,fil(1,i),fil(2,i),fil(3,i) !r,i,K filters
+     READ(11,*) d1,filters(i,1),filters(i,2),filters(i,3) !r,i,K filters
   ENDDO
   CLOSE(11)
 
