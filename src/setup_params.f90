@@ -134,7 +134,7 @@ SUBROUTINE SETUP_PARAMS(pos,prlo,prhi,velz)
   IF (prhi%imf2.EQ.test%imf2) prhi%imf2       = 3.5
   IF (prhi%logfy.EQ.test%logfy) prhi%logfy    = -0.3
   IF (prhi%fy_logage.EQ.test%fy_logage) prhi%fy_logage = LOG10(5.0)
-  IF (prhi%logm7g.EQ.test%logm7g) prhi%logm7g   = -0.5
+  IF (prhi%logm7g.EQ.test%logm7g) prhi%logm7g   = -1.0
   IF (prhi%hotteff.EQ.test%hotteff) prhi%hotteff= 30.0
   IF (prhi%loghot.EQ.test%loghot) prhi%loghot   = -0.1
   IF (prhi%sigma.EQ.test%sigma) prhi%sigma      = 1E3

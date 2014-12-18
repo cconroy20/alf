@@ -23,6 +23,8 @@ PROGRAM ALF
 
   !number of chain steps to print to file
   INTEGER, PARAMETER :: nmcmc=10000
+  !sampling of the walkers for print
+  INTEGER, PARAMETER :: nsample=10
   !length of chain burn-in
   INTEGER, PARAMETER :: nburn=1000000
   !start w/ powell minimization?
@@ -226,9 +228,18 @@ PROGRAM ALF
         WRITE (*,'(A)',advance='no') ' ...25%'
         CALL FLUSH
      ENDIF
-     IF (i.EQ.nburn/nwalkers/4.*2) WRITE (*,'(A)',advance='no') '...50%'
-     IF (i.EQ.nburn/nwalkers/4.*3) WRITE (*,'(A)',advance='no') '...75%'
-     IF (i.EQ.nburn/nwalkers/4.*4) WRITE (*,'(A)') '...100%'
+     IF (i.EQ.nburn/nwalkers/4.*2) THEN
+        WRITE (*,'(A)',advance='no') '...50%'
+        CALL FLUSH
+     ENDIF        
+     IF (i.EQ.nburn/nwalkers/4.*3) THEN
+        WRITE (*,'(A)',advance='no') '...75%'
+        CALL FLUSH
+     ENDIF
+     IF (i.EQ.nburn/nwalkers/4.*4) THEN
+        WRITE (*,'(A)') '...100%'
+        CALL FLUSH
+     ENDIF
   ENDDO
   
   !Run a production chain
@@ -239,7 +250,7 @@ PROGRAM ALF
           lp_emcee,pos_emcee,lp_emcee,accept_emcee)
      totacc = totacc + SUM(accept_emcee)
      
-     DO j=1,nwalkers
+     DO j=1,nwalkers,nsample
 
         CALL STR2ARR(2,opos,pos_emcee(:,j)) !arr->str
 
