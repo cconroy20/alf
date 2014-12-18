@@ -102,7 +102,7 @@ MODULE SFVARS
   INTEGER :: powell_fitting=0
 
   !common array for filters
-  REAL(DP), DIMENSION(nfil,nl) :: fil=0.0
+  REAL(DP), DIMENSION(nl,nfil) :: filters=0.0
   !common array for wavelength intervals
   REAL(DP), DIMENSION(nlint_max)   :: l1,l2
   !arrays containing the upper and lower prior limits

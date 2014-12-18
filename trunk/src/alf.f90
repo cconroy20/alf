@@ -24,7 +24,7 @@ PROGRAM ALF
   !number of chain steps to print to file
   INTEGER, PARAMETER :: nmcmc=10000
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=20000
+  INTEGER, PARAMETER :: nburn=1000000
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !number of walkers for emcee
@@ -222,7 +222,10 @@ PROGRAM ALF
   DO i=1,nburn/nwalkers
      CALL EMCEE_ADVANCE(npar,nwalkers,2.d0,pos_emcee,&
           lp_emcee,pos_emcee,lp_emcee,accept_emcee)
-     IF (i.EQ.nburn/nwalkers/4.*1) WRITE (*,'(A)',advance='no') ' ...25%'
+     IF (i.EQ.nburn/nwalkers/4.*1) THEN
+        WRITE (*,'(A)',advance='no') ' ...25%'
+        CALL FLUSH
+     ENDIF
      IF (i.EQ.nburn/nwalkers/4.*2) WRITE (*,'(A)',advance='no') '...50%'
      IF (i.EQ.nburn/nwalkers/4.*3) WRITE (*,'(A)',advance='no') '...75%'
      IF (i.EQ.nburn/nwalkers/4.*4) WRITE (*,'(A)') '...100%'
