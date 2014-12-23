@@ -22,15 +22,15 @@ PROGRAM ALF
   IMPLICIT NONE
 
   !number of chain steps to print to file
-  INTEGER, PARAMETER :: nmcmc=10000
+  INTEGER, PARAMETER :: nmcmc=1E4
   !sampling of the walkers for print
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=100000
+  INTEGER, PARAMETER :: nburn=1E5
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !number of walkers for emcee
-  INTEGER, PARAMETER :: nwalkers=100
+  INTEGER, PARAMETER :: nwalkers=200
   !Powell iteration tolerance
   REAL(DP), PARAMETER :: ftol=0.1
 
@@ -55,7 +55,7 @@ PROGRAM ALF
 
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
-  fitsimple = 0
+  fitsimple = 1
   IF (fitsimple.EQ.1.OR.fitsimple.EQ.2) mwimf=1
 
   !prhi%logm7g = -2.0
@@ -82,6 +82,7 @@ PROGRAM ALF
   WRITE(*,'("      mwimf  =",I2)') mwimf
   WRITE(*,'("  force_nah  =",I2)') force_nah
   WRITE(*,'("  age-dep Rf =",I2)') use_age_dep_resp_fcns
+  WRITE(*,'("  Nwalkers   = ",I8)') nwalkers
   WRITE(*,'("  Nburn      = ",I8)') nburn
   WRITE(*,'("  Nchain     = ",I8)') nmcmc
   WRITE(*,'("  filename   = ",A)') TRIM(file)//TRIM(tag)
@@ -97,7 +98,7 @@ PROGRAM ALF
 
   !read in the data and wavelength boundaries
   CALL READ_DATA(file)
-  WRITE(*,'("  Using ",I1," wavelength intervals")') nlint
+  WRITE(*,'("  Fitting ",I1," wavelength intervals")') nlint
   IF (l2(nlint).GT.lam(nl).OR.l1(1).LT.lam(1)) THEN
      WRITE(*,*) 'ERROR: wavelength boundaries exceed model wavelength grid'
      WRITE(*,'(4F8.1)') l2(nlint),lam(nl),l1(1),lam(1)
@@ -208,7 +209,7 @@ PROGRAM ALF
         !larger variation.
         DO i=1,npowell
            IF (i.LE.2) wdth = 10.0
-           IF (i.GT.2) wdth = 0.3
+           IF (i.GT.2) wdth = 0.2
            pos_emcee(i,j) = bposarr(i) + wdth*(2.*myran()-1.0)
         ENDDO
      ENDIF
@@ -226,21 +227,19 @@ PROGRAM ALF
           lp_emcee,pos_emcee,lp_emcee,accept_emcee)
      IF (i.EQ.nburn/nwalkers/4.*1) THEN
         WRITE (*,'(A)',advance='no') ' ...25%'
-        CALL FLUSH
+        CALL FLUSH()
      ENDIF
      IF (i.EQ.nburn/nwalkers/4.*2) THEN
         WRITE (*,'(A)',advance='no') '...50%'
-        CALL FLUSH
+        CALL FLUSH()
      ENDIF        
      IF (i.EQ.nburn/nwalkers/4.*3) THEN
         WRITE (*,'(A)',advance='no') '...75%'
-        CALL FLUSH
-     ENDIF
-     IF (i.EQ.nburn/nwalkers/4.*4) THEN
-        WRITE (*,'(A)') '...100%'
-        CALL FLUSH
+        CALL FLUSH()
      ENDIF
   ENDDO
+  WRITE (*,'(A)') '...100%'
+  CALL FLUSH()
 
   !Run a production chain
   WRITE(*,*) '   production run...'

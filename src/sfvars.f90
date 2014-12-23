@@ -39,10 +39,10 @@ MODULE SFVARS
   !force [Na/H]=[Mg/H]
   INTEGER, PARAMETER :: force_nah=0
 
-  !--------------------------------------------------------!
-  ! the parameters below should not be modified unless you !
-  ! know what you are doing!                               !
-  !--------------------------------------------------------!
+  !--------------------------------------------------------------!
+  !    the parameters below should not be modified unless you    !
+  !    know what you are doing!                                  !
+  !--------------------------------------------------------------!
 
   !nstart and nend allow us to use only a subset of 
   !the full wavelength array
@@ -115,12 +115,6 @@ MODULE SFVARS
   REAL(DP) :: dlstep
   REAL(DP), DIMENSION(nl) :: lnlam
 
-  !Kroupa-like IMF slopes
-  REAL(DP), DIMENSION(3) :: imf_alpha=(/1.3,2.3,2.3/)
-  !this flag allows us to tell the IMF routine to
-  !compute m*dn/dm rather than dn/dm
-  REAL(DP) :: imf_flag=0
-
   !array of central wavelengths for emission lines
   REAL(DP), DIMENSION(neml) :: emlines=0.0
 
@@ -131,8 +125,8 @@ MODULE SFVARS
   !indices where x=1.3,x=2.3 in the IMF array
   INTEGER :: i13,i23
 
-  !-------------Physical Constants---------------!
-  !-------in cgs units where applicable----------!
+  !---------------------Physical Constants-----------------------!
+  !---------------in cgs units where applicable------------------!
 
   !pi
   REAL(DP), PARAMETER :: mypi   = 3.14159265
@@ -144,12 +138,12 @@ MODULE SFVARS
   REAL(DP), PARAMETER :: lsun   = 3.839E33
   !cm in a pc
   REAL(DP), PARAMETER :: pc2cm  = 3.08568E18
-  
+
   !define small and large numbers
   REAL(DP), PARAMETER :: huge_number = 1E33
   REAL(DP), PARAMETER :: tiny_number = 1E-33
   
-  !------------Define TYPE structures-------------!
+  !-------------------Define TYPE structures---------------------!
   
   !structure for the set of parameters necessary to generate a model
   TYPE PARAMS
@@ -159,7 +153,7 @@ MODULE SFVARS
           cuh=0.0,rbh=0.0,srh=0.0,yh=0.0,zrh=0.0,bah=0.0,euh=0.0,&
           teff=0.0,imf1=1.3,imf2=2.3,logfy=-5.0,sigma2=0.0,velz2=0.0,&
           logm7g=-5.0,hotteff=20.0,loghot=-5.0,fy_logage=0.0
-     REAL(DP), DIMENSION(neml)   :: logemnorm=-5.0
+     REAL(DP), DIMENSION(neml) :: logemnorm=-5.0
      REAL(DP) :: chi2=huge_number
   END TYPE PARAMS
   
@@ -186,7 +180,8 @@ MODULE SFVARS
   !define the actual SSP grid to be shared between the routines
   TYPE(SSP) :: sspgrid
 
-  !define the actual variable for the raw data array
+  !define the actual object for the raw data array
   TYPE(TDATA), DIMENSION(ndat) :: data
+
 
 END MODULE SFVARS

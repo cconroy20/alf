@@ -35,8 +35,8 @@ SUBROUTINE GETM2L(msto,lam,spec,pos,m2l,mw)
      ELSE 
         mag(i) = -2.5*LOG10(mag(i))-48.60
         m2l(i) = mass/10**(2./5*(magsun(i)-mag(i)))
+        IF (m2l(i).GT.100.) m2l(i)=0.0
      ENDIF
   ENDDO
 
-  
 END SUBROUTINE GETM2L
