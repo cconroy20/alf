@@ -49,9 +49,9 @@ SUBROUTINE EMCEE_ADVANCE(ndim,nwalkers,a,pin,lpin,pout,lpout,accept)
   
   REAL(DP), INTENT(out), DIMENSION(ndim,nwalkers) :: pout
   REAL(DP), INTENT(out), DIMENSION(nwalkers) :: lpout
-  INTEGER, INTENT(out), DIMENSION(nwalkers) :: accept
+  INTEGER, INTENT(out),  DIMENSION(nwalkers) :: accept
   
-  INTEGER :: k, ri
+  INTEGER  :: k, ri
   REAL(DP) :: z, lp, diff
   REAL(DP), DIMENSION(ndim) :: q
  
@@ -61,12 +61,12 @@ SUBROUTINE EMCEE_ADVANCE(ndim,nwalkers,a,pin,lpin,pout,lpout,accept)
   DO k=1,nwalkers
            
      ! Compute a random stretch factor.
-     z = (a - 1.d0) * myran() + 1.d0
-     z = z * z / a
+     z = (a-1.d0) * myran() + 1.d0
+     z = z*z/a
      
      ! Select the helper walker.
      ri = CEILING((nwalkers-1) * myran())
-     IF (ri .GE. k) THEN
+     IF (ri.GE.k) THEN
         ri = ri + 1
         q = pin(:, ri+1)
      ELSE
@@ -77,7 +77,8 @@ SUBROUTINE EMCEE_ADVANCE(ndim,nwalkers,a,pin,lpin,pout,lpout,accept)
      q = (1.d0 - z) * q + z * pin(:, k)
 
      ! Compute the new ln-probability
-     lp = -0.5*func(q) !note: func returns chi^2
+     lp   = -0.5*func(q) !note: func returns chi^2
+     !lp = 1.d0
      diff = (ndim - 1.d0) * LOG(z) + lp - lpin(k)
      
      ! Accept or reject
@@ -101,5 +102,6 @@ SUBROUTINE EMCEE_ADVANCE(ndim,nwalkers,a,pin,lpin,pout,lpout,accept)
      ENDIF
      
   ENDDO
+
   
 END SUBROUTINE EMCEE_ADVANCE

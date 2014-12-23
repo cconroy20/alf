@@ -15,12 +15,7 @@ FUNCTION GETMASS(mto,imf1,imf2,imf3)
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
-  imf_alpha(1) = imf1
-  imf_alpha(2) = imf2
-  imf_alpha(3) = imf3
-
   getmass  = 0.d0
-  imf_flag = 0
 
   !normalize the weights so that 1 Msun formed at t=0
   imfnorm = (m2**(-imf1+2)-imflo**(-imf1+2))/(-imf1+2) + &
