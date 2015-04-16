@@ -26,7 +26,7 @@ PROGRAM ALF
   !sampling of the walkers for print
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=1E5
+  INTEGER, PARAMETER :: nburn=100
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !number of walkers for emcee
