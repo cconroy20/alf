@@ -22,8 +22,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   vt   = MAX(MIN(locate(sspgrid%logagegrid,pos%logage),nage-1),1)
   dt   = (pos%logage-sspgrid%logagegrid(vt))/&
        (sspgrid%logagegrid(vt+1)-sspgrid%logagegrid(vt))
-  !no extrapolation younger than 0.5 Gyr or older than 13
-  dt   = MAX(MIN(dt,1.0),-0.3) 
+  dt   = MAX(MIN(dt,1.0),-0.3)  !0.5<age<13 Gyr
   spec(1:nl_fit) = 10**(dt*sspgrid%logfkrpa(1:nl_fit,vt+1) + &
        (1-dt)*sspgrid%logfkrpa(1:nl_fit,vt))
 
@@ -33,21 +32,21 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      vr = nage_rfcn-1
      dr = 1.0
   ELSE
+     !should be using mass-weighted age here
      vr = MAX(MIN(locate(sspgrid%logagegrid_rfcn,pos%logage),nage_rfcn-1),1)
      dr = (pos%logage-sspgrid%logagegrid_rfcn(vr))/&
           (sspgrid%logagegrid_rfcn(vr+1)-sspgrid%logagegrid_rfcn(vr))
      dr = MAX(MIN(dr,1.0),0.0)
   ENDIF
 
+  !vary young population - both fraction and age
   !only include these parameters in the "full" model
   IF (fitsimple.EQ.0.AND.powell_fitting.EQ.0) THEN
-     !vary young population - both fraction and age
      fy    = MAX(MIN(10**pos%logfy,1.0),0.0)
      vt    = MAX(MIN(locate(sspgrid%logagegrid,pos%fy_logage),nage-1),1)
      dt    = (pos%fy_logage-sspgrid%logagegrid(vt))/&
           (sspgrid%logagegrid(vt+1)-sspgrid%logagegrid(vt))
-     !no extrapolation younger than 0.5 Gyr or older than 13
-     dt    = MAX(MIN(dt,1.0),-0.3) 
+     dt    = MAX(MIN(dt,1.0),-0.3) !0.5<age<13 Gyr
      yspec(1:nl_fit) = 10**(dt*sspgrid%logfkrpa(1:nl_fit,vt+1) + &
           (1-dt)*sspgrid%logfkrpa(1:nl_fit,vt))
      spec(1:nl_fit)  = (1-fy)*spec(1:nl_fit) + fy*yspec(1:nl_fit)

@@ -1,8 +1,12 @@
 SUBROUTINE STR2ARR(switch,str,arr)
 
-  !simple routine to dump the information in the parameteter 
+  !routine to dump the information in the parameteter 
   !structure (str) into an array (arr), or visa versa, depending
   !on the value of the switch
+
+  !this is actually the location where the parameters to be fit
+  !in the full model are specified.  If a parameter is left out
+  !of this list (e.g., [Rb/H]) then it does not affect Chi^2
 
   USE sfvars
   IMPLICIT NONE

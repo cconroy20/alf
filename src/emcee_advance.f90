@@ -60,26 +60,25 @@ SUBROUTINE EMCEE_ADVANCE(ndim,nwalkers,a,pin,lpin,pout,lpout,accept)
 
   DO k=1,nwalkers
            
-     ! Compute a random stretch factor.
+     ! Compute a random stretch factor
      z = (a-1.d0) * myran() + 1.d0
      z = z*z/a
      
-     ! Select the helper walker.
+     ! Select the helper walker
      ri = CEILING((nwalkers-1) * myran())
      IF (ri.GE.k) THEN
-        ri = ri + 1
-        q = pin(:, ri+1)
+        ri = ri+1
+        q  = pin(:,ri+1)
      ELSE
-        q = pout(:, ri)
+        q = pout(:,ri)
      ENDIF
      
-     ! Compute the proposal position.
-     q = (1.d0 - z) * q + z * pin(:, k)
+     ! Compute the proposal position
+     q = (1.d0-z) * q + z*pin(:,k)
 
      ! Compute the new ln-probability
      lp   = -0.5*func(q) !note: func returns chi^2
-     !lp = 1.d0
-     diff = (ndim - 1.d0) * LOG(z) + lp - lpin(k)
+     diff = (ndim-1.d0) * LOG(z) + lp - lpin(k)
      
      ! Accept or reject
      IF (diff.GE.0.d0) THEN

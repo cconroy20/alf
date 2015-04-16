@@ -56,7 +56,7 @@ FUNCTION FUNC(nposarr,spec,funit)
         spec = mspec
      ENDIF
 
-     !de-redshift the data and interpolate to model wave array
+     !de-redshift the data and interpolate to model wavelength array
      tlam      = data%lam / (1+npos%velz/clight*1E5)
      CALL LINTERP3(tlam(1:datmax),data(1:datmax)%flx,&
           data(1:datmax)%err,data(1:datmax)%wgt,&

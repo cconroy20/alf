@@ -66,6 +66,7 @@ MODULE SFVARS
   !number of ages in the empirical SSP grid
   INTEGER, PARAMETER :: nage = 7
   !number of parameters used when fitting in Powell model
+  !and in the supersimple mode (fitsimple=2)
   INTEGER, PARAMETER :: npowell = 4
   !number of ages in the response functions
   INTEGER, PARAMETER :: nage_rfcn = 5

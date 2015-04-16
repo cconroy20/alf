@@ -14,6 +14,10 @@ PROGRAM ALF
   !    what you're doing.  Make sure you understand *why* the code is 
   !    settling on a particular parameter value.  
   
+  !To Do: 
+  !1. allow the user to switch on/off each parameter to be fit
+  !2. add SFH and metal-poor component
+
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
@@ -22,15 +26,15 @@ PROGRAM ALF
   IMPLICIT NONE
 
   !number of chain steps to print to file
-  INTEGER, PARAMETER :: nmcmc=1E4
+  INTEGER, PARAMETER :: nmcmc=1000
   !sampling of the walkers for print
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=100
+  INTEGER, PARAMETER :: nburn=50000
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !number of walkers for emcee
-  INTEGER, PARAMETER :: nwalkers=200
+  INTEGER, PARAMETER :: nwalkers=100
   !Powell iteration tolerance
   REAL(DP), PARAMETER :: ftol=0.1
 
@@ -55,10 +59,10 @@ PROGRAM ALF
 
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
-  fitsimple = 1
+  fitsimple = 0
   IF (fitsimple.EQ.1.OR.fitsimple.EQ.2) mwimf=1
 
-  !prhi%logm7g = -2.0
+  !prhi%logm7g = -3.0
 
   !initialize the random number generator
   CALL INIT_RANDOM_SEED()
@@ -82,9 +86,9 @@ PROGRAM ALF
   WRITE(*,'("      mwimf  =",I2)') mwimf
   WRITE(*,'("  force_nah  =",I2)') force_nah
   WRITE(*,'("  age-dep Rf =",I2)') use_age_dep_resp_fcns
-  WRITE(*,'("  Nwalkers   = ",I8)') nwalkers
-  WRITE(*,'("  Nburn      = ",I8)') nburn
-  WRITE(*,'("  Nchain     = ",I8)') nmcmc
+  WRITE(*,'("  Nwalkers   = ",I5)') nwalkers
+  WRITE(*,'("  Nburn      = ",I5)') nburn
+  WRITE(*,'("  Nchain     = ",I5)') nmcmc
   WRITE(*,'("  filename   = ",A)') TRIM(file)//TRIM(tag)
   WRITE(*,'(" ************************************")') 
  
@@ -222,18 +226,18 @@ PROGRAM ALF
   !burn-in
   WRITE(*,*) '   burning in...'
   WRITE(*,'(A)',advance='no') '      Progress:'
-  DO i=1,nburn/nwalkers
+  DO i=1,nburn
      CALL EMCEE_ADVANCE(npar,nwalkers,2.d0,pos_emcee,&
           lp_emcee,pos_emcee,lp_emcee,accept_emcee)
-     IF (i.EQ.nburn/nwalkers/4.*1) THEN
+     IF (i.EQ.nburn/4.*1) THEN
         WRITE (*,'(A)',advance='no') ' ...25%'
         CALL FLUSH()
      ENDIF
-     IF (i.EQ.nburn/nwalkers/4.*2) THEN
+     IF (i.EQ.nburn/4.*2) THEN
         WRITE (*,'(A)',advance='no') '...50%'
         CALL FLUSH()
      ENDIF        
-     IF (i.EQ.nburn/nwalkers/4.*3) THEN
+     IF (i.EQ.nburn/4.*3) THEN
         WRITE (*,'(A)',advance='no') '...75%'
         CALL FLUSH()
      ENDIF
@@ -243,7 +247,7 @@ PROGRAM ALF
 
   !Run a production chain
   WRITE(*,*) '   production run...'
-  DO i=1,nmcmc/nwalkers
+  DO i=1,nmcmc
      
      CALL EMCEE_ADVANCE(npar,nwalkers,2.d0,pos_emcee,&
           lp_emcee,pos_emcee,lp_emcee,accept_emcee)
@@ -259,15 +263,23 @@ PROGRAM ALF
         !compute the main sequence turn-off mass
         msto = 10**( msto_fit0 + msto_fit1*opos%logage )
         msto = MIN(MAX(msto,0.8),3.)
+
         CALL GETMODEL(opos,mspecmw,mw=1)     !get spectra for MW IMF
         CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
-        IF (fitsimple.EQ.0.AND.mwimf.EQ.0) THEN
+
+        IF (mwimf.EQ.0) THEN
            CALL GETMODEL(opos,mspec)
            CALL GETM2L(msto,lam,mspec,opos,m2l) ! compute M/L
         ELSE
            m2l = m2lmw
+        ENDIF
+
+        IF (fitsimple.EQ.1) THEN
            !these parameters aren't actually being updated
            pos_emcee(nparsimp+1:,j) = 0.0 
+        ELSE IF (fitsimple.EQ.2) THEN
+           !these parameters aren't actually being updated
+           pos_emcee(npowell+1:,j) = 0.0 
         ENDIF
 
         !write the chain element to file
@@ -296,7 +308,7 @@ PROGRAM ALF
   CALL date_and_time(TIME=time)
   WRITE(*,*) 'End Time   '//time(1:2)//':'//time(3:4)
   WRITE(*,*) 
-  WRITE(*,'("  Facc: ",F5.2)') REAL(totacc)/REAL(nmcmc)
+  WRITE(*,'("  Facc: ",F5.2)') REAL(totacc)/REAL(nmcmc*nwalkers)
 
   !---------------------------------------------------------------!
   !--------------------Write results to file----------------------!
