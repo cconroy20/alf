@@ -169,11 +169,12 @@ MODULE SFUTILS
   END INTERFACE
 
   INTERFACE
-     SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl)
+     SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,lin)
        USE sfvars
        REAL(DP), INTENT(in), DIMENSION(nl) :: lambda
        REAL(DP), INTENT(inout), DIMENSION(nl) :: spec
        REAL(DP), INTENT(in) :: sigma,minl,maxl
+       REAL(DP), INTENT(in), OPTIONAL :: lin
      END SUBROUTINE VELBROAD
   END INTERFACE
 

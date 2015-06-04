@@ -10,7 +10,7 @@ PROGRAM WRITE_A_MODEL
 
   INTEGER  :: i
   REAL(DP) :: s2n,lmin,lmax
-  REAL(DP), DIMENSION(nl) :: mspec,mspec2,lam,err,gdev
+  REAL(DP), DIMENSION(nl) :: mspec,lam,err,gdev
   CHARACTER(100)  :: file=''
   TYPE(PARAMS)   :: pos
   
@@ -22,17 +22,19 @@ PROGRAM WRITE_A_MODEL
   !compute an array of gaussian deviates
   CALL GASDEV(gdev)
 
-  file = 'age+13.0_sn+100.spec'
-  s2n  = 100.0
-  lmin = 3900.
+  file = 'age+10.0_sn+100_sigma200_simp1.spec'
+  s2n  = 1000.0
+  lmin = sspgrid%lam(1)
   lmax = 7000.
+  pos%sigma  = 200.0
+  pos%logage = 1.0
 
   !read in the SSPs and bandpass filters
   CALL SFSETUP()
   lam = sspgrid%lam
 
-  pos%sigma   = 10.0
-  pos%logage  = LOG10(8.0)
+  !pos%sigma   = 10.0
+  !pos%logage  = LOG10(8.0)
   pos%feh     = 0.0
   pos%ah      = 0.0
   pos%nhe     = 0.0
@@ -66,7 +68,18 @@ PROGRAM WRITE_A_MODEL
   pos%logm7g  = -5.0
   pos%hotteff = 20.0
   pos%loghot  = -5.0
-  pos%logemnorm = -1.0
+  pos%logemnorm = -10.0
+
+  !define the log wavelength grid used in velbroad.f90
+  nl_fit = MIN(MAX(locate(lam,lmax+500.0),1),nl)
+  dlstep = (LOG(sspgrid%lam(nl_fit))-LOG(sspgrid%lam(1)))/nl_fit
+  DO i=1,nl_fit
+     lnlam(i) = i*dlstep+LOG(sspgrid%lam(1))
+  ENDDO
+  l1(1) = lmin
+  nlint = 2
+  l2(nlint) = lmax
+
 
   !get a model spectrum
   CALL GETMODEL(pos,mspec)

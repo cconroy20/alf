@@ -16,7 +16,7 @@ PROGRAM ALF
   
   !To Do: 
   !1. allow the user to switch on/off each parameter to be fit
-  !2. add SFH and metal-poor component
+  !2. add SFH and metal-poor/metal-rich component
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -26,11 +26,11 @@ PROGRAM ALF
   IMPLICIT NONE
 
   !number of chain steps to print to file
-  INTEGER, PARAMETER :: nmcmc=1000
+  INTEGER, PARAMETER :: nmcmc=100
   !sampling of the walkers for print
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=50000
+  INTEGER, PARAMETER :: nburn=1000
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !number of walkers for emcee
@@ -256,6 +256,7 @@ PROGRAM ALF
      DO j=1,nwalkers,nsample
 
         CALL STR2ARR(2,opos,pos_emcee(:,j)) !arr->str
+
         !kill the emission lines for computing M/L
         !since unconstrained lines can really mess up R,I bands
         opos%logemnorm = -8.0

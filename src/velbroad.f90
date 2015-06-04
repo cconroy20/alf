@@ -1,4 +1,4 @@
-SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl)
+SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,lin)
 
   !routine to compute velocity broadening of an input spectrum
   !the PSF kernel has a width of m*sigma, where m=4
@@ -10,8 +10,9 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl)
   REAL(DP), INTENT(in), DIMENSION(nl) :: lambda
   REAL(DP), INTENT(inout), DIMENSION(nl) :: spec
   REAL(DP), INTENT(in) :: sigma,minl,maxl
+  REAL(DP), INTENT(in), OPTIONAL :: lin
   REAL(DP), DIMENSION(nl) :: tspec,nspec,vel,func,psf
-  REAL(DP) :: xmax,fwhm,psig
+  REAL(DP) :: xmax,fwhm,psig,sigmal
   INTEGER :: i,il,ih,m=4,grange
 
   !---------------------------------------------------------------!
@@ -38,7 +39,13 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl)
            CYCLE
         ENDIF
         
-        xmax = lambda(i)*(m*sigma/clight*1E5+1)
+        IF (PRESENT(lin)) THEN
+           sigmal = sigma + (lambda(i)-4E3)*lin
+        ELSE
+           sigmal = sigma
+        ENDIF
+
+        xmax = lambda(i)*(m*sigmal/clight*1E5+1)
         ih   = MIN(locate(lambda(1:nl),xmax),nl)
         il   = MAX(2*i-ih,1)
                 
@@ -46,8 +53,8 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl)
            spec(i) = tspec(i)
         ELSE
            vel(il:ih)  = (lambda(i)/lambda(il:ih)-1)*clight/1E5
-           func(il:ih) =  1/SQRT(2*mypi)/sigma * &
-                EXP(-vel(il:ih)**2/2./sigma**2)
+           func(il:ih) =  1/SQRT(2*mypi)/sigmal * &
+                EXP(-vel(il:ih)**2/2./sigmal**2)
            !normalize the weights to integrate to unity
            func(il:ih) = func(il:ih) / TSUM(vel(il:ih),func(il:ih))
            spec(i) = TSUM(vel(il:ih),func(il:ih)*tspec(il:ih))
@@ -67,6 +74,7 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl)
      fwhm   = sigma*2.35482/clight*1E5/dlstep
      psig   = fwhm/2.d0/SQRT(-2.d0*LOG(0.5d0)) ! equivalent sigma for kernel
      grange = FLOOR(m*psig) ! range for kernel (-range:range)
+
      
      DO i=1,2*grange+1
         psf(i) = 1.d0/SQRT(2.d0*mypi)/psig*EXP(-((i-grange-1)/psig)**2/2.d0)

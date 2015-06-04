@@ -10,7 +10,7 @@ FUNCTION GETMASS(mto,imf1,imf2,imf3)
   REAL(DP), INTENT(in) :: mto,imf1,imf2,imf3
   REAL(DP) :: imfnorm, getmass
   REAL(DP), PARAMETER :: bhlim=40.0,nslim=8.5
-  REAL(DP) :: m1=0.08,m2=0.5,m3=1.0
+  REAL(DP) :: m2=0.5,m3=1.0
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
