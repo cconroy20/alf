@@ -1,4 +1,4 @@
-FUNCTION READ_SPECFIT_ONE, file, old=old, nwalker=nwalker
+FUNCTION READ_ALF_ONE, file, old=old, nwalker=nwalker
 
   sdir = getenv('SPECFIT_HOME')
   dir  = sdir+'/results/'
@@ -130,11 +130,11 @@ END
 ;----------------------------------------------------------------------;
 ;----------------------------------------------------------------------;
 
-FUNCTION READ_SPECFIT, file, old=old, nwalker=nwalker
+FUNCTION READ_ALF, file, old=old, nwalker=nwalker
 
   sdir = getenv('SPECFIT_HOME')
   IF sdir EQ '' THEN BEGIN
-     print,'READ_SPECFIT ERROR: SPECFIT_HOME environment '+$
+     print,'READ_ALF ERROR: SPECFIT_HOME environment '+$
            'variable not set, returning...'
      return,0
   ENDIF
