@@ -17,6 +17,7 @@ PROGRAM ALF
   !To Do: 
   !1. allow the user to switch on/off each parameter to be fit
   !2. add SFH and metal-poor/metal-rich component
+  !3. prune the walkers after some time
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -59,10 +60,11 @@ PROGRAM ALF
 
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
-  fitsimple = 0
-  IF (fitsimple.EQ.1.OR.fitsimple.EQ.2) mwimf=1
+  fit_type = 0
+  IF (fit_type.EQ.1.OR.fit_type.EQ.2) mwimf=1
 
   !prhi%logm7g = -3.0
+  !prhi%loghot = -3.0
 
   !initialize the random number generator
   CALL INIT_RANDOM_SEED()
@@ -82,7 +84,7 @@ PROGRAM ALF
   WRITE(*,*) 
   WRITE(*,'(" ************************************")') 
   WRITE(*,'("   dopowell  =",I2)') dopowell
-  WRITE(*,'("  fitsimple  =",I2)') fitsimple
+  WRITE(*,'("  fit_type   =",I2)') fit_type
   WRITE(*,'("      mwimf  =",I2)') mwimf
   WRITE(*,'("  force_nah  =",I2)') force_nah
   WRITE(*,'("  age-dep Rf =",I2)') use_age_dep_resp_fcns
@@ -275,10 +277,10 @@ PROGRAM ALF
            m2l = m2lmw
         ENDIF
 
-        IF (fitsimple.EQ.1) THEN
+        IF (fit_type.EQ.1) THEN
            !these parameters aren't actually being updated
            pos_emcee(nparsimp+1:,j) = 0.0 
-        ELSE IF (fitsimple.EQ.2) THEN
+        ELSE IF (fit_type.EQ.2) THEN
            !these parameters aren't actually being updated
            pos_emcee(npowell+1:,j) = 0.0 
         ENDIF

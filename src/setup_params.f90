@@ -105,7 +105,9 @@ SUBROUTINE SETUP_PARAMS(pos,prlo,prhi,velz)
   ENDDO
 
   !priors (high)
-  IF (prhi%logage.EQ.test%logage) prhi%logage = LOG10(13.7)
+  !if you change the prior on the age, also change the max 
+  !age allowed in getmodel
+  IF (prhi%logage.EQ.test%logage) prhi%logage = LOG10(15.0)
   IF (prhi%feh.EQ.test%feh) prhi%feh          = 1.0
   IF (prhi%ah.EQ.test%ah) prhi%ah             = 1.0
   IF (prhi%nhe.EQ.test%nhe) prhi%nhe          = 1.0

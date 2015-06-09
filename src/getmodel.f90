@@ -43,12 +43,12 @@ SUBROUTINE GETMODEL(pos,spec,mw)
 
   !vary young population - both fraction and age
   !only include these parameters in the "full" model
-  IF (fitsimple.EQ.0.AND.powell_fitting.EQ.0) THEN
+  IF (fit_type.EQ.0.AND.powell_fitting.EQ.0) THEN
      fy    = MAX(MIN(10**pos%logfy,1.0),0.0)
      vt    = MAX(MIN(locate(sspgrid%logagegrid,pos%fy_logage),nage-1),1)
      dt    = (pos%fy_logage-sspgrid%logagegrid(vt))/&
           (sspgrid%logagegrid(vt+1)-sspgrid%logagegrid(vt))
-     dt    = MAX(MIN(dt,1.0),-0.3) !0.5<age<13 Gyr
+     dt    = MAX(MIN(dt,1.5),-0.3) !0.5<age<15 Gyr
      yspec(1:nl_fit) = 10**(dt*sspgrid%logfkrpa(1:nl_fit,vt+1) + &
           (1-dt)*sspgrid%logfkrpa(1:nl_fit,vt))
      spec(1:nl_fit)  = (1-fy)*spec(1:nl_fit) + fy*yspec(1:nl_fit)
@@ -59,7 +59,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
 
   !Only sigma, velz, logage, and [Fe/H] are fit when either
   !fitting in Powell mode or "super simple" mode
-  IF (powell_fitting.EQ.0.AND.fitsimple.NE.2) THEN
+  IF (powell_fitting.EQ.0.AND.fit_type.NE.2) THEN
 
      !vary [O/H]
      CALL ADD_RESPONSE(spec,pos%ah,0.3,dr,vr,sspgrid%solar,sspgrid%ap)
@@ -106,7 +106,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   ENDIF
 
   !only include these parameters in the "full" model
-  IF (fitsimple.EQ.0.AND.powell_fitting.EQ.0) THEN
+  IF (fit_type.EQ.0.AND.powell_fitting.EQ.0) THEN
 
      !vary Teff (special case - force use of the 13 Gyr model)
      CALL ADD_RESPONSE(spec,pos%teff,50.,1.d0,nage_rfcn-1,sspgrid%solar,&

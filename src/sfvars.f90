@@ -33,9 +33,9 @@ MODULE SFVARS
   !0: fit the full model (IMF, all abundances, nuisance params, etc)
   !1: only fit velz, sigma, SSP age, Fe,C,N,O,Mg,Si,Ca,Ti,Na
   !2: only fit velz, sigma, SSP age, Fe
-  INTEGER :: fitsimple=0
+  INTEGER :: fit_type=0
   !force the IMF to be a MW IMF if set
-  !this is automatically assumed if fitsimple>0
+  !this is automatically assumed if fit_type=1,2
   INTEGER :: mwimf=0
   !force [Na/H]=[Mg/H]
   INTEGER, PARAMETER :: force_nah=0
@@ -66,7 +66,7 @@ MODULE SFVARS
   !number of ages in the empirical SSP grid
   INTEGER, PARAMETER :: nage = 7
   !number of parameters used when fitting in Powell model
-  !and in the supersimple mode (fitsimple=2)
+  !and in the supersimple mode (fit_type=2)
   INTEGER, PARAMETER :: npowell = 4
   !number of ages in the response functions
   INTEGER, PARAMETER :: nage_rfcn = 5

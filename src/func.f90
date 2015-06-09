@@ -38,8 +38,8 @@ FUNCTION FUNC(nposarr,spec,funit)
   !in (super) simple mode or in powell fitting mode)
   pr = 1.0
   DO i=1,npar
-     IF (i.GT.npowell.AND.(powell_fitting.EQ.1.OR.fitsimple.EQ.2)) CYCLE
-     IF (fitsimple.EQ.1.AND.i.GT.nparsimp) CYCLE
+     IF (i.GT.npowell.AND.(powell_fitting.EQ.1.OR.fit_type.EQ.2)) CYCLE
+     IF (fit_type.EQ.1.AND.i.GT.nparsimp) CYCLE
      IF (nposarr(i).GT.prhiarr(i)) &
           pr = pr*EXP(-(nposarr(i)-prhiarr(i))**2/2/0.01)
      IF (nposarr(i).LT.prloarr(i)) &
