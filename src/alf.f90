@@ -31,7 +31,7 @@ PROGRAM ALF
   !sampling of the walkers for print
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=1000
+  INTEGER, PARAMETER :: nburn=20000
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !number of walkers for emcee
@@ -63,8 +63,8 @@ PROGRAM ALF
   fit_type = 0
   IF (fit_type.EQ.1.OR.fit_type.EQ.2) mwimf=1
 
-  !prhi%logm7g = -3.0
-  !prhi%loghot = -3.0
+  prhi%logm7g = -3.0
+  prhi%loghot = -3.0
 
   !initialize the random number generator
   CALL INIT_RANDOM_SEED()
@@ -222,9 +222,9 @@ PROGRAM ALF
 
      !Compute the initial log-probability for each walker
      lp_emcee(j) = -0.5*func(pos_emcee(:, j))
-     
+   
   ENDDO
-  
+
   !burn-in
   WRITE(*,*) '   burning in...'
   WRITE(*,'(A)',advance='no') '      Progress:'

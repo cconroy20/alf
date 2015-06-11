@@ -41,9 +41,9 @@ FUNCTION FUNC(nposarr,spec,funit)
      IF (i.GT.npowell.AND.(powell_fitting.EQ.1.OR.fit_type.EQ.2)) CYCLE
      IF (fit_type.EQ.1.AND.i.GT.nparsimp) CYCLE
      IF (nposarr(i).GT.prhiarr(i)) &
-          pr = pr*EXP(-(nposarr(i)-prhiarr(i))**2/2/0.01)
+          pr = pr*EXP(-(nposarr(i)-prhiarr(i))**2/2/0.001)
      IF (nposarr(i).LT.prloarr(i)) &
-          pr = pr*EXP(-(nposarr(i)-prloarr(i))**2/2/0.01)
+          pr = pr*EXP(-(nposarr(i)-prloarr(i))**2/2/0.001)
   ENDDO
 
   !only compute the model and chi2 if the priors are >0.0

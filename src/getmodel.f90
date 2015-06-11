@@ -24,7 +24,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   vt   = MAX(MIN(locate(sspgrid%logagegrid,pos%logage),nage-1),1)
   dt   = (pos%logage-sspgrid%logagegrid(vt))/&
        (sspgrid%logagegrid(vt+1)-sspgrid%logagegrid(vt))
-  dt   = MAX(MIN(dt,1.0),-0.3)  !0.5<age<13 Gyr
+  dt   = MAX(MIN(dt,1.5),-0.3)  !0.5<age<15 Gyr
   spec(1:nl_fit) = 10**(dt*sspgrid%logfkrpa(1:nl_fit,vt+1) + &
        (1-dt)*sspgrid%logfkrpa(1:nl_fit,vt))
 
@@ -48,7 +48,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      vt    = MAX(MIN(locate(sspgrid%logagegrid,pos%fy_logage),nage-1),1)
      dt    = (pos%fy_logage-sspgrid%logagegrid(vt))/&
           (sspgrid%logagegrid(vt+1)-sspgrid%logagegrid(vt))
-     dt    = MAX(MIN(dt,1.5),-0.3) !0.5<age<15 Gyr
+     dt    = MAX(MIN(dt,1.0),-0.3) !0.5<age<13 Gyr
      yspec(1:nl_fit) = 10**(dt*sspgrid%logfkrpa(1:nl_fit,vt+1) + &
           (1-dt)*sspgrid%logfkrpa(1:nl_fit,vt))
      spec(1:nl_fit)  = (1-fy)*spec(1:nl_fit) + fy*yspec(1:nl_fit)
@@ -187,7 +187,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
 
   !velocity broaden the model
   IF (pos%sigma.GT.20.0) &
-       CALL VELBROAD(sspgrid%lam,spec,pos%sigma,l1(1),l2(nlint),lin=lin)
+       CALL VELBROAD(sspgrid%lam,spec,pos%sigma,l1(1),l2(nlint),lin)
 
   IF (apply_temperrfcn.EQ.1) THEN
      spec(1:nl_fit) = spec(1:nl_fit) / temperrfcn(1:nl_fit)

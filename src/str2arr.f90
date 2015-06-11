@@ -49,7 +49,6 @@ SUBROUTINE STR2ARR(switch,str,arr)
      arr(18) = str%coh
      arr(19) = str%nih
      arr(20) = str%cuh
-  
      arr(21) = str%srh
      arr(22) = str%bah
      arr(23) = str%euh
@@ -90,6 +89,7 @@ SUBROUTINE STR2ARR(switch,str,arr)
      str%kh     = arr(12)
      str%cah    = arr(13)
      str%tih    = arr(14)
+     !end of the simple model parameters
 
      str%vh     = arr(15)
      str%crh    = arr(16)

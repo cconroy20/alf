@@ -56,7 +56,7 @@ MODULE SFVARS
   !(max) number of wavelength intervals
   INTEGER, PARAMETER :: nlint_max = 10
   !actual number of wavelength intervals
-  INTEGER :: nlint = 0  
+  INTEGER :: nlint = 0
   !number of emission lines to fit
   INTEGER, PARAMETER :: neml = 11
   !number of coefficients for the polynomial fitting
@@ -149,12 +149,12 @@ MODULE SFVARS
   
   !structure for the set of parameters necessary to generate a model
   TYPE PARAMS
-     REAL(DP) :: velz=0.0,sigma=0.0,logage=1.14,feh=0.0,ah=0.0,&
+     REAL(DP) :: velz=0.0,sigma=0.0,logage=1.0,feh=0.0,ah=0.0,&
           nhe=0.0,ch=0.0,nh=0.0,nah=0.0,mgh=0.0,sih=0.0,kh=0.0,&
           cah=0.0,tih=0.0,vh=0.0,crh=0.0,mnh=0.0,coh=0.0,nih=0.0,&
           cuh=0.0,rbh=0.0,srh=0.0,yh=0.0,zrh=0.0,bah=0.0,euh=0.0,&
-          teff=0.0,imf1=1.3,imf2=2.3,logfy=-5.0,sigma2=0.0,velz2=0.0,&
-          logm7g=-5.0,hotteff=20.0,loghot=-5.0,fy_logage=0.0
+          teff=0.0,imf1=1.3,imf2=2.3,logfy=-4.0,sigma2=0.0,velz2=0.0,&
+          logm7g=-4.0,hotteff=20.0,loghot=-4.0,fy_logage=0.3
      REAL(DP), DIMENSION(neml) :: logemnorm=-5.0
      REAL(DP) :: chi2=huge_number
   END TYPE PARAMS
