@@ -31,7 +31,7 @@ PROGRAM ALF
   !sampling of the walkers for print
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=2000
+  INTEGER, PARAMETER :: nburn=1000
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !number of walkers for emcee
@@ -62,6 +62,8 @@ PROGRAM ALF
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
   fit_type = 0
   IF (fit_type.EQ.1.OR.fit_type.EQ.2) mwimf=1
+
+  mwimf=1
 
   prhi%logm7g = -3.0
   prhi%loghot = -3.0

@@ -153,7 +153,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      CALL ADD_RESPONSE(spec,pos%euh,0.3,dr,vr,sspgrid%solar,sspgrid%eup)
 
      !vary IMF
-     IF (.NOT.PRESENT(mw)) THEN
+     IF (mwimf.EQ.0.AND..NOT.PRESENT(mw)) THEN
         vv1 = MAX(MIN(locate(sspgrid%imfx,pos%imf1),nimf-1),1)
         dx1 = (pos%imf1-sspgrid%imfx(vv1))/(sspgrid%imfx(vv1+1)-sspgrid%imfx(vv1))
         dx1 = MAX(MIN(dx1,1.0),-1.0)

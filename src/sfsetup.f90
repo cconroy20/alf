@@ -206,7 +206,6 @@ SUBROUTINE SFSETUP()
   emlines(3)  = 4862.69  ! [Hb]
   emlines(4)  = 4960.30  ! [OIII]
   emlines(5)  = 5008.24  ! [OIII]
-  !emlines(6) = 5201.29  ! [NI] - this line was wrong!
   emlines(6)  = 5203.05  ! [NI]
   emlines(7)  = 6549.84  ! [NII]
   emlines(8)  = 6564.61  ! [Ha]

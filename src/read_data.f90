@@ -67,7 +67,7 @@ SUBROUTINE READ_DATA(file)
   ENDDO
 20 CONTINUE
   CLOSE(10)
-
+stop
   IF (i.GT.ndat) THEN
      WRITE(*,*) 'READ_DATA ERROR: data file is too long, returning'
      STOP
