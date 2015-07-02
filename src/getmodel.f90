@@ -13,12 +13,10 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   INTEGER, OPTIONAL :: mw
   REAL(DP), DIMENSION(nl) :: tmp,tmpr,yspec
   INTEGER :: vt,vv1,vv2,i,vr
-  REAL(DP) :: dt,fy,dx1,dx2,lsig,vz,dr,lin
+  REAL(DP) :: dt,fy,dx1,dx2,lsig,vz,dr
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
-
-  lin = 0.00
 
   !vary age of the empirical SSPs
   vt   = MAX(MIN(locate(sspgrid%logagegrid,pos%logage),nage-1),1)
@@ -187,7 +185,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
 
   !velocity broaden the model
   IF (pos%sigma.GT.20.0) &
-       CALL VELBROAD(sspgrid%lam,spec,pos%sigma,l1(1),l2(nlint),lin)
+       CALL VELBROAD(sspgrid%lam,spec,pos%sigma,l1(1),l2(nlint))
 
   IF (apply_temperrfcn.EQ.1) THEN
      spec(1:nl_fit) = spec(1:nl_fit) / temperrfcn(1:nl_fit)

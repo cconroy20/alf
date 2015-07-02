@@ -26,7 +26,7 @@ MODULE SFVARS
   !if set, compute velocity broadening via a simple method
   !rather than the proper convolution in log_lambda space
   !don't turn this on - the "correct" version is just as fast
-  INTEGER, PARAMETER :: velbroad_simple=0
+  INTEGER :: velbroad_simple=0
   !turn on the use of age-dependent response functions
   INTEGER, PARAMETER :: use_age_dep_resp_fcns=1
 
@@ -176,7 +176,7 @@ MODULE SFVARS
 
   !structure for the data
   TYPE TDATA
-     REAL(DP) :: lam=1E6,flx=0.0,err=0.0,wgt=0.0
+     REAL(DP) :: lam=1E6,flx=0.0,err=0.0,wgt=0.0,ires=0.0
   END TYPE TDATA
 
   !define the actual SSP grid to be shared between the routines

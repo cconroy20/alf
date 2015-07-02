@@ -61,13 +61,34 @@ SUBROUTINE READ_DATA(file)
   !--------now read in the input spectrum, errors, and weights----------!
 
   DO i=1,ndat
-     READ(10,*,IOSTAT=stat) data(i)%lam,data(i)%flx,data(i)%err,data(i)%wgt
+
+     READ(10,*,IOSTAT=stat) data(i)%lam,data(i)%flx,data(i)%err,&
+          data(i)%wgt,data(i)%ires
+
+     IF (data(i)%lam.LT.1E3.OR.data(i)%lam.GT.5E4) THEN
+        WRITE(*,*) 'READ_DATA ERROR: Input lambda  <1E3 or >5E4: ',&
+             data(i)%lam,data(i)%wgt
+        STOP
+     ENDIF
+     IF (data(i)%wgt.LT.0.0.OR.data(i)%wgt.GT.1.0) THEN
+        WRITE(*,*) 'READ_DATA ERROR: Input weight <0 or >1: ',&
+             data(i)%lam,data(i)%wgt
+        STOP
+     ENDIF
+     IF (data(i)%ires.LT.0.0.OR.data(i)%ires.GT.1E4) THEN
+        WRITE(*,*) 'READ_DATA ERROR: Input instr. res <0 or >1E4: ',&
+             data(i)%lam,data(i)%ires
+        STOP
+     ENDIF
+
      IF (data(i)%err.LE.tiny_number) data(i)%err = huge_number
      IF (stat.NE.0) GOTO 20
+
   ENDDO
+
 20 CONTINUE
   CLOSE(10)
-stop
+
   IF (i.GT.ndat) THEN
      WRITE(*,*) 'READ_DATA ERROR: data file is too long, returning'
      STOP

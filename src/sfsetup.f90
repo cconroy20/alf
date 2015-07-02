@@ -2,22 +2,16 @@ SUBROUTINE SFSETUP()
 
   !read in and set up all the arrays
 
-  USE sfvars; USE nr, ONLY : locate
+  USE sfvars; USE nr, ONLY : locate; USE sfutils, ONLY : linterp
   IMPLICIT NONE
   
-  REAL(DP) :: d1,l5000=5000.0, t13=1.3,t23=2.3
+  REAL(DP) :: d1,l5000=5000.0, t13=1.3,t23=2.3,sig0=99.
   REAL(DP), DIMENSION(nimf*nimf) :: tmp
-  REAL(DP), DIMENSION(nl) :: test2
+  REAL(DP), DIMENSION(nl) :: test2,smooth=0.0,lam
   INTEGER :: stat,i,vv,j,k,ii,shift
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
-
-  CALL GETENV('SPECFIT_HOME',SPECFIT_HOME)
-  IF (TRIM(SPECFIT_HOME).EQ.'') THEN
-     WRITE(*,*) 'SFSETUP ERROR: SPECFIT_HOME environment variable not set!'
-     STOP
-  ENDIF
 
   !read in filter transmission curves
   OPEN(11,FILE=TRIM(SPECFIT_HOME)//'/infiles/filters.dat',&
@@ -29,7 +23,6 @@ SUBROUTINE SFSETUP()
      READ(11,*) d1,filters(i,1),filters(i,2),filters(i,3) !r,i,K filters
   ENDDO
   CLOSE(11)
-
 
   !read in the ATLAS SSPs
   DO j=1,nage_rfcn
@@ -73,7 +66,9 @@ SUBROUTINE SFSETUP()
 
   ENDDO
 
+  lam = sspgrid%lam
   sspgrid%logagegrid_rfcn = LOG10((/1.0,3.0,5.0,9.0,13.0/))
+
 
   IF (1.EQ.0) THEN
 
@@ -110,6 +105,7 @@ SUBROUTINE SFSETUP()
           sspgrid%logfkrpa(i,6),sspgrid%logfkrpa(i,7)
   ENDDO
   CLOSE(21)
+
   sspgrid%logfkrpa   = LOG10(sspgrid%logfkrpa+tiny_number)
   sspgrid%logagegrid = LOG10((/1.0,3.0,5.0,7.0,9.0,11.0,13.5/))
 
@@ -215,6 +211,7 @@ SUBROUTINE SFSETUP()
 
   
   !read in template error function (computed from SDSS stacks)
+  !NB: this hasn't been used in years!
   OPEN(22,FILE=TRIM(SPECFIT_HOME)//'/infiles/temperrfcn.s350',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   DO i=1,nstart-1
@@ -225,5 +222,78 @@ SUBROUTINE SFSETUP()
   ENDDO
   CLOSE(22)
  
+
+  !smooth the models to the input instrumental resolution
+  IF (MAXVAL(data(1:datmax)%ires).GT.10.0) THEN
+
+     !the interpolation here is a massive extrapoltion beyond the range
+     !of the data.  This *should't* matter since we dont use the model
+     !beyond the range of the data, but I should double check this at some point
+     smooth = linterp(data(1:datmax)%lam,data(1:datmax)%ires,sspgrid%lam)
+     smooth = MIN(MAX(smooth,0.0),MAXVAL(data(1:datmax)%ires))
+
+     DO j=1,nage_rfcn
+        CALL VELBROAD(lam,sspgrid%solar(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%nap(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%nam(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%cap(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%cam(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%fep(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%fem(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%cp(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%cm(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%zp(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%zm(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%np(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%nm(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%ap(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%tip(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%tim(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%mgp(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%mgm(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%sip(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%sim(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%hep(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%hem(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%teffp(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%teffm(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%crp(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%mnp(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%bap(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%bam(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%nip(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%cop(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%eup(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%srp(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%kp(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%vp(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%yp(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%zrp(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%rbp(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%cup(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%nap6(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        CALL VELBROAD(lam,sspgrid%nap9(:,j),sig0,l1(1)-100,l2(nlint)+100,smooth)
+     ENDDO
+
+     DO i=1,nhot
+        CALL VELBROAD(lam,sspgrid%hotspec(i,:),sig0,l1(1)-100,l2(nlint)+100,smooth)
+     ENDDO
+
+     CALL VELBROAD(lam,sspgrid%m7g,sig0,l1(1)-100,l2(nlint)+100,smooth)
+
+     DO j=1,nimf
+        DO k=1,nimf
+           CALL VELBROAD(lam,sspgrid%imf(:,j,k),sig0,l1(1)-100,l2(nlint)+100,smooth)
+        ENDDO
+     ENDDO
+
+     sspgrid%logfkrpa = 10**sspgrid%logfkrpa
+     DO i=1,nage
+        CALL VELBROAD(lam,sspgrid%logfkrpa(:,i),sig0,l1(1)-100,l2(nlint)+100,smooth)
+     ENDDO
+     sspgrid%logfkrpa = LOG10(sspgrid%logfkrpa+tiny_number)
+
+  ENDIF
+
 
 END SUBROUTINE SFSETUP

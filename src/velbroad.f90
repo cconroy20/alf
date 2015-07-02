@@ -1,7 +1,10 @@
-SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,lin)
+SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
 
   !routine to compute velocity broadening of an input spectrum
   !the PSF kernel has a width of m*sigma, where m=4
+  !If optional input ires is present, then the spectrum will be
+  !smoothed by a wavelength dependent velocity dispersion in the
+  !'vebroad_simple=1' mode
 
   USE sfvars; USE nr, ONLY : locate
   USE sfutils, ONLY : linterp,tsum
@@ -10,14 +13,14 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,lin)
   REAL(DP), INTENT(in), DIMENSION(nl) :: lambda
   REAL(DP), INTENT(inout), DIMENSION(nl) :: spec
   REAL(DP), INTENT(in) :: sigma,minl,maxl
-  REAL(DP), INTENT(in), OPTIONAL :: lin
+  REAL(DP), INTENT(in), DIMENSION(nl), OPTIONAL :: ires
   REAL(DP), DIMENSION(nl) :: tspec,nspec,vel,func,psf
   REAL(DP) :: xmax,fwhm,psig,sigmal
   INTEGER :: i,il,ih,m=4,grange
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
-  
+   
   IF (sigma.LE.tiny_number) RETURN
 
   IF (sigma.GE.1E4) THEN
@@ -27,7 +30,7 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,lin)
   ENDIF
 
   !compute smoothing the fast (and slightly less accurate) way
-  IF (velbroad_simple.EQ.1) THEN
+  IF (velbroad_simple.EQ.1.OR.PRESENT(ires)) THEN
 
      tspec = spec
      spec  = 0.0
@@ -39,8 +42,8 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,lin)
            CYCLE
         ENDIF
         
-        IF (PRESENT(lin)) THEN
-           sigmal = sigma + (lambda(i)-4E3)*lin
+        IF (PRESENT(ires)) THEN
+           sigmal = ires(i)
         ELSE
            sigmal = sigma
         ENDIF

@@ -31,7 +31,7 @@ PROGRAM ALF
   !sampling of the walkers for print
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=1000
+  INTEGER, PARAMETER :: nburn=50000
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !number of walkers for emcee
@@ -62,8 +62,6 @@ PROGRAM ALF
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
   fit_type = 0
   IF (fit_type.EQ.1.OR.fit_type.EQ.2) mwimf=1
-
-  mwimf=1
 
   prhi%logm7g = -3.0
   prhi%loghot = -3.0
@@ -100,12 +98,19 @@ PROGRAM ALF
   WRITE(*,*) 
   WRITE(*,*) 'Start Time '//time(1:2)//':'//time(3:4)
 
+  CALL GETENV('SPECFIT_HOME',SPECFIT_HOME)
+  IF (TRIM(SPECFIT_HOME).EQ.'') THEN
+     WRITE(*,*) 'SFSETUP ERROR: SPECFIT_HOME environment variable not set!'
+     STOP
+  ENDIF
+
+  !read in the data and wavelength boundaries
+  CALL READ_DATA(file)
+
   !read in the SSPs and bandpass filters
   CALL SFSETUP()
   lam = sspgrid%lam
 
-  !read in the data and wavelength boundaries
-  CALL READ_DATA(file)
   WRITE(*,'("  Fitting ",I1," wavelength intervals")') nlint
   IF (l2(nlint).GT.lam(nl).OR.l1(1).LT.lam(1)) THEN
      WRITE(*,*) 'ERROR: wavelength boundaries exceed model wavelength grid'
