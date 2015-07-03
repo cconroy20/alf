@@ -64,7 +64,8 @@ SUBROUTINE READ_DATA(file)
 
      READ(10,*,IOSTAT=stat) data(i)%lam,data(i)%flx,data(i)%err,&
           data(i)%wgt,data(i)%ires
-
+     IF (stat.NE.0) GOTO 20
+     
      IF (data(i)%lam.LT.1E3.OR.data(i)%lam.GT.5E4) THEN
         WRITE(*,*) 'READ_DATA ERROR: Input lambda  <1E3 or >5E4: ',&
              data(i)%lam,data(i)%wgt
@@ -82,8 +83,7 @@ SUBROUTINE READ_DATA(file)
      ENDIF
 
      IF (data(i)%err.LE.tiny_number) data(i)%err = huge_number
-     IF (stat.NE.0) GOTO 20
-
+ 
   ENDDO
 
 20 CONTINUE
