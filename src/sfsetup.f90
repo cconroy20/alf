@@ -295,5 +295,8 @@ SUBROUTINE SFSETUP()
 
   ENDIF
 
+  !locate where lam=7000A
+  lam7 = locate(lam,7000.d0)
+
 
 END SUBROUTINE SFSETUP

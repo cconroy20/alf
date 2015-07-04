@@ -27,7 +27,7 @@ PROGRAM ALF
   IMPLICIT NONE
 
   !number of chain steps to print to file
-  INTEGER, PARAMETER :: nmcmc=100
+  INTEGER, PARAMETER :: nmcmc=200
   !sampling of the walkers for print
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
@@ -65,6 +65,12 @@ PROGRAM ALF
 
   prhi%logm7g = -3.0
   prhi%loghot = -3.0
+  !force Balmer em lines to be ~zero
+  prhi%logemnorm(1) = -4.0
+  prhi%logemnorm(2) = -4.0
+  prhi%logemnorm(3) = -4.0
+  prhi%logemnorm(8) = -4.0
+
 
   !initialize the random number generator
   CALL INIT_RANDOM_SEED()

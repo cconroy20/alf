@@ -164,8 +164,9 @@ SUBROUTINE GETMODEL(pos,spec,mw)
              dx1*dx2*sspgrid%imf(1:nl_fit,vv1+1,vv2+1)
         tmp(1:nl_fit) = tmp(1:nl_fit)/sspgrid%imf(1:nl_fit,i13,i23)
         !turn off IMF sensitivity at lambda<7000A
-        !wh = where(la LT 7E3)
-        !tmp[wh] = 1.0
+        IF (blueimf_off.EQ.1) THEN
+           tmp(1:lam7) = 1.0
+        ENDIF
         spec(1:nl_fit) = spec(1:nl_fit) * tmp(1:nl_fit)
      ENDIF
 
@@ -184,7 +185,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   ENDIF
 
   !velocity broaden the model
-  IF (pos%sigma.GT.20.0) &
+  IF (pos%sigma.GT.5.0) &
        CALL VELBROAD(sspgrid%lam,spec,pos%sigma,l1(1),l2(nlint))
 
   IF (apply_temperrfcn.EQ.1) THEN

@@ -99,8 +99,8 @@ SUBROUTINE SETUP_PARAMS(pos,prlo,prhi,velz)
   IF (prlo%logm7g.EQ.test%logm7g) prlo%logm7g   = -5.0
   IF (prlo%hotteff.EQ.test%hotteff) prlo%hotteff= 8.0
   IF (prlo%loghot.EQ.test%loghot) prlo%loghot   = -5.0
-  IF (prlo%sigma.EQ.test%sigma) prlo%sigma      = 20.0
-  IF (prlo%sigma2.EQ.test%sigma2) prlo%sigma2   = 20.0
+  IF (prlo%sigma.EQ.test%sigma) prlo%sigma      = 10.0
+  IF (prlo%sigma2.EQ.test%sigma2) prlo%sigma2   = 10.0
   IF (prlo%velz.EQ.test%velz) prlo%velz         = -1E3
   IF (prlo%velz2.EQ.test%velz2) prlo%velz2      = -1E3
   DO i=1,neml 

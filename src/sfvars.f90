@@ -1,6 +1,5 @@
 MODULE SFVARS
 
-
   ! module to set up most arrays and variables 
 
   IMPLICIT NONE
@@ -29,6 +28,8 @@ MODULE SFVARS
   INTEGER :: velbroad_simple=0
   !turn on the use of age-dependent response functions
   INTEGER, PARAMETER :: use_age_dep_resp_fcns=1
+  !Turn off the IMF sensitivity at <7000A if this parameter is =1
+  INTEGER, PARAMETER :: blueimf_off=0
 
   !0: fit the full model (IMF, all abundances, nuisance params, etc)
   !1: only fit velz, sigma, SSP age, Fe,C,N,O,Mg,Si,Ca,Ti,Na
@@ -94,9 +95,11 @@ MODULE SFVARS
   REAL(DP), PARAMETER :: krpa_imf1=1.3,krpa_imf2=2.3,krpa_imf3=2.3
   !linear fit to log(age) vs. log(MS TO mass)
   REAL(DP), PARAMETER :: msto_fit0=0.290835,msto_fit1=-0.301566
-
+  
   !length of input data
   INTEGER :: datmax=0
+  !index in lam array at 7000A
+  INTEGER :: lam7=1
 
   !----------Setup a common block of arrays and vars-------------!
 

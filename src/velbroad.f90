@@ -69,30 +69,32 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
   !actually, this way is faster than the one above!
   ELSE
 
-     tspec = 0.0
-     nspec = 0.0
-     tspec(1:nl_fit) = &
-          linterp(LOG(lambda(1:nl_fit)),spec(1:nl_fit),lnlam(1:nl_fit))
-
      fwhm   = sigma*2.35482/clight*1E5/dlstep
      psig   = fwhm/2.d0/SQRT(-2.d0*LOG(0.5d0)) ! equivalent sigma for kernel
      grange = FLOOR(m*psig) ! range for kernel (-range:range)
 
-     
-     DO i=1,2*grange+1
-        psf(i) = 1.d0/SQRT(2.d0*mypi)/psig*EXP(-((i-grange-1)/psig)**2/2.d0)
-     ENDDO
-     psf(1:2*grange+1) = psf(1:2*grange+1) / SUM(psf(1:2*grange+1))
-     
-     DO i=grange+1,nl_fit-grange
-        nspec(i) = SUM( psf(1:2*grange+1)*tspec(i-grange:i+grange) )
-     ENDDO
-     
-     !interpolate back to the main array
-     spec(1:nl_fit) = &
-          linterp(EXP(lnlam(1:nl_fit)),nspec(1:nl_fit),lambda(1:nl_fit))
-  
-  ENDIF
+     IF (grange.GT.1) THEN 
 
+        tspec = 0.0
+        nspec = 0.0
+        tspec(1:nl_fit) = &
+             linterp(LOG(lambda(1:nl_fit)),spec(1:nl_fit),lnlam(1:nl_fit))
+
+        DO i=1,2*grange+1
+           psf(i) = 1.d0/SQRT(2.d0*mypi)/psig*EXP(-((i-grange-1)/psig)**2/2.d0)
+        ENDDO
+        psf(1:2*grange+1) = psf(1:2*grange+1) / SUM(psf(1:2*grange+1))
+        
+        DO i=grange+1,nl_fit-grange
+           nspec(i) = SUM( psf(1:2*grange+1)*tspec(i-grange:i+grange) )
+        ENDDO
+     
+        !interpolate back to the main array
+        spec(1:nl_fit) = &
+             linterp(EXP(lnlam(1:nl_fit)),nspec(1:nl_fit),lambda(1:nl_fit))
+  
+     ENDIF
+
+  ENDIF
 
 END SUBROUTINE VELBROAD
