@@ -197,19 +197,15 @@ SUBROUTINE SFSETUP()
   sspgrid%teffarrhot = (/8.0,10.,20.,30./)
 
   !define central wavelengths of emission lines (in vacuum)
-  emlines(1)  = 4102.92  ! [Hd]
-  emlines(2)  = 4341.69  ! [Hg]
-  emlines(3)  = 4862.69  ! [Hb]
-  emlines(4)  = 4960.30  ! [OIII]
-  emlines(5)  = 5008.24  ! [OIII]
-  emlines(6)  = 5203.05  ! [NI]
-  emlines(7)  = 6549.84  ! [NII]
-  emlines(8)  = 6564.61  ! [Ha]
-  emlines(9)  = 6585.23  ! [NII]
-  emlines(10) = 6718.32  ! [SII]
-  emlines(11) = 6732.71  ! [SII]
+  emlines(1)  = 4960.30  ! [OIII]
+  emlines(2)  = 5008.24  ! [OIII]
+  emlines(3)  = 5203.05  ! [NI]
+  emlines(4)  = 6549.84  ! [NII]
+  emlines(5)  = 6564.61  ! [Ha]
+  emlines(6)  = 6585.23  ! [NII]
+  emlines(7) = 6718.32  ! [SII]
+  emlines(8) = 6732.71  ! [SII]
 
-  
   !read in template error function (computed from SDSS stacks)
   !NB: this hasn't been used in years!
   OPEN(22,FILE=TRIM(SPECFIT_HOME)//'/infiles/temperrfcn.s350',&

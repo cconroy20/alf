@@ -22,14 +22,16 @@ MODULE SFVARS
   INTEGER, PARAMETER :: maskem=0
   !apply template error function? (only works for SDSS stacks)
   INTEGER, PARAMETER :: apply_temperrfcn=0
-  !if set, compute velocity broadening via a simple method
-  !rather than the proper convolution in log_lambda space
-  !don't turn this on - the "correct" version is just as fast
-  INTEGER :: velbroad_simple=0
   !turn on the use of age-dependent response functions
   INTEGER, PARAMETER :: use_age_dep_resp_fcns=1
   !Turn off the IMF sensitivity at <7000A if this parameter is =1
   INTEGER, PARAMETER :: blueimf_off=0
+  !if set, compute velocity broadening via a simple method
+  !rather than the proper convolution in log_lambda space
+  !don't turn this on - the "correct" version is just as fast
+  INTEGER :: velbroad_simple=0
+  !flag to indicate if redshift is being fit
+  INTEGER :: free_velz=1
 
   !0: fit the full model (IMF, all abundances, nuisance params, etc)
   !1: only fit velz, sigma, SSP age, Fe,C,N,O,Mg,Si,Ca,Ti,Na
@@ -38,8 +40,6 @@ MODULE SFVARS
   !force the IMF to be a MW IMF if set
   !this is automatically assumed if fit_type=1,2
   INTEGER :: mwimf=0
-  !force [Na/H]=[Mg/H]
-  INTEGER, PARAMETER :: force_nah=0
 
   !--------------------------------------------------------------!
   !    the parameters below should not be modified unless you    !
@@ -59,11 +59,11 @@ MODULE SFVARS
   !actual number of wavelength intervals
   INTEGER :: nlint = 0
   !number of emission lines to fit
-  INTEGER, PARAMETER :: neml = 11
+  INTEGER, PARAMETER :: neml = 8
   !number of coefficients for the polynomial fitting
   INTEGER, PARAMETER :: ncoeff = 30
   !number of parameters (minus em lines)
-  INTEGER, PARAMETER :: npar1 = 33
+  INTEGER, PARAMETER :: npar1 = 32
   !number of ages in the empirical SSP grid
   INTEGER, PARAMETER :: nage = 7
   !number of parameters used when fitting in Powell model
@@ -179,14 +179,16 @@ MODULE SFVARS
 
   !structure for the data
   TYPE TDATA
-     REAL(DP) :: lam=1E6,flx=0.0,err=0.0,wgt=0.0,ires=0.0
+     REAL(DP) :: lam=1E6,flx=0.0,err=0.0,wgt=0.0,ires=0.0,lam0=1E6
   END TYPE TDATA
 
   !define the actual SSP grid to be shared between the routines
   TYPE(SSP) :: sspgrid
 
-  !define the actual object for the raw data array
+  !define the object for the raw data array
   TYPE(TDATA), DIMENSION(ndat) :: data
+  !define the object for the data interpolated to the model arr
+  TYPE(TDATA), DIMENSION(nl) :: idata
 
 
 END MODULE SFVARS

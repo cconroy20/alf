@@ -27,11 +27,11 @@ PROGRAM ALF
   IMPLICIT NONE
 
   !number of chain steps to print to file
-  INTEGER, PARAMETER :: nmcmc=200
+  INTEGER, PARAMETER :: nmcmc=100
   !sampling of the walkers for print
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=50000
+  INTEGER, PARAMETER :: nburn=30000
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !number of walkers for emcee
@@ -39,7 +39,7 @@ PROGRAM ALF
   !Powell iteration tolerance
   REAL(DP), PARAMETER :: ftol=0.1
 
-  INTEGER  :: i,j,totacc=0,iter=30
+  INTEGER  :: i,j,totacc=0,iter=30, fit_velz
   REAL(DP) :: velz,msto,minchi2=huge_number,fret,wdth,bret=huge_number
   REAL(DP), DIMENSION(nl)   :: mspec=0.0,mspecmw=0.0,lam=0.0
   REAL(DP), DIMENSION(nfil) :: m2l=0.0,m2lmw=0.0
@@ -90,9 +90,8 @@ PROGRAM ALF
   WRITE(*,*) 
   WRITE(*,'(" ************************************")') 
   WRITE(*,'("   dopowell  =",I2)') dopowell
-  WRITE(*,'("  fit_type   =",I2)') fit_type
+  WRITE(*,'("   fit_type  =",I2)') fit_type
   WRITE(*,'("      mwimf  =",I2)') mwimf
-  WRITE(*,'("  force_nah  =",I2)') force_nah
   WRITE(*,'("  age-dep Rf =",I2)') use_age_dep_resp_fcns
   WRITE(*,'("  Nwalkers   = ",I5)') nwalkers
   WRITE(*,'("  Nburn      = ",I5)') nburn
@@ -143,6 +142,7 @@ PROGRAM ALF
 
   !make an initial estimate of the redshift
   !we do this to help Powell minimization
+  free_velz=1
   WRITE(*,*) ' Finding redshift...'
   IF (file(1:4).EQ.'cdfs') THEN
      velz = 0.0 
@@ -152,7 +152,6 @@ PROGRAM ALF
   opos%velz = velz
   WRITE(*,'("    best velocity: ",F6.1)') velz
   
-
   !convert the structures into their equivalent arrays
   CALL STR2ARR(1,prlo,prloarr)   !str->arr
   CALL STR2ARR(1,prhi,prhiarr)   !str->arr
@@ -201,7 +200,13 @@ PROGRAM ALF
      CALL MASKEMLINES(opos%velz,opos%sigma)
   ENDIF
 
-
+  !free_velz=0
+  !data%lam0 = data%lam / (1+opos%velz/clight*1E5)
+  !CALL LINTERP3(data(1:datmax)%lam0,data(1:datmax)%flx,&
+  !     data(1:datmax)%err,data(1:datmax)%wgt,&
+  !     sspgrid%lam(1:nl_fit),idata(1:nl_fit)%flx,&
+  !     idata(1:nl_fit)%err,idata(1:nl_fit)%wgt)
+ 
   !---------------------------------------------------------------!
   !-----------------------------MCMC------------------------------!
   !---------------------------------------------------------------!
@@ -341,6 +346,13 @@ PROGRAM ALF
   !here, "best-fit" is the mean of the posterior distributions
   OPEN(14,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
        TRIM(file)//TRIM(tag)//'.bestp',STATUS='REPLACE')
+  WRITE(14,'("#   dopowell  =",I2)') dopowell
+  WRITE(14,'("#   fit_type  =",I2)') fit_type
+  WRITE(14,'("#      mwimf  =",I2)') mwimf
+  WRITE(14,'("#  age-dep Rf =",I2)') use_age_dep_resp_fcns
+  WRITE(14,'("#  Nwalkers   = ",I5)') nwalkers
+  WRITE(14,'("#  Nburn      = ",I5)') nburn
+  WRITE(14,'("#  Nchain     = ",I5)') nmcmc
   WRITE(14,'(ES12.5,1x,99(F9.4,1x))') bpos%chi2, runtot(2,:)/runtot(1,:)
   CLOSE(14)
 

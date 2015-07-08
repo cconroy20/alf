@@ -54,7 +54,7 @@ SUBROUTINE SETUP_PARAMS(pos,prlo,prhi,velz)
   pos%sigma2    = myran()*100+100
   pos%velz2     = myran()*10-5
   DO i=1,neml
-     pos%logemnorm(i) = myran()*2-4
+     pos%logemnorm(i) = myran()*1-6
   ENDDO
   IF (PRESENT(velz)) THEN
      pos%velz  = velz + (myran()*10-5)

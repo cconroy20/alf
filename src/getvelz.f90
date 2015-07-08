@@ -14,8 +14,7 @@ FUNCTION GETVELZ()
   INTEGER :: i,i1,i2
   REAL(DP), DIMENSION(nl) :: mflx,dflx
   REAL(DP), DIMENSION(nv) :: tvz,tchi2,tvza
-  TYPE(TDATA), DIMENSION(nl) :: idata
-  REAL(DP), DIMENSION(ndat) :: tlam
+  TYPE(TDATA), DIMENSION(nl) :: iidata
 
   !------------------------------------------------------!
  
@@ -27,26 +26,26 @@ FUNCTION GETVELZ()
      tvz(i) = REAL(i)*11-1E3
 
      !de-redshift the data and interpolate to model wave array
-     tlam      = data%lam / (1+tvz(i)/clight*1E5)
-     idata(1:nl_fit)%flx = linterp(tlam(1:datmax),&
+     data%lam0 = data%lam / (1+tvz(i)/clight*1E5)
+     iidata(1:nl_fit)%flx = linterp(data(1:datmax)%lam0,&
           data(1:datmax)%flx,sspgrid%lam(1:nl_fit))
-     idata(1:nl_fit)%err = linterp(tlam(1:datmax),&
+     iidata(1:nl_fit)%err = linterp(data(1:datmax)%lam0,&
           data(1:datmax)%err,sspgrid%lam(1:nl_fit))
-     idata(1:nl_fit)%wgt = linterp(tlam(1:datmax),&
+     iidata(1:nl_fit)%wgt = linterp(data(1:datmax)%lam0,&
           data(1:datmax)%wgt,sspgrid%lam(1:nl_fit))
      
-     lo = MAX(l1(1),tlam(1))+50
-     hi = MIN(l2(1),tlam(datmax))-50
+     lo = MAX(l1(1),data(1)%lam0)+50
+     hi = MIN(l2(1),data(datmax)%lam0)-50
      IF (lo.GE.hi) CYCLE
 
-     CALL CONTNORMSPEC(sspgrid%lam,idata%flx,idata%err,lo,hi,dflx)
+     CALL CONTNORMSPEC(sspgrid%lam,iidata%flx,iidata%err,lo,hi,dflx)
      !use a 5 Gyr Zsol SSP
      CALL CONTNORMSPEC(sspgrid%lam,10**sspgrid%logfkrpa(:,4),&
-          idata%wgt*SQRT(10**sspgrid%logfkrpa(:,3)),lo,hi,mflx)
+          iidata%wgt*SQRT(10**sspgrid%logfkrpa(:,3)),lo,hi,mflx)
 
      i1 = MIN(MAX(locate(sspgrid%lam,lo),1),nl_fit-1)
      i2 = MIN(MAX(locate(sspgrid%lam,hi),2),nl_fit)
-     tchi2(i) = SUM(idata(i1:i2)%flx**2/idata(i1:i2)%err**2*&
+     tchi2(i) = SUM(iidata(i1:i2)%flx**2/iidata(i1:i2)%err**2*&
           (dflx(i1:i2)-mflx(i1:i2))**2) / (i2-i1)
      
      IF (tchi2(i).LT.chi2) THEN

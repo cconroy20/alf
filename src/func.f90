@@ -14,12 +14,10 @@ FUNCTION FUNC(nposarr,spec,funit)
   INTEGER, INTENT(in), OPTIONAL :: funit
   REAL(DP) :: func,pr,tchi2,ml,tl1,tl2
   REAL(DP), DIMENSION(nl)   :: mspec,mflx,dflx,poly
-  REAL(DP), DIMENSION(ndat) :: tlam
   REAL(DP), DIMENSION(npar) :: tposarr=0.0
   REAL(DP), DIMENSION(ncoeff) :: tcoeff
   INTEGER  :: i,i1,i2,j,npow,tpow
   TYPE(PARAMS)   :: npos
-  TYPE(TDATA), DIMENSION(nl) :: idata
 
   !------------------------------------------------------!
 
@@ -56,18 +54,20 @@ FUNCTION FUNC(nposarr,spec,funit)
         spec = mspec
      ENDIF
 
-     !de-redshift the data and interpolate to model wavelength array
-     tlam      = data%lam / (1+npos%velz/clight*1E5)
-     CALL LINTERP3(tlam(1:datmax),data(1:datmax)%flx,&
-          data(1:datmax)%err,data(1:datmax)%wgt,&
-          sspgrid%lam(1:nl_fit),idata(1:nl_fit)%flx,&
-          idata(1:nl_fit)%err,idata(1:nl_fit)%wgt)
+     IF (free_velz.EQ.1) THEN
+        !de-redshift the data and interpolate to model wavelength array
+        data%lam0 = data%lam / (1+npos%velz/clight*1E5)
+        CALL LINTERP3(data(1:datmax)%lam0,data(1:datmax)%flx,&
+             data(1:datmax)%err,data(1:datmax)%wgt,&
+             sspgrid%lam(1:nl_fit),idata(1:nl_fit)%flx,&
+             idata(1:nl_fit)%err,idata(1:nl_fit)%wgt)
+     ENDIF
 
      !compute chi2, looping over wavelength intervals
      DO i=1,nlint
         
-        tl1 = MAX(l1(i),tlam(1))
-        tl2 = MIN(l2(i),tlam(datmax))
+        tl1 = MAX(l1(i),data(1)%lam0)
+        tl2 = MIN(l2(i),data(datmax)%lam0)
         !if wavelength interval falls completely outside 
         !of the range of the data, then skip
         IF (tl1.GE.tl2) CYCLE
@@ -76,6 +76,7 @@ FUNCTION FUNC(nposarr,spec,funit)
         i2 = MIN(MAX(locate(sspgrid%lam,tl2),2),nl)
         ml = (tl1+tl2)/2.0
         
+        !fit a polynomial to the ratio of model and data
         IF (fitpoly.EQ.1) THEN
            CALL CONTNORMSPEC(sspgrid%lam,idata%flx/mspec,idata%err,&
                 tl1,tl2,mflx,coeff=tcoeff)
