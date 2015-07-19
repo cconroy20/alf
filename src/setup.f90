@@ -1,4 +1,4 @@
-SUBROUTINE SFSETUP()
+SUBROUTINE SETUP()
 
   !read in and set up all the arrays
 
@@ -295,4 +295,4 @@ SUBROUTINE SFSETUP()
   lam7 = locate(lam,7000.d0)
 
 
-END SUBROUTINE SFSETUP
+END SUBROUTINE SETUP

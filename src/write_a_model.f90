@@ -30,7 +30,7 @@ PROGRAM WRITE_A_MODEL
   pos%logage = 1.0
 
   !read in the SSPs and bandpass filters
-  CALL SFSETUP()
+  CALL SETUP()
   lam = sspgrid%lam
 
   !pos%sigma   = 10.0

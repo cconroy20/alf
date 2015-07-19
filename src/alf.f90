@@ -5,7 +5,7 @@ PROGRAM ALF
   !  population to the CvD model SSPs.
 
   ! Some things to keep in mind:
-  ! 1. The prior bounds on the parameters are specified in setup_params. 
+  ! 1. The prior bounds on the parameters are specified in set_pinit_priors. 
   !    Always make sure that the output parameters are not hitting a prior.
   ! 2. Make sure that the chain is converged in all relevant parameters
   !    by plotting the chain trace (parameter vs. chain step).
@@ -99,7 +99,7 @@ PROGRAM ALF
 
   CALL GETENV('SPECFIT_HOME',SPECFIT_HOME)
   IF (TRIM(SPECFIT_HOME).EQ.'') THEN
-     WRITE(*,*) 'SFSETUP ERROR: SPECFIT_HOME environment variable not set!'
+     WRITE(*,*) 'ALF ERROR: SPECFIT_HOME environment variable not set!'
      STOP
   ENDIF
 
@@ -107,7 +107,7 @@ PROGRAM ALF
   CALL READ_DATA(file)
 
   !read in the SSPs and bandpass filters
-  CALL SFSETUP()
+  CALL SETUP()
   lam = sspgrid%lam
 
   WRITE(*,'("  Fitting ",I1," wavelength intervals")') nlint
@@ -132,7 +132,7 @@ PROGRAM ALF
   data%err = data%err * data%wgt
 
   !set initial params, step sizes, and prior ranges
-  CALL SETUP_PARAMS(opos,prlo,prhi)
+  CALL SET_PINIT_PRIORS(opos,prlo,prhi)
 
   !make an initial estimate of the redshift
   !we do this to help Powell minimization
@@ -165,7 +165,7 @@ PROGRAM ALF
            xi(i,i) = 1E-2
         ENDDO
         fret = huge_number
-        CALL SETUP_PARAMS(opos,prlo,prhi,velz=velz)
+        CALL SET_PINIT_PRIORS(opos,prlo,prhi,velz=velz)
         CALL STR2ARR(1,opos,oposarr) !str->arr
         CALL POWELL(oposarr(1:npowell),xi(1:npowell,1:npowell),&
              ftol,iter,fret)
@@ -216,7 +216,7 @@ PROGRAM ALF
   DO j=1,nwalkers
      
      !random initialization of each walker
-     CALL SETUP_PARAMS(opos,prlo,prhi,velz=velz)
+     CALL SET_PINIT_PRIORS(opos,prlo,prhi,velz=velz)
      CALL STR2ARR(1,opos,pos_emcee(:,j))
 
      IF (dopowell.EQ.1) THEN

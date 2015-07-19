@@ -1,4 +1,4 @@
-SUBROUTINE SETUP_PARAMS(pos,prlo,prhi,velz)
+SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
 
   !define the first position (pos), and the lower and upper bounds 
   !on the priors (prlo, prhi).  The priors are defined in such a way
@@ -150,4 +150,4 @@ SUBROUTINE SETUP_PARAMS(pos,prlo,prhi,velz)
      IF (prhi%logemnorm(i).EQ.test%logemnorm(i)) prhi%logemnorm(i) = 0.0
   ENDDO
 
-END SUBROUTINE SETUP_PARAMS
+END SUBROUTINE SET_PINIT_PRIORS
