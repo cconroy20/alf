@@ -1,8 +1,8 @@
-MODULE SFUTILS
+MODULE ALF_UTILS
 
   INTERFACE
      SUBROUTINE ADD_RESPONSE(spec,pos,range,dr,vr,solar,plus,minus)
-       USE sfvars
+       USE alf_vars
        INTEGER, INTENT(in) :: vr
        REAL(SP), INTENT(in) :: range
        REAL(DP), INTENT(in) :: pos,dr
@@ -14,7 +14,7 @@ MODULE SFUTILS
 
   INTERFACE
      SUBROUTINE CONTNORMSPEC(lam,flx,err,il1,il2,flxout,coeff)
-       USE sfvars
+       USE alf_vars
        REAL(DP), DIMENSION(nl), INTENT(in) :: lam,flx,err
        REAL(DP), INTENT(in) :: il1,il2
        REAL(DP), DIMENSION(nl), INTENT(inout) :: flxout
@@ -25,7 +25,7 @@ MODULE SFUTILS
   INTERFACE
      SUBROUTINE EMCEE_ADVANCE(ndim,nwalkers,a,pin,lpin,&
           pout,lpout,accept)
-       USE sfvars
+       USE alf_vars
        INTEGER, INTENT(in) :: ndim, nwalkers
        REAL(DP), INTENT(in) :: a
        REAL(DP), INTENT(in), DIMENSION(ndim,nwalkers) :: pin
@@ -38,7 +38,7 @@ MODULE SFUTILS
 
   INTERFACE
      FUNCTION FUNC(nposarr,spec,funit)
-       USE sfvars
+       USE alf_vars
        REAL(DP), DIMENSION(:), INTENT(in) :: nposarr
        REAL(DP), DIMENSION(nl), OPTIONAL :: spec
        INTEGER, INTENT(in), OPTIONAL :: funit
@@ -48,7 +48,7 @@ MODULE SFUTILS
 
   INTERFACE
      SUBROUTINE GETM2L(msto,lam,spec,pos,m2l,mw)
-       USE sfvars
+       USE alf_vars
        REAL(DP), DIMENSION(nl), INTENT(in) :: lam,spec
        REAL(DP), INTENT(in) :: msto
        TYPE(PARAMS), INTENT(in)   :: pos
@@ -59,7 +59,7 @@ MODULE SFUTILS
 
   INTERFACE
      FUNCTION GETMASS(mto,imf1,imf2,imf3)
-       USE sfvars
+       USE alf_vars
        REAL(DP), INTENT(in) :: mto,imf1,imf2,imf3
        REAL(DP) :: getmass
      END FUNCTION GETMASS
@@ -67,7 +67,7 @@ MODULE SFUTILS
 
   INTERFACE
      SUBROUTINE GETMODEL(pos,spec,mw)
-       USE sfvars
+       USE alf_vars
        TYPE(PARAMS), INTENT(in) :: pos
        REAL(DP), DIMENSION(nl), INTENT(out) :: spec
        INTEGER, OPTIONAL :: mw
@@ -76,14 +76,14 @@ MODULE SFUTILS
 
   INTERFACE
      FUNCTION GETVELZ()
-       USE sfvars
+       USE alf_vars
        REAL(DP) :: getvelz
      END FUNCTION GETVELZ
   END INTERFACE
 
   INTERFACE
      FUNCTION IMF(mass)
-       USE sfvars
+       USE alf_vars
        REAL(DP), DIMENSION(:), INTENT(in) :: mass
        REAL(DP), DIMENSION(size(mass)) :: imf
      END FUNCTION IMF
@@ -91,7 +91,7 @@ MODULE SFUTILS
 
   INTERFACE
      FUNCTION LINTERP(xin,yin,xout)
-       USE sfvars
+       USE alf_vars
        REAL(DP), DIMENSION(:), INTENT(in) :: xin,yin
        REAL(DP), INTENT(in), DIMENSION(:)  :: xout
        REAL(DP), DIMENSION(SIZE(xout)) :: linterp
@@ -100,7 +100,7 @@ MODULE SFUTILS
 
   INTERFACE
      SUBROUTINE LINTERP3(xin,yin1,yin2,yin3,xout,yout1,yout2,yout3)
-       USE sfvars
+       USE alf_vars
        REAL(DP), DIMENSION(:), INTENT(in) :: xin,yin1,yin2,yin3,xout
        REAL(DP), DIMENSION(:), INTENT(inout) :: yout1,yout2,yout3
      END SUBROUTINE LINTERP3
@@ -108,14 +108,14 @@ MODULE SFUTILS
 
   INTERFACE
      SUBROUTINE MASKEMLINES(zred,sigma)
-       USE sfvars
+       USE alf_vars
        REAL(DP), INTENT(in) :: zred,sigma
      END SUBROUTINE MASKEMLINES
   END INTERFACE
 
   INTERFACE
      FUNCTION MYRAN()
-       USE sfvars
+       USE alf_vars
        USE nr, ONLY : ran1
        REAL(DP) :: myran
      END FUNCTION MYRAN
@@ -123,14 +123,14 @@ MODULE SFUTILS
 
   INTERFACE
      SUBROUTINE READ_DATA(file)
-       USE sfvars
+       USE alf_vars
        CHARACTER(50), INTENT(in)  :: file
      END SUBROUTINE READ_DATA
   END INTERFACE
 
   INTERFACE
      SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
-       USE sfvars
+       USE alf_vars
        TYPE(PARAMS), INTENT(inout) :: pos,prlo,prhi
        REAL(DP), OPTIONAL :: velz
      END SUBROUTINE SET_PINIT_PRIORS
@@ -138,13 +138,13 @@ MODULE SFUTILS
 
   INTERFACE
      SUBROUTINE SETUP()
-       USE sfvars
+       USE alf_vars
      END SUBROUTINE SETUP
   END INTERFACE
 
   INTERFACE
      SUBROUTINE STR2ARR(switch,str,arr)
-       USE sfvars
+       USE alf_vars
        TYPE(PARAMS), INTENT(inout) :: str
        REAL(DP), DIMENSION(npar), INTENT(inout) :: arr
        INTEGER, INTENT(in) :: switch
@@ -153,7 +153,7 @@ MODULE SFUTILS
 
   INTERFACE
      FUNCTION TSUM(xin,yin)
-       USE sfvars       
+       USE alf_vars       
        REAL(DP), DIMENSION(:), INTENT(in) :: xin,yin
        REAL(DP) :: tsum
      END FUNCTION TSUM
@@ -161,7 +161,7 @@ MODULE SFUTILS
 
   INTERFACE
      SUBROUTINE UPDATE_RUNTOT(runtot,inarr,m2l,m2lmw)
-       USE sfvars
+       USE alf_vars
        REAL(DP), INTENT(inout), DIMENSION(3,npar+2*nfil) :: runtot
        REAL(DP), INTENT(in), DIMENSION(nfil) :: m2l,m2lmw
        REAL(DP), INTENT(in), DIMENSION(npar) :: inarr
@@ -170,7 +170,7 @@ MODULE SFUTILS
 
   INTERFACE
      SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
-       USE sfvars
+       USE alf_vars
        REAL(DP), INTENT(in), DIMENSION(nl) :: lambda
        REAL(DP), INTENT(inout), DIMENSION(nl) :: spec
        REAL(DP), INTENT(in) :: sigma,minl,maxl
@@ -179,4 +179,4 @@ MODULE SFUTILS
   END INTERFACE
 
 
-END MODULE SFUTILS
+END MODULE ALF_UTILS

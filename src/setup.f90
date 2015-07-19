@@ -2,7 +2,7 @@ SUBROUTINE SETUP()
 
   !read in and set up all the arrays
 
-  USE sfvars; USE nr, ONLY : locate; USE sfutils, ONLY : linterp
+  USE alf_vars; USE nr, ONLY : locate; USE alf_utils, ONLY : linterp
   IMPLICIT NONE
   
   REAL(DP) :: d1,l5000=5000.0, t13=1.3,t23=2.3,sig0=99.

@@ -4,8 +4,8 @@ FUNCTION FUNC(nposarr,spec,funit)
   !the model spectrum is returned (spec).  The model priors
   !are computed in this routine.
 
-  USE sfvars; USE nr, ONLY : locate
-  USE sfutils, ONLY : linterp3,contnormspec,getmass,&
+  USE alf_vars; USE nr, ONLY : locate
+  USE alf_utils, ONLY : linterp3,contnormspec,getmass,&
        str2arr,getmodel
   IMPLICIT NONE
 

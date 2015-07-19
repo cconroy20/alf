@@ -2,7 +2,7 @@ FUNCTION MYRAN()
 
   !turns ran1 into a function, rather than a subroutine
 
-  USE sfvars
+  USE alf_vars
   USE nr, ONLY : ran1
   IMPLICIT NONE
 

@@ -39,7 +39,7 @@ SUBROUTINE EMCEE_ADVANCE(ndim,nwalkers,a,pin,lpin,pout,lpout,accept)
   !   accepted.
   !---------------------------------------------------------------!
 
-  USE sfvars; USE sfutils, ONLY : func, myran
+  USE alf_vars; USE alf_utils, ONLY : func, myran
   IMPLICIT NONE
 
   INTEGER, INTENT(in) :: ndim, nwalkers

@@ -2,7 +2,7 @@ SUBROUTINE GETM2L(msto,lam,spec,pos,m2l,mw)
 
   !compute mass-to-light ratio in several filters (AB mags)
 
-  USE sfvars; USE sfutils, ONLY : tsum, getmass
+  USE alf_vars; USE alf_utils, ONLY : tsum, getmass
   IMPLICIT NONE
 
   REAL(DP), DIMENSION(nl), INTENT(in) :: lam,spec

@@ -2,7 +2,7 @@ PROGRAM WRITE_A_MODEL
 
   !write a model to file
 
-  USE sfvars; USE sfutils
+  USE alf_vars; USE alf_utils
   USE nr, ONLY : gasdev,ran,locate,powell,ran1
   USE ran_state, ONLY : ran_seed,ran_init
 

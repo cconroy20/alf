@@ -5,7 +5,7 @@ SUBROUTINE LINTERP3(xin,yin1,yin2,yin3,xout,yout1,yout2,yout3)
   !this routine was created because the locate function is 
   !slow so we only have to call it once, rather than thrice.
 
-  USE sfvars; USE nr, ONLY: locate
+  USE alf_vars; USE nr, ONLY: locate
   IMPLICIT NONE
   REAL(DP), DIMENSION(:), INTENT(in)    :: xin,yin1,yin2,yin3,xout
   REAL(DP), DIMENSION(:), INTENT(inout) :: yout1,yout2,yout3

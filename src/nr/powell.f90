@@ -2,7 +2,7 @@ SUBROUTINE powell(p,xi,ftol,iter,fret)
   
   USE nrtype; USE nrutil, ONLY : assert_eq,nrerror
   USE nr, ONLY : linmin
-  USE sfutils, ONLY : func
+  USE alf_utils, ONLY : func
   IMPLICIT NONE
   REAL(SP), DIMENSION(:), INTENT(INOUT) :: p
   REAL(SP), DIMENSION(:,:), INTENT(INOUT) :: xi

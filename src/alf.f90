@@ -22,8 +22,8 @@ PROGRAM ALF
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
-  USE sfvars; USE nr, ONLY : ran,locate,powell,ran1
-  USE ran_state, ONLY : ran_seed,ran_init; USE sfutils
+  USE alf_vars; USE nr, ONLY : ran,locate,powell,ran1
+  USE ran_state, ONLY : ran_seed,ran_init; USE alf_utils
   IMPLICIT NONE
 
   !number of chain steps to print to file

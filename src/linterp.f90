@@ -2,7 +2,7 @@ FUNCTION LINTERP(xin,yin,xout)
 
   !routine to linearly interpolate a function yin(xin) at xout
 
-  USE sfvars; USE nr, ONLY: locate
+  USE alf_vars; USE nr, ONLY: locate
   IMPLICIT NONE
   REAL(DP), DIMENSION(:), INTENT(in) :: xin,yin,xout
   REAL(DP), DIMENSION(SIZE(xout)) :: linterp

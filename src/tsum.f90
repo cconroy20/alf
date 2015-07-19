@@ -2,7 +2,7 @@ FUNCTION TSUM(xin,yin)
 
   !simple trapezoidal integration of tabulated function (xin,yin)
 
-  USE sfvars
+  USE alf_vars
   IMPLICIT NONE
 
   REAL(DP), DIMENSION(:), INTENT(in) :: xin,yin

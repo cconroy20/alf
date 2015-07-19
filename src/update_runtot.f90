@@ -4,7 +4,7 @@ SUBROUTINE UPDATE_RUNTOT(runtot,inarr,m2l,m2lmw)
   !of the parameters, parameters^2, etc. in order to compute
   !averages and errors.
 
-  USE sfvars
+  USE alf_vars
   IMPLICIT NONE
 
   REAL(DP), INTENT(inout), DIMENSION(3,npar+2*nfil) :: runtot

@@ -21,7 +21,7 @@ SUBROUTINE CONTNORMSPEC(lam,flx,err,il1,il2,flxout,coeff)
   !n=(lam_max-lam_min)/100.  Only normalized over the input
   !min/max wavelength range
 
-  USE sfvars; USE nr, ONLY : locate, lfit, svdfit
+  USE alf_vars; USE nr, ONLY : locate, lfit, svdfit
   IMPLICIT NONE
 
   REAL(DP), DIMENSION(nl), INTENT(in) :: lam,flx,err

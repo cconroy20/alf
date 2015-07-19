@@ -2,7 +2,7 @@ SUBROUTINE MASKEMLINES(zred,sigma)
 
   !routine to mask emission lines
 
-  USE sfvars
+  USE alf_vars
   IMPLICIT NONE
 
   REAL(DP), INTENT(in)      :: zred,sigma

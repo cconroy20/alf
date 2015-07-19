@@ -24,7 +24,7 @@ F90FLAGS = -O -fno-strict-overflow #-fopenmp
 
 PROGS = alf write_a_model
 
-COMMON =  nrtype.o sfvars.o nr.o nrutil.o ran_state.o sfutils.o getmodel.o \
+COMMON =  nrtype.o alf_vars.o nr.o nrutil.o ran_state.o alf_utils.o getmodel.o \
 	setup.o linterp.o velbroad.o tsum.o add_response.o \
 	contnormspec.o locate.o gasdev.o set_pinit_priors.o str2arr.o \
 	ran1.o read_data.o lfit.o gaussj.o covsrt.o getm2l.o myran.o \
@@ -43,9 +43,9 @@ alf : alf.o $(COMMON)
 write_a_model : write_a_model.o $(COMMON) 
 	$(F90) -o write_a_model.exe write_a_model.o $(COMMON)
 
-alf.o : sfvars.o nrtype.o nr.o sfutils.o ran_state.o nrutil.o
+alf.o : alf_vars.o nrtype.o nr.o alf_utils.o ran_state.o nrutil.o
 
-write_a_model.o : sfvars.o nrtype.o nr.o sfutils.o ran_state.o nrutil.o
+write_a_model.o : alf_vars.o nrtype.o nr.o alf_utils.o ran_state.o nrutil.o
 
 ran_state.o: nrutil.o
 

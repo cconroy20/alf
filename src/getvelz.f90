@@ -5,8 +5,8 @@ FUNCTION GETVELZ()
   !so that the subsequent Powell minimization (in specfit)
   !coverges faster.  uses 4100<lambda<5000A
 
-  USE sfvars; USE nr, ONLY : locate
-  USE sfutils, ONLY : linterp,contnormspec
+  USE alf_vars; USE nr, ONLY : locate
+  USE alf_utils, ONLY : linterp,contnormspec
   IMPLICIT NONE
 
   REAL(DP) :: getvelz, chi2,lo,hi

@@ -4,7 +4,7 @@ SUBROUTINE READ_DATA(file)
   !returns a structure for the data and an integer specifying
   !the length of the data array
 
-  USE sfvars
+  USE alf_vars
   IMPLICIT NONE
 
   CHARACTER(50), INTENT(in)  :: file

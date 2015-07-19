@@ -1,4 +1,4 @@
-MODULE SFVARS
+MODULE ALF_VARS
 
   ! module to set up most arrays and variables 
 
@@ -191,4 +191,4 @@ MODULE SFVARS
   TYPE(TDATA), DIMENSION(nl) :: idata
 
 
-END MODULE SFVARS
+END MODULE ALF_VARS

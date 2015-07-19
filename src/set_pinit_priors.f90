@@ -5,7 +5,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   !that if the user defines a prior limit that is **different from
   !the default parameter set**, then that value overrides the defaults below
 
-  USE sfvars; USE sfutils, ONLY : myran
+  USE alf_vars; USE alf_utils, ONLY : myran
   IMPLICIT NONE
 
   TYPE(PARAMS), INTENT(inout) :: pos,prlo,prhi

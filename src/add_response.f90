@@ -1,6 +1,6 @@
 SUBROUTINE ADD_RESPONSE(spec,pos,range,dr,vr,solar,plus,minus)
 
-  USE sfvars
+  USE alf_vars
   IMPLICIT NONE
 
   INTEGER, INTENT(in)  :: vr

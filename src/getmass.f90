@@ -3,7 +3,7 @@ FUNCTION GETMASS(mto,imf1,imf2,imf3)
   !compute mass in stars and remnants (normalized to 1 Msun at t=0)
   !assume an IMF that runs from 0.08 to 100 Msun.
 
-  USE sfvars
+  USE alf_vars
   IMPLICIT NONE
 
   !turnoff mass

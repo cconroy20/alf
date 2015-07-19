@@ -6,7 +6,7 @@ MODULE f1dim_mod
 CONTAINS
   
   FUNCTION f1dim(x)
-    USE sfutils, ONLY : func
+    USE alf_utils, ONLY : func
     IMPLICIT NONE
     REAL(SP), INTENT(IN) :: x
     REAL(SP) :: f1dim

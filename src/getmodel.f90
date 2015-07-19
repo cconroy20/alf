@@ -4,8 +4,8 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   !set of parameters (pos).  The optional flag 'mw' is used
   !to force the IMF to be of the MW (Kroupa 2001) form
 
-  USE sfvars; USE nr, ONLY : locate
-  USE sfutils, ONLY : velbroad, add_response
+  USE alf_vars; USE nr, ONLY : locate
+  USE alf_utils, ONLY : velbroad, add_response
   IMPLICIT NONE
 
   TYPE(PARAMS), INTENT(in) :: pos

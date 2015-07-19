@@ -8,7 +8,7 @@ SUBROUTINE STR2ARR(switch,str,arr)
   !in the full model are specified.  If a parameter is left out
   !of this list (e.g., [Rb/H]) then it does not affect Chi^2
 
-  USE sfvars
+  USE alf_vars
   IMPLICIT NONE
 
   TYPE(PARAMS), INTENT(inout) :: str

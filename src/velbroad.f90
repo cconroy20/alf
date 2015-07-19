@@ -6,8 +6,8 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
   !smoothed by a wavelength dependent velocity dispersion in the
   !'vebroad_simple=1' mode
 
-  USE sfvars; USE nr, ONLY : locate
-  USE sfutils, ONLY : linterp,tsum
+  USE alf_vars; USE nr, ONLY : locate
+  USE alf_utils, ONLY : linterp,tsum
   IMPLICIT NONE
   
   REAL(DP), INTENT(in), DIMENSION(nl) :: lambda
