@@ -3,11 +3,13 @@
 # (Uncomment only one)
 #======================
 # GNU
-F90 = gfortran
+#F90 = gfortran
 #---------------------
 # Intel
 #F90 = ifort 
 #---------------------
+#MPI
+F90 = mpifort
 
 #========================
 # Compiler Optimizations
@@ -29,8 +31,8 @@ COMMON =  nrtype.o alf_vars.o nr.o nrutil.o ran_state.o alf_utils.o getmodel.o \
 	contnormspec.o locate.o gasdev.o set_pinit_priors.o str2arr.o \
 	ran1.o read_data.o lfit.o gaussj.o covsrt.o getm2l.o myran.o \
 	powell.o linmin.o mnbrak.o brent.o func.o init_random_seed.o \
-	getmass.o maskemlines.o getvelz.o emcee_advance.o update_runtot.o \
-	linterp3.o
+	getmass.o maskemlines.o getvelz.o emcee_advance_mpi.o update_runtot.o \
+	linterp3.o free_workers.o
 
 all : $(PROGS)
 

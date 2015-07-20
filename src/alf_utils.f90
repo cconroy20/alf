@@ -37,6 +37,26 @@ MODULE ALF_UTILS
   END INTERFACE
 
   INTERFACE
+     SUBROUTINE EMCEE_ADVANCE_MPI(ndim,nwalkers,a,pin,lpin,&
+          pout,lpout,accept,nworkers)
+       USE alf_vars
+       INTEGER, INTENT(in) :: ndim, nwalkers,nworkers
+       REAL(DP), INTENT(in) :: a
+       REAL(DP), INTENT(in), DIMENSION(ndim,nwalkers) :: pin
+       REAL(DP), INTENT(in), DIMENSION(nwalkers) :: lpin  
+       REAL(DP), INTENT(out), DIMENSION(ndim,nwalkers) :: pout
+       REAL(DP), INTENT(out), DIMENSION(nwalkers) :: lpout
+       INTEGER, INTENT(out), DIMENSION(nwalkers) :: accept
+     END SUBROUTINE EMCEE_ADVANCE_MPI
+  END INTERFACE
+
+  INTERFACE
+     SUBROUTINE FREE_WORKERS(ndim, nwalkers, nworkers)
+       INTEGER, INTENT(in) :: ndim, nwalkers, nworkers
+     END SUBROUTINE FREE_WORKERS
+  END INTERFACE
+
+  INTERFACE
      FUNCTION FUNC(nposarr,spec,funit)
        USE alf_vars
        REAL(DP), DIMENSION(:), INTENT(in) :: nposarr

@@ -30,8 +30,6 @@ MODULE ALF_VARS
   !rather than the proper convolution in log_lambda space
   !don't turn this on - the "correct" version is just as fast
   INTEGER :: velbroad_simple=0
-  !flag to indicate if redshift is being fit
-  INTEGER :: free_velz=1
   !flag to include transmission spectrum in fitting
   INTEGER :: fit_trans=1
 

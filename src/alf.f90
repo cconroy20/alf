@@ -27,7 +27,7 @@ PROGRAM ALF
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
-  USE alf_vars; USE alf_utils
+  USE alf_vars; USE alf_utils; USE mpi
   USE nr, ONLY : ran,locate,powell,ran1
   USE ran_state, ONLY : ran_seed,ran_init
 
@@ -50,7 +50,7 @@ PROGRAM ALF
   REAL(DP) :: velz,msto,minchi2=huge_number,fret,wdth,bret=huge_number
   REAL(DP), DIMENSION(nl)   :: mspec=0.0,mspecmw=0.0,lam=0.0
   REAL(DP), DIMENSION(nfil) :: m2l=0.0,m2lmw=0.0
-  REAL(DP), DIMENSION(npar) :: oposarr=0.,bposarr=0.0
+  REAL(DP), DIMENSION(npar) :: oposarr=0.,bposarr=0.0,mpiposarr=0.0
   REAL(DP), DIMENSION(3,npar+2*nfil) :: runtot=0.0
   REAL(DP), DIMENSION(npar,npar)     :: xi=0.0
   CHARACTER(10) :: time=''
@@ -61,6 +61,12 @@ PROGRAM ALF
   REAL(DP), DIMENSION(nwalkers)      :: lp_emcee
   INTEGER,  DIMENSION(nwalkers)      :: accept_emcee
   
+  !variables for MPI
+  INTEGER :: ierr, taskid, ntasks, received_tag, rqst, status(MPI_STATUS_SIZE)
+  LOGICAL :: wait=.TRUE.
+  REAL(DP) :: one_lnp
+  INTEGER, PARAMETER :: masterid=0
+ 
   !---------------------------------------------------------------!
   !---------------------------Setup-------------------------------!
   !---------------------------------------------------------------!
@@ -72,6 +78,12 @@ PROGRAM ALF
 
   prhi%logm7g = -3.0
   prhi%loghot = -2.0
+
+  ! Initialize MPI, and get the total number of processes and
+  ! your process number
+  CALL MPI_INIT( ierr )
+  CALL MPI_COMM_RANK( MPI_COMM_WORLD, taskid, ierr )
+  CALL MPI_COMM_SIZE( MPI_COMM_WORLD, ntasks, ierr )
 
   !initialize the random number generator
   CALL INIT_RANDOM_SEED()
@@ -87,22 +99,24 @@ PROGRAM ALF
      CALL GETARG(2,tag(2:))
   ENDIF
 
-  !write some important variables to screen
-  WRITE(*,*) 
-  WRITE(*,'(" ************************************")') 
-  WRITE(*,'("   dopowell  =",I2)') dopowell
-  WRITE(*,'("   fit_type  =",I2)') fit_type
-  WRITE(*,'("      mwimf  =",I2)') mwimf
-  WRITE(*,'("  age-dep Rf =",I2)') use_age_dep_resp_fcns
-  WRITE(*,'("  Nwalkers   = ",I5)') nwalkers
-  WRITE(*,'("  Nburn      = ",I5)') nburn
-  WRITE(*,'("  Nchain     = ",I5)') nmcmc
-  WRITE(*,'("  filename   = ",A)') TRIM(file)//TRIM(tag)
-  WRITE(*,'(" ************************************")') 
- 
-  CALL date_and_time(TIME=time)
-  WRITE(*,*) 
-  WRITE(*,*) 'Start Time '//time(1:2)//':'//time(3:4)
+  IF (taskid.EQ.masterid) THEN
+     !write some important variables to screen
+     WRITE(*,*) 
+     WRITE(*,'(" ************************************")') 
+     WRITE(*,'("   dopowell  =",I2)') dopowell
+     WRITE(*,'("   fit_type  =",I2)') fit_type
+     WRITE(*,'("      mwimf  =",I2)') mwimf
+     WRITE(*,'("  age-dep Rf =",I2)') use_age_dep_resp_fcns
+     WRITE(*,'("  Nwalkers   = ",I5)') nwalkers
+     WRITE(*,'("  Nburn      = ",I5)') nburn
+     WRITE(*,'("  Nchain     = ",I5)') nmcmc
+     WRITE(*,'("  filename   = ",A)') TRIM(file)//TRIM(tag)
+     WRITE(*,'(" ************************************")') 
+     
+     CALL date_and_time(TIME=time)
+     WRITE(*,*) 
+     WRITE(*,*) 'Start Time '//time(1:2)//':'//time(3:4)
+  ENDIF
 
   !read in the data and wavelength boundaries
   CALL READ_DATA(file)
@@ -110,13 +124,6 @@ PROGRAM ALF
   !read in the SSPs and bandpass filters
   CALL SETUP()
   lam = sspgrid%lam
-
-  WRITE(*,'("  Fitting ",I1," wavelength intervals")') nlint
-  IF (l2(nlint).GT.lam(nl).OR.l1(1).LT.lam(1)) THEN
-     WRITE(*,*) 'ERROR: wavelength boundaries exceed model wavelength grid'
-     WRITE(*,'(4F8.1)') l2(nlint),lam(nl),l1(1),lam(1)
-     STOP
-  ENDIF
 
   !we only compute things up to 500A beyond the input fit region
   nl_fit = MIN(MAX(locate(lam,l2(nlint)+500.0),1),nl)
@@ -136,230 +143,267 @@ PROGRAM ALF
 
   !set initial params, step sizes, and prior ranges
   CALL SET_PINIT_PRIORS(opos,prlo,prhi)
-
-  !make an initial estimate of the redshift
-  !we do this to help Powell minimization
-  free_velz=1
-  WRITE(*,*) ' Finding redshift...'
-  IF (file(1:4).EQ.'cdfs') THEN
-     velz = 0.0 
-  ELSE 
-     velz = getvelz()
-  ENDIF
-  opos%velz = velz
-  WRITE(*,'("    best velocity: ",F6.1)') velz
-  
   !convert the structures into their equivalent arrays
   CALL STR2ARR(1,prlo,prloarr)   !str->arr
   CALL STR2ARR(1,prhi,prhiarr)   !str->arr
-  CALL STR2ARR(1,opos,oposarr)   !str->arr
 
-  !---------------------------------------------------------------!
-  !---------------------Powell minimization-----------------------!
-  !---------------------------------------------------------------!
+  ! The worker's only job is to calculate the value of a function
+  ! after receiving a parameter vector.
+  IF (taskid.NE.masterid) THEN
+           
+     ! Start event loop
+     DO WHILE (wait)
+        ! Get the parameter value from the master, and figure out
+        ! what tag it was sent with.  This call does not return until
+        ! until a parameter vector is received
+        CALL MPI_RECV(mpiposarr, npar, MPI_DOUBLE_PRECISION, &
+             masterid, MPI_ANY_TAG, MPI_COMM_WORLD, status, ierr)
+        received_tag = status(MPI_TAG)
+        ! Check if this is the kill tag
+        IF (received_tag.GT.nwalkers) EXIT
+        
+        ! Calculate the probability for this parameter position.
+        one_lnp = -0.5*func(mpiposarr)
+        
+        ! Send that back to the master, with the correct tag
+        call MPI_ISEND(one_lnp, 1, MPI_DOUBLE_PRECISION, &
+             masterid, received_tag, MPI_COMM_WORLD, rqst, ierr)
+     ENDDO
+     
+  ENDIF
+ 
+  !this is the master process
+  IF (taskid.EQ.masterid) THEN
+ 
+     WRITE(*,'("  Fitting ",I1," wavelength intervals")') nlint
+     IF (l2(nlint).GT.lam(nl).OR.l1(1).LT.lam(1)) THEN
+        WRITE(*,*) 'ERROR: wavelength boundaries exceed model wavelength grid'
+        WRITE(*,'(4F8.1)') l2(nlint),lam(nl),l1(1),lam(1)
+        STOP
+     ENDIF
 
-  IF (dopowell.EQ.1) THEN 
+     !make an initial estimate of the redshift
+     !we do this to help Powell minimization
+     WRITE(*,*) ' Finding redshift...'
+     IF (file(1:4).EQ.'cdfs') THEN
+        velz = 0.0 
+     ELSE 
+        velz = getvelz()
+     ENDIF
+     opos%velz = velz
+     WRITE(*,'("    best velocity: ",F6.1)') velz
+     CALL STR2ARR(1,opos,oposarr)   !str->arr
 
-     WRITE(*,*) ' Running Powell...'
-     powell_fitting = 1
-     DO j=1,10
-        xi=0.0
-        DO i=1,npar
-           xi(i,i) = 1E-2
+     !initialize the random number generator
+     CALL INIT_RANDOM_SEED()
+
+     !---------------------------------------------------------------!
+     !---------------------Powell minimization-----------------------!
+     !---------------------------------------------------------------!
+     
+     IF (dopowell.EQ.1) THEN 
+
+        WRITE(*,*) ' Running Powell...'
+        powell_fitting = 1
+        DO j=1,10
+           xi=0.0
+           DO i=1,npar
+              xi(i,i) = 1E-2
+           ENDDO
+           fret = huge_number
+           CALL SET_PINIT_PRIORS(opos,prlo,prhi,velz=velz)
+           CALL STR2ARR(1,opos,oposarr) !str->arr
+           CALL POWELL(oposarr(1:npowell),xi(1:npowell,1:npowell),&
+                ftol,iter,fret)
+           CALL STR2ARR(2,opos,oposarr) !arr->str
+           IF (fret.LT.bret) THEN
+              bposarr = oposarr
+              bpos    = opos
+              bret    = fret
+           ENDIF
         ENDDO
-        fret = huge_number
+        powell_fitting = 0
+        
+        !use the best-fit Powell position for the first MCMC position
+        CALL STR2ARR(2,opos,bposarr) !arr->str
+        
+        WRITE(*,'("    best velocity: ",F6.1)') opos%velz
+        WRITE(*,'("    best sigma:    ",F6.1)') opos%sigma
+        WRITE(*,'("    best age:      ",F6.1)') 10**opos%logage
+        
+     ENDIF
+     
+     IF (maskem.EQ.1) THEN
+        !now that we have a good guess of the redshift and velocity dispersion, 
+        !mask out regions where emission line contamination may be a problem
+        !In full mode, the default is to actually *fit* for emissions lines.
+        CALL MASKEMLINES(opos%velz,opos%sigma)
+     ENDIF
+
+     !---------------------------------------------------------------!
+     !-----------------------------MCMC------------------------------!
+     !---------------------------------------------------------------!
+
+     WRITE(*,*) ' Running emcee...'
+     CALL FLUSH()
+
+     !open output file
+     OPEN(12,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
+          TRIM(file)//TRIM(tag)//'.mcmc',STATUS='REPLACE')
+     
+     !initialize the walkers
+     DO j=1,nwalkers
+        
+        !random initialization of each walker
         CALL SET_PINIT_PRIORS(opos,prlo,prhi,velz=velz)
-        CALL STR2ARR(1,opos,oposarr) !str->arr
-        CALL POWELL(oposarr(1:npowell),xi(1:npowell,1:npowell),&
-             ftol,iter,fret)
-        CALL STR2ARR(2,opos,oposarr) !arr->str
-        IF (fret.LT.bret) THEN
-           bposarr = oposarr
-           bpos    = opos
-           bret    = fret
+        CALL STR2ARR(1,opos,pos_emcee(:,j))
+
+        IF (dopowell.EQ.1) THEN
+           !use the best-fit position from Powell, with small
+           !random offsets to set up all the walkers, but only
+           !do this for the params actually fit in Powell!
+           !the first two params are velz and sigma so give them
+           !larger variation.
+           DO i=1,npowell
+              IF (i.LE.2) wdth = 10.0
+              IF (i.GT.2) wdth = 0.2
+              pos_emcee(i,j) = bposarr(i) + wdth*(2.*myran()-1.0)
+           ENDDO
         ENDIF
-     ENDDO
-     powell_fitting = 0
 
-     !use the best-fit Powell position for the first MCMC position
-     CALL STR2ARR(2,opos,bposarr) !arr->str
- 
-     WRITE(*,'("    best velocity: ",F6.1)') opos%velz
-     WRITE(*,'("    best sigma:    ",F6.1)') opos%sigma
-     WRITE(*,'("    best age:      ",F6.1)') 10**opos%logage
-
-  ENDIF
-
-  IF (maskem.EQ.1) THEN
-     !now that we have a good guess of the redshift and velocity dispersion, 
-     !mask out regions where emission line contamination may be a problem
-     !In full mode, the default is to actually *fit* for emissions lines.
-     CALL MASKEMLINES(opos%velz,opos%sigma)
-  ENDIF
-
-  !free_velz=0
-  !data%lam0 = data%lam / (1+opos%velz/clight*1E5)
-  !CALL LINTERP3(data(1:datmax)%lam0,data(1:datmax)%flx,&
-  !     data(1:datmax)%err,data(1:datmax)%wgt,&
-  !     sspgrid%lam(1:nl_fit),idata(1:nl_fit)%flx,&
-  !     idata(1:nl_fit)%err,idata(1:nl_fit)%wgt)
- 
-  !---------------------------------------------------------------!
-  !-----------------------------MCMC------------------------------!
-  !---------------------------------------------------------------!
-
-  WRITE(*,*) ' Running emcee...'
-  CALL FLUSH()
-
-  !open output file
-  OPEN(12,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
-       TRIM(file)//TRIM(tag)//'.mcmc',STATUS='REPLACE')
-     
-  !initialize the walkers
-  DO j=1,nwalkers
-     
-     !random initialization of each walker
-     CALL SET_PINIT_PRIORS(opos,prlo,prhi,velz=velz)
-     CALL STR2ARR(1,opos,pos_emcee(:,j))
-
-     IF (dopowell.EQ.1) THEN
-        !use the best-fit position from Powell, with small
-        !random offsets to set up all the walkers, but only
-        !do this for the params actually fit in Powell!
-        !the first two params are velz and sigma so give them
-        !larger variation.
-        DO i=1,npowell
-           IF (i.LE.2) wdth = 10.0
-           IF (i.GT.2) wdth = 0.2
-           pos_emcee(i,j) = bposarr(i) + wdth*(2.*myran()-1.0)
-        ENDDO
-     ENDIF
-
-     !Compute the initial log-probability for each walker
-     lp_emcee(j) = -0.5*func(pos_emcee(:, j))
+        !Compute the initial log-probability for each walker
+        lp_emcee(j) = -0.5*func(pos_emcee(:, j))
    
-  ENDDO
-
-  !burn-in
-  WRITE(*,*) '   burning in...'
-  WRITE(*,'(A)',advance='no') '      Progress:'
-  DO i=1,nburn
-     CALL EMCEE_ADVANCE(npar,nwalkers,2.d0,pos_emcee,&
-          lp_emcee,pos_emcee,lp_emcee,accept_emcee)
-     IF (i.EQ.nburn/4.*1) THEN
-        WRITE (*,'(A)',advance='no') ' ...25%'
-        CALL FLUSH()
-     ENDIF
-     IF (i.EQ.nburn/4.*2) THEN
-        WRITE (*,'(A)',advance='no') '...50%'
-        CALL FLUSH()
-     ENDIF        
-     IF (i.EQ.nburn/4.*3) THEN
-        WRITE (*,'(A)',advance='no') '...75%'
-        CALL FLUSH()
-     ENDIF
-  ENDDO
-  WRITE (*,'(A)') '...100%'
-  CALL FLUSH()
-
-  !Run a production chain
-  WRITE(*,*) '   production run...'
-  DO i=1,nmcmc
-     
-     CALL EMCEE_ADVANCE(npar,nwalkers,2.d0,pos_emcee,&
-          lp_emcee,pos_emcee,lp_emcee,accept_emcee)
-     totacc = totacc + SUM(accept_emcee)
-     
-     DO j=1,nwalkers,nsample
-
-        CALL STR2ARR(2,opos,pos_emcee(:,j)) !arr->str
-
-        !kill the emission lines for computing M/L
-        !since unconstrained lines can really mess up R,I bands
-        opos%logemnorm = -8.0
-
-        !compute the main sequence turn-off mass
-        msto = 10**( msto_fit0 + msto_fit1*opos%logage )
-        msto = MIN(MAX(msto,0.8),3.)
-
-        CALL GETMODEL(opos,mspecmw,mw=1)     !get spectra for MW IMF
-        CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
-
-        IF (mwimf.EQ.0) THEN
-           CALL GETMODEL(opos,mspec)
-           CALL GETM2L(msto,lam,mspec,opos,m2l) ! compute M/L
-        ELSE
-           m2l = m2lmw
-        ENDIF
-
-        IF (fit_type.EQ.1) THEN
-           !these parameters aren't actually being updated
-           pos_emcee(nparsimp+1:,j) = 0.0 
-        ELSE IF (fit_type.EQ.2) THEN
-           !these parameters aren't actually being updated
-           pos_emcee(npowell+1:,j) = 0.0 
-        ENDIF
-
-        !write the chain element to file
-        WRITE(12,'(ES12.5,1x,99(F9.4,1x))') -2.0*lp_emcee(j),&
-             pos_emcee(:, j),m2l,m2lmw
-
-        !keep the model with the lowest chi2
-        IF (-2.0*lp_emcee(j).LT.minchi2) THEN
-           bposarr = pos_emcee(:, j)
-           minchi2 = -2.0*lp_emcee(j)
-        ENDIF
-
-        CALL UPDATE_RUNTOT(runtot,pos_emcee(:,j),m2l,m2lmw)
-
      ENDDO
-     CALL FLUSH(12)
+
+     !burn-in
+     WRITE(*,*) '   burning in...'
+     WRITE(*,'(A)',advance='no') '      Progress:'
+     DO i=1,nburn
+        CALL EMCEE_ADVANCE_MPI(npar,nwalkers,2.d0,pos_emcee,&
+             lp_emcee,pos_emcee,lp_emcee,accept_emcee,ntasks-1)
+        IF (i.EQ.nburn/4.*1) THEN
+           WRITE (*,'(A)',advance='no') ' ...25%'
+           CALL FLUSH()
+        ENDIF
+        IF (i.EQ.nburn/4.*2) THEN
+           WRITE (*,'(A)',advance='no') '...50%'
+           CALL FLUSH()
+        ENDIF
+        IF (i.EQ.nburn/4.*3) THEN
+           WRITE (*,'(A)',advance='no') '...75%'
+           CALL FLUSH()
+        ENDIF
+     ENDDO
+     WRITE (*,'(A)') '...100%'
+     CALL FLUSH()
      
-  ENDDO
-  
-  !save the best position to the structure
-  CALL STR2ARR(2,bpos,bposarr)
-  bpos%chi2 = minchi2
-  
-  CLOSE(12)
+     !Run a production chain
+     WRITE(*,*) '   production run...'
+     DO i=1,nmcmc
+        
+        CALL EMCEE_ADVANCE_MPI(npar,nwalkers,2.d0,pos_emcee,&
+             lp_emcee,pos_emcee,lp_emcee,accept_emcee,ntasks-1)
+        totacc = totacc + SUM(accept_emcee)
+        
+        DO j=1,nwalkers,nsample
+           
+           CALL STR2ARR(2,opos,pos_emcee(:,j)) !arr->str
+           
+           !kill the emission lines for computing M/L
+           !since unconstrained lines can really mess up R,I bands
+           opos%logemnorm = -8.0
+           
+           !compute the main sequence turn-off mass
+           msto = 10**( msto_fit0 + msto_fit1*opos%logage )
+           msto = MIN(MAX(msto,0.8),3.)
+           
+           CALL GETMODEL(opos,mspecmw,mw=1)     !get spectra for MW IMF
+           CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
+           
+           IF (mwimf.EQ.0) THEN
+              CALL GETMODEL(opos,mspec)
+              CALL GETM2L(msto,lam,mspec,opos,m2l) ! compute M/L
+           ELSE
+              m2l = m2lmw
+           ENDIF
+           
+           IF (fit_type.EQ.1) THEN
+              !these parameters aren't actually being updated
+              pos_emcee(nparsimp+1:,j) = 0.0 
+           ELSE IF (fit_type.EQ.2) THEN
+              !these parameters aren't actually being updated
+              pos_emcee(npowell+1:,j) = 0.0 
+           ENDIF
+           
+           !write the chain element to file
+           WRITE(12,'(ES12.5,1x,99(F9.4,1x))') -2.0*lp_emcee(j),&
+                pos_emcee(:, j),m2l,m2lmw
+           
+           !keep the model with the lowest chi2
+           IF (-2.0*lp_emcee(j).LT.minchi2) THEN
+              bposarr = pos_emcee(:, j)
+              minchi2 = -2.0*lp_emcee(j)
+           ENDIF
+           
+           CALL UPDATE_RUNTOT(runtot,pos_emcee(:,j),m2l,m2lmw)
+           
+        ENDDO
+        CALL FLUSH(12)
+        
+     ENDDO
+     
+     !save the best position to the structure
+     CALL STR2ARR(2,bpos,bposarr)
+     bpos%chi2 = minchi2
+     
+     CLOSE(12)
+     
+     CALL date_and_time(TIME=time)
+     WRITE(*,*) 'End Time   '//time(1:2)//':'//time(3:4)
+     WRITE(*,*) 
+     WRITE(*,'("  Facc: ",F5.2)') REAL(totacc)/REAL(nmcmc*nwalkers)
 
-  CALL date_and_time(TIME=time)
-  WRITE(*,*) 'End Time   '//time(1:2)//':'//time(3:4)
-  WRITE(*,*) 
-  WRITE(*,'("  Facc: ",F5.2)') REAL(totacc)/REAL(nmcmc*nwalkers)
-
-  !---------------------------------------------------------------!
-  !--------------------Write results to file----------------------!
-  !---------------------------------------------------------------!
-
-  OPEN(13,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
-       TRIM(file)//TRIM(tag)//'.bestspec',STATUS='REPLACE')
-  CALL STR2ARR(1,bpos,bposarr)
-  !NB: the model written to file has the lowest chi^2
-  fret = func(bposarr,spec=mspec,funit=13)
-  CLOSE(13)
+     !---------------------------------------------------------------!
+     !--------------------Write results to file----------------------!
+     !---------------------------------------------------------------!
+     
+     OPEN(13,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
+          TRIM(file)//TRIM(tag)//'.bestspec',STATUS='REPLACE')
+     CALL STR2ARR(1,bpos,bposarr)
+     !NB: the model written to file has the lowest chi^2
+     fret = func(bposarr,spec=mspec,funit=13)
+     CLOSE(13)
  
-  !write best-fit parameters
-  !here, "best-fit" is the mean of the posterior distributions
-  OPEN(14,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
-       TRIM(file)//TRIM(tag)//'.bestp',STATUS='REPLACE')
-  WRITE(14,'("#   dopowell  =",I2)') dopowell
-  WRITE(14,'("#   fit_type  =",I2)') fit_type
-  WRITE(14,'("#      mwimf  =",I2)') mwimf
-  WRITE(14,'("#  age-dep Rf =",I2)') use_age_dep_resp_fcns
-  WRITE(14,'("#  Nwalkers   = ",I5)') nwalkers
-  WRITE(14,'("#  Nburn      = ",I5)') nburn
-  WRITE(14,'("#  Nchain     = ",I5)') nmcmc
-  WRITE(14,'(ES12.5,1x,99(F9.4,1x))') bpos%chi2, runtot(2,:)/runtot(1,:)
-  CLOSE(14)
+     !write best-fit parameters
+     !here, "best-fit" is the mean of the posterior distributions
+     OPEN(14,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
+          TRIM(file)//TRIM(tag)//'.bestp',STATUS='REPLACE')
+     WRITE(14,'("#   dopowell  =",I2)') dopowell
+     WRITE(14,'("#   fit_type  =",I2)') fit_type
+     WRITE(14,'("#      mwimf  =",I2)') mwimf
+     WRITE(14,'("#  age-dep Rf =",I2)') use_age_dep_resp_fcns
+     WRITE(14,'("#  Nwalkers   = ",I5)') nwalkers
+     WRITE(14,'("#  Nburn      = ",I5)') nburn
+     WRITE(14,'("#  Nchain     = ",I5)') nmcmc
+     WRITE(14,'(ES12.5,1x,99(F9.4,1x))') bpos%chi2, runtot(2,:)/runtot(1,:)
+     CLOSE(14)
 
-  !write one sigma errors on parameters
-  OPEN(15,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
-       TRIM(file)//TRIM(tag)//'.errp',STATUS='REPLACE')
-  WRITE(15,'(ES12.5,1x,99(F9.4,1x))') 0.0, &
-       SQRT( runtot(3,:)/runtot(1,:) - runtot(2,:)**2/runtot(1,:)**2 )
-  CLOSE(15)
+     !write one sigma errors on parameters
+     OPEN(15,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
+          TRIM(file)//TRIM(tag)//'.errp',STATUS='REPLACE')
+     WRITE(15,'(ES12.5,1x,99(F9.4,1x))') 0.0, &
+          SQRT( runtot(3,:)/runtot(1,:) - runtot(2,:)**2/runtot(1,:)**2 )
+     CLOSE(15)
 
-  WRITE(*,*)
+     WRITE(*,*)
+
+     !break the workers out of their event loops so they can close
+     CALL FREE_WORKERS(npar, nwalkers, ntasks-1)
+
+  ENDIF
+
+  CALL MPI_FINALIZE(ierr)
+ 
 
 END PROGRAM ALF

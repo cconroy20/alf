@@ -54,14 +54,12 @@ FUNCTION FUNC(nposarr,spec,funit)
         spec = mspec
      ENDIF
 
-     IF (free_velz.EQ.1) THEN
-        !de-redshift the data and interpolate to model wavelength array
-        data%lam0 = data%lam / (1+npos%velz/clight*1E5)
-        CALL LINTERP3(data(1:datmax)%lam0,data(1:datmax)%flx,&
-             data(1:datmax)%err,data(1:datmax)%wgt,&
-             sspgrid%lam(1:nl_fit),idata(1:nl_fit)%flx,&
-             idata(1:nl_fit)%err,idata(1:nl_fit)%wgt)
-     ENDIF
+     !de-redshift the data and interpolate to model wavelength array
+     data%lam0 = data%lam / (1+npos%velz/clight*1E5)
+     CALL LINTERP3(data(1:datmax)%lam0,data(1:datmax)%flx,&
+          data(1:datmax)%err,data(1:datmax)%wgt,&
+          sspgrid%lam(1:nl_fit),idata(1:nl_fit)%flx,&
+          idata(1:nl_fit)%err,idata(1:nl_fit)%wgt)
 
      !compute chi2, looping over wavelength intervals
      DO i=1,nlint
