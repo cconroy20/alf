@@ -171,10 +171,10 @@ MODULE ALF_UTILS
   INTERFACE
      SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
        USE alf_vars
-       REAL(DP), INTENT(in), DIMENSION(nl) :: lambda
-       REAL(DP), INTENT(inout), DIMENSION(nl) :: spec
+       REAL(DP), INTENT(in), DIMENSION(:) :: lambda
+       REAL(DP), INTENT(inout), DIMENSION(:) :: spec
        REAL(DP), INTENT(in) :: sigma,minl,maxl
-       REAL(DP), INTENT(in), DIMENSION(nl), OPTIONAL :: ires
+       REAL(DP), INTENT(in), DIMENSION(:), OPTIONAL :: ires
      END SUBROUTINE VELBROAD
   END INTERFACE
 

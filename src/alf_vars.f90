@@ -32,6 +32,9 @@ MODULE ALF_VARS
   INTEGER :: velbroad_simple=0
   !flag to indicate if redshift is being fit
   INTEGER :: free_velz=1
+  !flag to include transmission spectrum in fitting
+  INTEGER :: fit_trans=1
+
 
   !0: fit the full model (IMF, all abundances, nuisance params, etc)
   !1: only fit velz, sigma, SSP age, Fe,C,N,O,Mg,Si,Ca,Ti,Na
@@ -63,7 +66,7 @@ MODULE ALF_VARS
   !number of coefficients for the polynomial fitting
   INTEGER, PARAMETER :: ncoeff = 30
   !number of parameters (minus em lines)
-  INTEGER, PARAMETER :: npar1 = 32
+  INTEGER, PARAMETER :: npar1 = 33
   !number of ages in the empirical SSP grid
   INTEGER, PARAMETER :: nage = 7
   !number of parameters used when fitting in Powell model
@@ -157,7 +160,7 @@ MODULE ALF_VARS
           cah=0.0,tih=0.0,vh=0.0,crh=0.0,mnh=0.0,coh=0.0,nih=0.0,&
           cuh=0.0,rbh=0.0,srh=0.0,yh=0.0,zrh=0.0,bah=0.0,euh=0.0,&
           teff=0.0,imf1=1.3,imf2=2.3,logfy=-4.0,sigma2=0.0,velz2=0.0,&
-          logm7g=-4.0,hotteff=20.0,loghot=-4.0,fy_logage=0.3
+          logm7g=-4.0,hotteff=20.0,loghot=-4.0,fy_logage=0.3,logtrans=-4.0
      REAL(DP), DIMENSION(neml) :: logemnorm=-5.0
      REAL(DP) :: chi2=huge_number
   END TYPE PARAMS
@@ -174,6 +177,7 @@ MODULE ALF_VARS
      REAL(DP), DIMENSION(nl,nimf,nimf) :: imf
      REAL(DP), DIMENSION(nimf)         :: imfx
      REAL(DP), DIMENSION(nl,4)         :: hotspec
+     REAL(DP), DIMENSION(nl)           :: atm_trans
      REAL(DP), DIMENSION(4)            :: teffarrhot
   END TYPE SSP
 

@@ -53,6 +53,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   pos%sigma     = myran()*100+100
   pos%sigma2    = myran()*100+100
   pos%velz2     = myran()*10-5
+  pos%logtrans  = myran()*3-4.
   DO i=1,neml
      pos%logemnorm(i) = myran()*1-6
   ENDDO
@@ -67,7 +68,15 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   !choices are then not overwritten below
 
   !priors (low)
-  IF (prlo%logage.EQ.test%logage) prlo%logage = LOG10(0.5)
+  IF (fit_type.EQ.0) THEN
+     !in this case we're fitting a two component model
+     !so dont allow them to overlap in age
+     IF (prlo%logage.EQ.test%logage) prlo%logage = LOG10(3.0)
+  ELSE
+     !in this case we have a single age model, so it needs to
+     !cover the full range
+     IF (prlo%logage.EQ.test%logage) prlo%logage = LOG10(0.5)
+  ENDIF
   IF (prlo%feh.EQ.test%feh) prlo%feh          = -1.0
   IF (prlo%ah.EQ.test%ah) prlo%ah             = -1.0
   IF (prlo%nhe.EQ.test%nhe) prlo%nhe          = -1.0
@@ -103,6 +112,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prlo%sigma2.EQ.test%sigma2) prlo%sigma2   = 10.0
   IF (prlo%velz.EQ.test%velz) prlo%velz         = -1E3
   IF (prlo%velz2.EQ.test%velz2) prlo%velz2      = -1E3
+  IF (prlo%logtrans.EQ.test%logtrans) prlo%logtrans = -5.0
   DO i=1,neml 
      IF (prlo%logemnorm(i).EQ.test%logemnorm(i)) prlo%logemnorm(i) = -8.0
   ENDDO
@@ -138,7 +148,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prhi%imf1.EQ.test%imf1) prhi%imf1       = 3.5
   IF (prhi%imf2.EQ.test%imf2) prhi%imf2       = 3.5
   IF (prhi%logfy.EQ.test%logfy) prhi%logfy    = -0.7
-  IF (prhi%fy_logage.EQ.test%fy_logage) prhi%fy_logage = LOG10(5.0)
+  IF (prhi%fy_logage.EQ.test%fy_logage) prhi%fy_logage = LOG10(3.0)
   IF (prhi%logm7g.EQ.test%logm7g) prhi%logm7g   = -1.0
   IF (prhi%hotteff.EQ.test%hotteff) prhi%hotteff= 30.0
   IF (prhi%loghot.EQ.test%loghot) prhi%loghot   = -1.0
@@ -146,6 +156,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prhi%sigma2.EQ.test%sigma2) prhi%sigma2   = 1E3
   IF (prhi%velz.EQ.test%velz) prhi%velz         = 1E4
   IF (prhi%velz2.EQ.test%velz2) prhi%velz2      = 1E3
+  IF (prhi%logtrans.EQ.test%logtrans) prhi%logtrans = 1.0
   DO i=1,neml 
      IF (prhi%logemnorm(i).EQ.test%logemnorm(i)) prhi%logemnorm(i) = 0.0
   ENDDO

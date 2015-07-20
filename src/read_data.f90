@@ -15,6 +15,12 @@ SUBROUTINE READ_DATA(file)
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
+  CALL GETENV('SPECFIT_HOME',SPECFIT_HOME)
+  IF (TRIM(SPECFIT_HOME).EQ.'') THEN
+     WRITE(*,*) 'ALF ERROR: SPECFIT_HOME environment variable not set!'
+     STOP
+  ENDIF
+
   OPEN(10,FILE=TRIM(SPECFIT_HOME)//'/indata/'//TRIM(file)//'.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN

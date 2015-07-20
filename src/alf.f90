@@ -13,25 +13,32 @@ PROGRAM ALF
   !    subtle art and the code can easily fool you if you don't know
   !    what you're doing.  Make sure you understand *why* the code is 
   !    settling on a particular parameter value.  
-  
+  ! 4. Wavelength-dependent instrumental broadening is included but 
+  !    will not be accurate in the limit of modest-large redshift
+
   !To Do: 
   !1. allow the user to switch on/off each parameter to be fit
   !2. add SFH and metal-poor/metal-rich component
   !3. prune the walkers after some time
+  !4. parallelize
+  !5. include transmission curve in fitting
+  !6. Gelman & Rubin convergence testing
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
-  USE alf_vars; USE nr, ONLY : ran,locate,powell,ran1
-  USE ran_state, ONLY : ran_seed,ran_init; USE alf_utils
+  USE alf_vars; USE alf_utils
+  USE nr, ONLY : ran,locate,powell,ran1
+  USE ran_state, ONLY : ran_seed,ran_init
+
   IMPLICIT NONE
 
   !number of chain steps to print to file
-  INTEGER, PARAMETER :: nmcmc=100
+  INTEGER, PARAMETER :: nmcmc=1000
   !sampling of the walkers for print
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=10000
+  INTEGER, PARAMETER :: nburn=1
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !number of walkers for emcee
@@ -64,7 +71,7 @@ PROGRAM ALF
   IF (fit_type.EQ.1.OR.fit_type.EQ.2) mwimf=1
 
   prhi%logm7g = -3.0
-  prhi%loghot = -3.0
+  prhi%loghot = -2.0
 
   !initialize the random number generator
   CALL INIT_RANDOM_SEED()
@@ -97,12 +104,6 @@ PROGRAM ALF
   WRITE(*,*) 
   WRITE(*,*) 'Start Time '//time(1:2)//':'//time(3:4)
 
-  CALL GETENV('SPECFIT_HOME',SPECFIT_HOME)
-  IF (TRIM(SPECFIT_HOME).EQ.'') THEN
-     WRITE(*,*) 'ALF ERROR: SPECFIT_HOME environment variable not set!'
-     STOP
-  ENDIF
-
   !read in the data and wavelength boundaries
   CALL READ_DATA(file)
 
@@ -117,9 +118,11 @@ PROGRAM ALF
      STOP
   ENDIF
 
-  !define the log wavelength grid used in velbroad.f90
+  !we only compute things up to 500A beyond the input fit region
   nl_fit = MIN(MAX(locate(lam,l2(nlint)+500.0),1),nl)
   !nl_fit = MIN(MAX(locate(lam,15000.d0),1),nl)
+
+  !define the log wavelength grid used in velbroad.f90
   dlstep = (LOG(sspgrid%lam(nl_fit))-LOG(sspgrid%lam(1)))/nl_fit
   DO i=1,nl_fit
      lnlam(i) = i*dlstep+LOG(sspgrid%lam(1))

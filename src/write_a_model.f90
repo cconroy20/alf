@@ -9,7 +9,7 @@ PROGRAM WRITE_A_MODEL
   IMPLICIT NONE
 
   INTEGER  :: i
-  REAL(DP) :: s2n,lmin,lmax
+  REAL(DP) :: s2n,lmin,lmax,ires=0.
   REAL(DP), DIMENSION(nl) :: mspec,lam,err,gdev
   CHARACTER(100)  :: file=''
   TYPE(PARAMS)   :: pos
@@ -18,20 +18,20 @@ PROGRAM WRITE_A_MODEL
   !-----------------------------------------------------------!
 
   !initialize the random number generator
-  CALL init_random_seed()
+  CALL INIT_RANDOM_SEED()
   !compute an array of gaussian deviates
   CALL GASDEV(gdev)
 
-  file = 'age+10.0_sn+100_sigma200_simp1.spec'
+  file = 'age+10.0_sn+100_sigma200_trans1_vel1.spec'
   s2n  = 1000.0
-  lmin = sspgrid%lam(1)
-  lmax = 7000.
+  lmin = 3800.
+  lmax = 10000.
   pos%sigma  = 200.0
   pos%logage = 1.0
+  pos%logtrans=0.0
+  pos%velz=1E3
 
-  !read in the SSPs and bandpass filters
-  CALL SETUP()
-  lam = sspgrid%lam
+  ires = 10.
 
   !pos%sigma   = 10.0
   !pos%logage  = LOG10(8.0)
@@ -63,12 +63,23 @@ PROGRAM WRITE_A_MODEL
   pos%imf2    = 2.3
   pos%logfy   = -5.0
   pos%sigma2  = 300.
-  pos%velz    = 0.0
+  !pos%velz    = 0.0
   pos%velz2   = 0.0
   pos%logm7g  = -5.0
   pos%hotteff = 20.0
   pos%loghot  = -5.0
   pos%logemnorm = -10.0
+
+  !force a constant instrumental resolution
+  datmax=1E4
+  DO i=1,datmax
+     data(i)%lam=i+3500
+  ENDDO
+  data(1:datmax)%ires = ires
+
+  !read in the SSPs and bandpass filters
+  CALL SETUP()
+  lam = sspgrid%lam
 
   !define the log wavelength grid used in velbroad.f90
   nl_fit = MIN(MAX(locate(lam,lmax+500.0),1),nl)
@@ -79,7 +90,6 @@ PROGRAM WRITE_A_MODEL
   l1(1) = lmin
   nlint = 2
   l2(nlint) = lmax
-
 
   !get a model spectrum
   CALL GETMODEL(pos,mspec)

@@ -10,17 +10,26 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
   USE alf_utils, ONLY : linterp,tsum
   IMPLICIT NONE
   
-  REAL(DP), INTENT(in), DIMENSION(nl) :: lambda
-  REAL(DP), INTENT(inout), DIMENSION(nl) :: spec
+  REAL(DP), INTENT(in), DIMENSION(:) :: lambda
+  REAL(DP), INTENT(inout), DIMENSION(:) :: spec
   REAL(DP), INTENT(in) :: sigma,minl,maxl
-  REAL(DP), INTENT(in), DIMENSION(nl), OPTIONAL :: ires
-  REAL(DP), DIMENSION(nl) :: tspec,nspec,vel,func,psf
+  REAL(DP), INTENT(in), DIMENSION(:), OPTIONAL :: ires
+  REAL(DP), DIMENSION(40000) :: tspec,nspec,vel,func,psf
   REAL(DP) :: xmax,fwhm,psig,sigmal
-  INTEGER :: i,il,ih,m=4,grange
+  INTEGER :: i,il,ih,m=4,grange,nn,n2
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
    
+  nn = SIZE(lambda)
+
+  !fancy footwork to allow for arrays of arbitrary length
+  IF (nn.EQ.nl) THEN 
+     n2 = nl_fit
+  ELSE
+     n2 = nl
+  ENDIF
+
   IF (sigma.LE.tiny_number) RETURN
 
   IF (sigma.GE.1E4) THEN
@@ -32,11 +41,11 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
   !compute smoothing the fast (and slightly less accurate) way
   IF (velbroad_simple.EQ.1.OR.PRESENT(ires)) THEN
 
-     tspec = spec
-     spec  = 0.0
+     tspec(1:nn) = spec(1:nn)
+     spec(1:nn)  = 0.0
 
-     DO i=1,nl
-        
+     DO i=1,nn
+
         IF (lambda(i).LT.minl.OR.lambda(i).GT.maxl) THEN
            spec(i)=tspec(i)
            CYCLE
@@ -49,7 +58,7 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
         ENDIF
 
         xmax = lambda(i)*(m*sigmal/clight*1E5+1)
-        ih   = MIN(locate(lambda(1:nl),xmax),nl)
+        ih   = MIN(locate(lambda(1:nn),xmax),nn)
         il   = MAX(2*i-ih,1)
                 
         IF (il.EQ.ih) THEN
@@ -77,22 +86,24 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
 
         tspec = 0.0
         nspec = 0.0
-        tspec(1:nl_fit) = &
-             linterp(LOG(lambda(1:nl_fit)),spec(1:nl_fit),lnlam(1:nl_fit))
-
+        tspec(1:n2) = &
+             linterp(LOG(lambda(1:n2)),spec(1:n2),lnlam(1:n2))
+ 
         DO i=1,2*grange+1
            psf(i) = 1.d0/SQRT(2.d0*mypi)/psig*EXP(-((i-grange-1)/psig)**2/2.d0)
         ENDDO
         psf(1:2*grange+1) = psf(1:2*grange+1) / SUM(psf(1:2*grange+1))
-        
-        DO i=grange+1,nl_fit-grange
+      
+  
+        DO i=grange+1,n2-grange
            nspec(i) = SUM( psf(1:2*grange+1)*tspec(i-grange:i+grange) )
         ENDDO
      
         !interpolate back to the main array
-        spec(1:nl_fit) = &
-             linterp(EXP(lnlam(1:nl_fit)),nspec(1:nl_fit),lambda(1:nl_fit))
+        spec(1:n2) = &
+             linterp(EXP(lnlam(1:n2)),nspec(1:n2),lambda(1:n2))
   
+ 
      ENDIF
 
   ENDIF

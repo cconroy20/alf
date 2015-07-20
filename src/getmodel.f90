@@ -5,7 +5,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   !to force the IMF to be of the MW (Kroupa 2001) form
 
   USE alf_vars; USE nr, ONLY : locate
-  USE alf_utils, ONLY : velbroad, add_response
+  USE alf_utils, ONLY : velbroad, add_response,linterp
   IMPLICIT NONE
 
   TYPE(PARAMS), INTENT(in) :: pos
@@ -14,6 +14,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   REAL(DP), DIMENSION(nl) :: tmp,tmpr,yspec
   INTEGER :: vt,vv1,vv2,i,vr
   REAL(DP) :: dt,fy,dx1,dx2,lsig,vz,dr
+  REAL(DP), DIMENSION(nl)   :: tmp_ltrans, tmp_ftrans
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -188,8 +189,19 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   IF (pos%sigma.GT.5.0) &
        CALL VELBROAD(sspgrid%lam,spec,pos%sigma,l1(1),l2(nlint))
 
+  !apply a template error function
   IF (apply_temperrfcn.EQ.1) THEN
      spec(1:nl_fit) = spec(1:nl_fit) / temperrfcn(1:nl_fit)
+  ENDIF
+
+  !apply an atmosphereric transmission function
+  IF (fit_trans.EQ.1) THEN
+     !atm trans applied in the observed frame
+     tmp_ltrans = sspgrid%lam / (1+pos%velz/clight*1E5)
+     tmp_ftrans(1:nl_fit) = linterp(tmp_ltrans,&
+          sspgrid%atm_trans,sspgrid%lam(1:nl_fit))
+     spec(1:nl_fit) = spec(1:nl_fit) * &
+          (1+(tmp_ftrans(1:nl_fit)-1)*10**pos%logtrans)
   ENDIF
 
 
