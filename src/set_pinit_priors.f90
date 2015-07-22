@@ -54,9 +54,12 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   pos%sigma2    = myran()*100+100
   pos%velz2     = myran()*10-5
   pos%logtrans  = myran()*3-4.
-  DO i=1,neml
-     pos%logemnorm(i) = myran()*1-6
-  ENDDO
+  pos%logemline_h    = myran()*1-4
+  pos%logemline_oiii = myran()*1-4
+  pos%logemline_ni   = myran()*1-4
+  pos%logemline_nii  = myran()*1-4
+  pos%logemline_sii  = myran()*1-4
+
   IF (PRESENT(velz)) THEN
      pos%velz  = velz + (myran()*10-5)
   ELSE
@@ -78,28 +81,28 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
      IF (prlo%logage.EQ.test%logage) prlo%logage = LOG10(0.5)
   ENDIF
   IF (prlo%feh.EQ.test%feh) prlo%feh          = -1.0
-  IF (prlo%ah.EQ.test%ah) prlo%ah             = -1.0
-  IF (prlo%nhe.EQ.test%nhe) prlo%nhe          = -1.0
-  IF (prlo%ch.EQ.test%ch) prlo%ch             = -1.0
-  IF (prlo%nh.EQ.test%nh) prlo%nh             = -1.0
-  IF (prlo%nah.EQ.test%nah) prlo%nah          = -1.0
-  IF (prlo%mgh.EQ.test%mgh) prlo%mgh          = -1.0
-  IF (prlo%sih.EQ.test%sih) prlo%sih          = -1.0
-  IF (prlo%kh.EQ.test%kh) prlo%kh             = -1.0
-  IF (prlo%cah.EQ.test%cah) prlo%cah          = -1.0
-  IF (prlo%tih.EQ.test%tih) prlo%tih          = -1.0
-  IF (prlo%vh.EQ.test%vh) prlo%vh             = -1.0
-  IF (prlo%crh.EQ.test%crh) prlo%crh          = -1.0
-  IF (prlo%mnh.EQ.test%mnh) prlo%mnh          = -1.0
-  IF (prlo%coh.EQ.test%coh) prlo%coh          = -1.0
-  IF (prlo%nih.EQ.test%nih) prlo%nih          = -1.0
-  IF (prlo%cuh.EQ.test%cuh) prlo%cuh          = -1.0
-  IF (prlo%rbh.EQ.test%rbh) prlo%rbh          = -1.0
-  IF (prlo%srh.EQ.test%srh) prlo%srh          = -1.0
-  IF (prlo%yh.EQ.test%yh) prlo%yh             = -1.0
-  IF (prlo%zrh.EQ.test%zrh) prlo%zrh          = -1.0
-  IF (prlo%bah.EQ.test%bah) prlo%bah          = -1.0
-  IF (prlo%euh.EQ.test%euh) prlo%euh          = -1.0
+  IF (prlo%ah.EQ.test%ah) prlo%ah             = -0.3
+  IF (prlo%nhe.EQ.test%nhe) prlo%nhe          = -0.3
+  IF (prlo%ch.EQ.test%ch) prlo%ch             = -0.3
+  IF (prlo%nh.EQ.test%nh) prlo%nh             = -0.3
+  IF (prlo%nah.EQ.test%nah) prlo%nah          = -0.3
+  IF (prlo%mgh.EQ.test%mgh) prlo%mgh          = -0.3
+  IF (prlo%sih.EQ.test%sih) prlo%sih          = -0.3
+  IF (prlo%kh.EQ.test%kh) prlo%kh             = -0.3
+  IF (prlo%cah.EQ.test%cah) prlo%cah          = -0.3
+  IF (prlo%tih.EQ.test%tih) prlo%tih          = -0.3
+  IF (prlo%vh.EQ.test%vh) prlo%vh             = -0.3
+  IF (prlo%crh.EQ.test%crh) prlo%crh          = -0.3
+  IF (prlo%mnh.EQ.test%mnh) prlo%mnh          = -0.3
+  IF (prlo%coh.EQ.test%coh) prlo%coh          = -0.3
+  IF (prlo%nih.EQ.test%nih) prlo%nih          = -0.3
+  IF (prlo%cuh.EQ.test%cuh) prlo%cuh          = -0.3
+  IF (prlo%rbh.EQ.test%rbh) prlo%rbh          = -0.3
+  IF (prlo%srh.EQ.test%srh) prlo%srh          = -0.3
+  IF (prlo%yh.EQ.test%yh) prlo%yh             = -0.3
+  IF (prlo%zrh.EQ.test%zrh) prlo%zrh          = -0.6
+  IF (prlo%bah.EQ.test%bah) prlo%bah          = -0.6
+  IF (prlo%euh.EQ.test%euh) prlo%euh          = -0.6
   IF (prlo%teff.EQ.test%teff) prlo%teff       = -75.0
   IF (prlo%imf1.EQ.test%imf1) prlo%imf1       = 0.5
   IF (prlo%imf2.EQ.test%imf2) prlo%imf2       = 0.5
@@ -113,37 +116,40 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prlo%velz.EQ.test%velz) prlo%velz         = -1E3
   IF (prlo%velz2.EQ.test%velz2) prlo%velz2      = -1E3
   IF (prlo%logtrans.EQ.test%logtrans) prlo%logtrans = -6.0
-  DO i=1,neml 
-     IF (prlo%logemnorm(i).EQ.test%logemnorm(i)) prlo%logemnorm(i) = -8.0
-  ENDDO
+  IF (prlo%logemline_h.EQ.test%logemline_h) prlo%logemline_h          = -6.0
+  IF (prlo%logemline_oiii.EQ.test%logemline_oiii) prlo%logemline_oiii = -6.0
+  IF (prlo%logemline_sii.EQ.test%logemline_sii) prlo%logemline_sii    = -6.0
+  IF (prlo%logemline_ni.EQ.test%logemline_ni) prlo%logemline_ni       = -6.0
+  IF (prlo%logemline_nii.EQ.test%logemline_nii) prlo%logemline_nii    = -6.0
 
+ 
   !priors (high)
   !if you change the prior on the age, also change the max 
   !age allowed in getmodel
   IF (prhi%logage.EQ.test%logage) prhi%logage = LOG10(15.0)
-  IF (prhi%feh.EQ.test%feh) prhi%feh          = 1.0
-  IF (prhi%ah.EQ.test%ah) prhi%ah             = 1.0
-  IF (prhi%nhe.EQ.test%nhe) prhi%nhe          = 1.0
-  IF (prhi%ch.EQ.test%ch) prhi%ch             = 1.0
+  IF (prhi%feh.EQ.test%feh) prhi%feh          = 0.5
+  IF (prhi%ah.EQ.test%ah) prhi%ah             = 0.5
+  IF (prhi%nhe.EQ.test%nhe) prhi%nhe          = 0.5
+  IF (prhi%ch.EQ.test%ch) prhi%ch             = 0.5
   IF (prhi%nh.EQ.test%nh) prhi%nh             = 1.0
   IF (prhi%nah.EQ.test%nah) prhi%nah          = 1.0
-  IF (prhi%mgh.EQ.test%mgh) prhi%mgh          = 1.0
-  IF (prhi%sih.EQ.test%sih) prhi%sih          = 1.0
-  IF (prhi%kh.EQ.test%kh) prhi%kh             = 1.0
-  IF (prhi%cah.EQ.test%cah) prhi%cah          = 1.0
-  IF (prhi%tih.EQ.test%tih) prhi%tih          = 1.0
-  IF (prhi%vh.EQ.test%vh) prhi%vh             = 1.0
-  IF (prhi%crh.EQ.test%crh) prhi%crh          = 1.0
-  IF (prhi%mnh.EQ.test%mnh) prhi%mnh          = 1.0
-  IF (prhi%coh.EQ.test%coh) prhi%coh          = 1.0
-  IF (prhi%nih.EQ.test%nih) prhi%nih          = 1.0
-  IF (prhi%cuh.EQ.test%cuh) prhi%cuh          = 1.0
-  IF (prhi%rbh.EQ.test%rbh) prhi%rbh          = 1.0
-  IF (prhi%srh.EQ.test%srh) prhi%srh          = 1.0
-  IF (prhi%yh.EQ.test%yh) prhi%yh             = 1.0
-  IF (prhi%zrh.EQ.test%zrh) prhi%zrh          = 1.0
-  IF (prhi%bah.EQ.test%bah) prhi%bah          = 1.0
-  IF (prhi%euh.EQ.test%euh) prhi%euh          = 1.0
+  IF (prhi%mgh.EQ.test%mgh) prhi%mgh          = 0.5
+  IF (prhi%sih.EQ.test%sih) prhi%sih          = 0.5
+  IF (prhi%kh.EQ.test%kh) prhi%kh             = 0.5
+  IF (prhi%cah.EQ.test%cah) prhi%cah          = 0.5
+  IF (prhi%tih.EQ.test%tih) prhi%tih          = 0.5
+  IF (prhi%vh.EQ.test%vh) prhi%vh             = 0.5
+  IF (prhi%crh.EQ.test%crh) prhi%crh          = 0.5
+  IF (prhi%mnh.EQ.test%mnh) prhi%mnh          = 0.5
+  IF (prhi%coh.EQ.test%coh) prhi%coh          = 0.5
+  IF (prhi%nih.EQ.test%nih) prhi%nih          = 0.5
+  IF (prhi%cuh.EQ.test%cuh) prhi%cuh          = 0.5
+  IF (prhi%rbh.EQ.test%rbh) prhi%rbh          = 0.5
+  IF (prhi%srh.EQ.test%srh) prhi%srh          = 0.5
+  IF (prhi%yh.EQ.test%yh) prhi%yh             = 0.5
+  IF (prhi%zrh.EQ.test%zrh) prhi%zrh          = 0.5
+  IF (prhi%bah.EQ.test%bah) prhi%bah          = 0.5
+  IF (prhi%euh.EQ.test%euh) prhi%euh          = 0.5
   IF (prhi%teff.EQ.test%teff) prhi%teff       = 75.0
   IF (prhi%imf1.EQ.test%imf1) prhi%imf1       = 3.5
   IF (prhi%imf2.EQ.test%imf2) prhi%imf2       = 3.5
@@ -157,8 +163,10 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prhi%velz.EQ.test%velz) prhi%velz         = 1E4
   IF (prhi%velz2.EQ.test%velz2) prhi%velz2      = 1E3
   IF (prhi%logtrans.EQ.test%logtrans) prhi%logtrans = 1.0
-  DO i=1,neml 
-     IF (prhi%logemnorm(i).EQ.test%logemnorm(i)) prhi%logemnorm(i) = 0.0
-  ENDDO
+  IF (prhi%logemline_h.EQ.test%logemline_h) prhi%logemline_h          = 1.0
+  IF (prhi%logemline_oiii.EQ.test%logemline_oiii) prhi%logemline_oiii = 1.0
+  IF (prhi%logemline_sii.EQ.test%logemline_sii) prhi%logemline_sii    = 1.0
+  IF (prhi%logemline_ni.EQ.test%logemline_ni) prhi%logemline_ni       = 1.0
+  IF (prhi%logemline_nii.EQ.test%logemline_nii) prhi%logemline_nii    = 1.0
 
 END SUBROUTINE SET_PINIT_PRIORS

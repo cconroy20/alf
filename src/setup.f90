@@ -214,14 +214,18 @@ SUBROUTINE SETUP()
   sspgrid%teffarrhot = (/8.0,10.,20.,30./)
 
   !define central wavelengths of emission lines (in vacuum)
-  emlines(1) = 4960.30  ! [OIII]
-  emlines(2) = 5008.24  ! [OIII]
-  emlines(3) = 5203.05  ! [NI]
-  emlines(4) = 6549.84  ! [NII]
-  emlines(5) = 6564.61  ! [Ha]
-  emlines(6) = 6585.23  ! [NII]
-  emlines(7) = 6718.32  ! [SII]
-  emlines(8) = 6732.71  ! [SII]
+  !these wavelengths come from NIST
+  emlines(1)  = 4102.89  ! Hd
+  emlines(2)  = 4341.69  ! Hy
+  emlines(3)  = 4862.71  ! Hb
+  emlines(4)  = 4960.30  ! [OIII]
+  emlines(5)  = 5008.24  ! [OIII]
+  emlines(6)  = 5203.05  ! [NI]
+  emlines(7)  = 6549.86  ! [NII]
+  emlines(8)  = 6564.61  ! Ha
+  emlines(9)  = 6585.27  ! [NII]
+  emlines(10) = 6718.29  ! [SII]
+  emlines(11) = 6732.67  ! [SII]
 
   !read in template error function (computed from SDSS stacks)
   !NB: this hasn't been used in years!

@@ -59,9 +59,11 @@ SUBROUTINE STR2ARR(switch,str,arr)
      arr(31) = str%loghot
      arr(32) = str%fy_logage
      arr(33) = str%logtrans
-     DO i=1,neml
-        arr(npar1+i) = str%logemnorm(i)
-     ENDDO
+     arr(34) = str%logemline_h
+     arr(35) = str%logemline_oiii
+     arr(36) = str%logemline_sii
+     arr(37) = str%logemline_ni
+     arr(38) = str%logemline_nii
  
   ELSE
 
@@ -103,10 +105,12 @@ SUBROUTINE STR2ARR(switch,str,arr)
      str%loghot    = arr(31)
      str%fy_logage = arr(32)
      str%logtrans  = arr(33)
-     DO i=1,neml
-        str%logemnorm(i) = arr(npar1+i)
-     ENDDO
- 
+     str%logemline_h    = arr(34)
+     str%logemline_oiii = arr(35)
+     str%logemline_sii  = arr(36)
+     str%logemline_ni   = arr(37)
+     str%logemline_nii  = arr(38)
+
   ENDIF
 
 

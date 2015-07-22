@@ -15,7 +15,8 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   INTEGER :: vt,vv1,vv2,i,vr
   REAL(DP) :: dt,fy,dx1,dx2,lsig,vz,dr
   REAL(DP), DIMENSION(nl)   :: tmp_ltrans, tmp_ftrans
-
+  REAL(DP), DIMENSION(neml) :: emnormall=1.0
+  
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
@@ -173,12 +174,26 @@ SUBROUTINE GETMODEL(pos,spec,mw)
 
      !add emission lines
      IF (maskem.EQ.0) THEN
+
+        !these line ratios come from Cloudy or Osterbrock (Table 4.2)
+        emnormall(1)  = 10**pos%logemline_h / 11.21  ! Hy
+        emnormall(2)  = 10**pos%logemline_h / 6.16   ! Hd
+        emnormall(3)  = 10**pos%logemline_h / 2.87   ! Hb
+        emnormall(4)  = 10**pos%logemline_oiii / 3.0 ! [OIII]
+        emnormall(5)  = 10**pos%logemline_oiii       ! [OIII]
+        emnormall(6)  = 10**pos%logemline_ni         ! [NI]
+        emnormall(7)  = 10**pos%logemline_nii / 2.95 ! [NII]
+        emnormall(8)  = 10**pos%logemline_h          ! Ha
+        emnormall(9)  = 10**pos%logemline_nii        ! [NII]
+        emnormall(10) = 10**pos%logemline_sii        ! [SII]
+        emnormall(11) = 10**pos%logemline_sii * 0.7  ! [SII]
+
         DO i=1,neml
            !allow the em lines to be offset in velocity from the continuum
            !NB: velz2 is a *relative* shift between continuum and lines
            vz   = emlines(i) / (1+pos%velz2/clight*1E5)
            lsig = MAX(vz*pos%sigma2/clight*1E5,0.5)
-           spec(1:nl_fit) = spec(1:nl_fit) + 10**pos%logemnorm(i) * &
+           spec(1:nl_fit) = spec(1:nl_fit) + emnormall(i) * &
                 EXP(-(sspgrid%lam(1:nl_fit)-vz)**2/lsig**2/2.0)
         ENDDO
      ENDIF

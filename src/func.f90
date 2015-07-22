@@ -75,7 +75,7 @@ FUNCTION FUNC(nposarr,spec,funit)
         ml = (tl1+tl2)/2.0
         
         !fit a polynomial to the ratio of model and data
-        IF (fitpoly.EQ.1) THEN
+        IF (fit_poly.EQ.1) THEN
            CALL CONTNORMSPEC(sspgrid%lam,idata%flx/mspec,idata%err,&
                 tl1,tl2,mflx,coeff=tcoeff)
            poly = 0.0

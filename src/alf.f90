@@ -17,12 +17,8 @@ PROGRAM ALF
   !    will not be accurate in the limit of modest-large redshift
 
   !To Do: 
-  !1. allow the user to switch on/off each parameter to be fit
-  !2. add SFH and metal-poor/metal-rich component
-  !3. prune the walkers after some time
-  !4. parallelize
-  !5. include transmission curve in fitting
-  !6. Gelman & Rubin convergence testing
+  !1. add SFH and metal-poor/metal-rich component
+  !2. prune the walkers mid-way through the burn in
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -34,15 +30,15 @@ PROGRAM ALF
   IMPLICIT NONE
 
   !number of chain steps to print to file
-  INTEGER, PARAMETER :: nmcmc=500
-  !sampling of the walkers for print
+  INTEGER, PARAMETER :: nmcmc=100
+  !sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
   INTEGER, PARAMETER :: nburn=1
+  !number of walkers
+  INTEGER, PARAMETER :: nwalkers=512
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
-  !number of walkers for emcee
-  INTEGER, PARAMETER :: nwalkers=512
   !Powell iteration tolerance
   REAL(DP), PARAMETER :: ftol=0.1
 
@@ -54,14 +50,15 @@ PROGRAM ALF
   REAL(DP), DIMENSION(npar,nwalkers) :: mpiposarr=0.0
   REAL(DP), DIMENSION(3,npar+2*nfil) :: runtot=0.0
   REAL(DP), DIMENSION(npar,npar)     :: xi=0.0
-  CHARACTER(10) :: time=''
+  CHARACTER(10) :: time
   CHARACTER(50) :: file='',tag=''
   TYPE(PARAMS)  :: opos,prlo,prhi,bpos
   !the next three definitions are for emcee
   REAL(DP), DIMENSION(npar,nwalkers) :: pos_emcee
   REAL(DP), DIMENSION(nwalkers)      :: lp_emcee,lp_mpi
   INTEGER,  DIMENSION(nwalkers)      :: accept_emcee
-  
+  REAL(DP) :: time1,time2  
+
   !variables for MPI
   INTEGER :: ierr, taskid, ntasks, received_tag, rqst, status(MPI_STATUS_SIZE)
   INTEGER :: KILL=99, BEGIN=0
@@ -113,8 +110,8 @@ PROGRAM ALF
      WRITE(*,'("  Nchain     = ",I5)') nmcmc
      WRITE(*,'("  filename   = ",A)') TRIM(file)//TRIM(tag)
      WRITE(*,'(" ************************************")') 
-     
-     CALL date_and_time(TIME=time)
+     CALL DATE_AND_TIME(TIME=time)
+     CALL CPU_TIME(time1)
      WRITE(*,*) 
      WRITE(*,*) 'Start Time '//time(1:2)//':'//time(3:4)
   ENDIF
@@ -158,7 +155,7 @@ PROGRAM ALF
         ! Get the number of parameter positions that were sent
         CALL MPI_RECV(npos, 1, MPI_INTEGER, &
              masterid, MPI_ANY_TAG, MPI_COMM_WORLD, status, ierr)
-        ! figure out what tag it was sent with.  This call does not return until
+        ! figure out what tag it was sent with.  This call does not return 
         ! until a parameter vector is received
         received_tag = status(MPI_TAG)
         ! Check if this is the kill tag
@@ -321,8 +318,12 @@ PROGRAM ALF
            
            !kill the emission lines for computing M/L
            !since unconstrained lines can really mess up R,I bands
-           opos%logemnorm = -8.0
-           
+           opos%logemline_h = -8.0
+           opos%logemline_oiii = -8.0
+           opos%logemline_nii = -8.0
+           opos%logemline_sii = -8.0
+           opos%logemline_ni = -8.0
+
            !compute the main sequence turn-off mass
            msto = 10**( msto_fit0 + msto_fit1*opos%logage )
            msto = MIN(MAX(msto,0.8),3.)
@@ -368,11 +369,14 @@ PROGRAM ALF
      
      CLOSE(12)
      
-     CALL date_and_time(TIME=time)
+     CALL DATE_AND_TIME(TIME=time)
+     CALL CPU_TIME(time2)
      WRITE(*,*) 'End Time   '//time(1:2)//':'//time(3:4)
+     WRITE(*,'(" Elapsed Time: ",F7.3," hr")') (time2-time1)/3600.
      WRITE(*,*) 
      WRITE(*,'("  Facc: ",F5.2)') REAL(totacc)/REAL(nmcmc*nwalkers)
 
+     
      !---------------------------------------------------------------!
      !--------------------Write results to file----------------------!
      !---------------------------------------------------------------!
@@ -388,13 +392,17 @@ PROGRAM ALF
      !here, "best-fit" is the mean of the posterior distributions
      OPEN(14,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
           TRIM(file)//TRIM(tag)//'.bestp',STATUS='REPLACE')
+     WRITE(*,'(" Elapsed Time: ",F7.3," hr")') (time2-time1)/3600.
      WRITE(14,'("#   dopowell  =",I2)') dopowell
      WRITE(14,'("#   fit_type  =",I2)') fit_type
+     WRITE(14,'("#   fit_trans =",I2)') fit_trans
+     WRITE(14,'("#   fit_poly  =",I2)') fit_poly
      WRITE(14,'("#      mwimf  =",I2)') mwimf
      WRITE(14,'("#  age-dep Rf =",I2)') use_age_dep_resp_fcns
      WRITE(14,'("#  Nwalkers   = ",I5)') nwalkers
      WRITE(14,'("#  Nburn      = ",I5)') nburn
      WRITE(14,'("#  Nchain     = ",I5)') nmcmc
+     WRITE(14,'("#  Ncores     = ",I5)') ntasks
      WRITE(14,'(ES12.5,1x,99(F9.4,1x))') bpos%chi2, runtot(2,:)/runtot(1,:)
      CLOSE(14)
 
@@ -406,9 +414,10 @@ PROGRAM ALF
      CLOSE(15)
 
      WRITE(*,*)
+     WRITE(*,'(" ************************************")') 
 
      !break the workers out of their event loops so they can close
-     CALL FREE_WORKERS(npar, nwalkers, ntasks-1)
+     CALL FREE_WORKERS(ntasks-1)
 
   ENDIF
 

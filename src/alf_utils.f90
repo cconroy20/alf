@@ -51,8 +51,8 @@ MODULE ALF_UTILS
   END INTERFACE
 
   INTERFACE
-     SUBROUTINE FREE_WORKERS(ndim, nwalkers, nworkers)
-       INTEGER, INTENT(in) :: ndim, nwalkers, nworkers
+     SUBROUTINE FREE_WORKERS(nworkers)
+       INTEGER, INTENT(in) :: nworkers
      END SUBROUTINE FREE_WORKERS
   END INTERFACE
 

@@ -22,14 +22,14 @@ PROGRAM WRITE_A_MODEL
   !compute an array of gaussian deviates
   CALL GASDEV(gdev)
 
-  file = 'age+10.0_sn+100_sigma200_trans1_vel1.spec'
+  file = 'age+10.0_sn+100_sigma200_Ha-6.spec'
   s2n  = 1000.0
   lmin = 3800.
   lmax = 10000.
   pos%sigma  = 200.0
   pos%logage = 1.0
-  pos%logtrans=0.0
-  pos%velz=1E3
+
+  pos%logemnorm(5)=-6.0
 
   ires = 10.
 
@@ -68,7 +68,7 @@ PROGRAM WRITE_A_MODEL
   pos%logm7g  = -5.0
   pos%hotteff = 20.0
   pos%loghot  = -5.0
-  pos%logemnorm = -10.0
+  !pos%logemnorm = -10.0
 
   !force a constant instrumental resolution
   datmax=1E4
