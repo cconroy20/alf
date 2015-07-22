@@ -67,6 +67,14 @@ MODULE ALF_UTILS
   END INTERFACE
 
   INTERFACE
+     SUBROUTINE FUNCTION_PARALLEL_MAP(ndim, nk, nworkers, pos, lnpout)
+       integer, intent(in) :: ndim, nk, nworkers
+       double precision, intent(in), dimension(ndim,nk) :: pos
+       double precision, intent(out), dimension(nk) :: lnpout
+     END SUBROUTINE FUNCTION_PARALLEL_MAP
+  END INTERFACE
+
+  INTERFACE
      SUBROUTINE GETM2L(msto,lam,spec,pos,m2l,mw)
        USE alf_vars
        REAL(DP), DIMENSION(nl), INTENT(in) :: lam,spec

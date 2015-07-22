@@ -34,7 +34,7 @@ PROGRAM ALF
   IMPLICIT NONE
 
   !number of chain steps to print to file
-  INTEGER, PARAMETER :: nmcmc=1000
+  INTEGER, PARAMETER :: nmcmc=500
   !sampling of the walkers for print
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
@@ -42,15 +42,16 @@ PROGRAM ALF
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !number of walkers for emcee
-  INTEGER, PARAMETER :: nwalkers=100
+  INTEGER, PARAMETER :: nwalkers=512
   !Powell iteration tolerance
   REAL(DP), PARAMETER :: ftol=0.1
 
-  INTEGER  :: i,j,totacc=0,iter=30, fit_velz
+  INTEGER  :: i,j,k,totacc=0,iter=30, fit_velz,npos
   REAL(DP) :: velz,msto,minchi2=huge_number,fret,wdth,bret=huge_number
   REAL(DP), DIMENSION(nl)   :: mspec=0.0,mspecmw=0.0,lam=0.0
   REAL(DP), DIMENSION(nfil) :: m2l=0.0,m2lmw=0.0
-  REAL(DP), DIMENSION(npar) :: oposarr=0.,bposarr=0.0,mpiposarr=0.0
+  REAL(DP), DIMENSION(npar) :: oposarr=0.,bposarr=0.0
+  REAL(DP), DIMENSION(npar,nwalkers) :: mpiposarr=0.0
   REAL(DP), DIMENSION(3,npar+2*nfil) :: runtot=0.0
   REAL(DP), DIMENSION(npar,npar)     :: xi=0.0
   CHARACTER(10) :: time=''
@@ -58,13 +59,13 @@ PROGRAM ALF
   TYPE(PARAMS)  :: opos,prlo,prhi,bpos
   !the next three definitions are for emcee
   REAL(DP), DIMENSION(npar,nwalkers) :: pos_emcee
-  REAL(DP), DIMENSION(nwalkers)      :: lp_emcee
+  REAL(DP), DIMENSION(nwalkers)      :: lp_emcee,lp_mpi
   INTEGER,  DIMENSION(nwalkers)      :: accept_emcee
   
   !variables for MPI
   INTEGER :: ierr, taskid, ntasks, received_tag, rqst, status(MPI_STATUS_SIZE)
+  INTEGER :: KILL=99, BEGIN=0
   LOGICAL :: wait=.TRUE.
-  REAL(DP) :: one_lnp
   INTEGER, PARAMETER :: masterid=0
  
   !---------------------------------------------------------------!
@@ -150,26 +151,34 @@ PROGRAM ALF
   ! The worker's only job is to calculate the value of a function
   ! after receiving a parameter vector.
   IF (taskid.NE.masterid) THEN
-           
+     
      ! Start event loop
      DO WHILE (wait)
-        ! Get the parameter value from the master, and figure out
-        ! what tag it was sent with.  This call does not return until
-        ! until a parameter vector is received
-        CALL MPI_RECV(mpiposarr, npar, MPI_DOUBLE_PRECISION, &
+
+        ! Get the number of parameter positions that were sent
+        CALL MPI_RECV(npos, 1, MPI_INTEGER, &
              masterid, MPI_ANY_TAG, MPI_COMM_WORLD, status, ierr)
+        ! figure out what tag it was sent with.  This call does not return until
+        ! until a parameter vector is received
         received_tag = status(MPI_TAG)
         ! Check if this is the kill tag
-        IF (received_tag.GT.nwalkers) EXIT
-        
-        ! Calculate the probability for this parameter position.
-        one_lnp = -0.5*func(mpiposarr)
-        
-        ! Send that back to the master, with the correct tag
-        call MPI_ISEND(one_lnp, 1, MPI_DOUBLE_PRECISION, &
-             masterid, received_tag, MPI_COMM_WORLD, rqst, ierr)
+        if ((received_tag.EQ.KILL).OR.(npos.EQ.0)) EXIT
+        ! Otherwise look for data from the master
+        CALL MPI_RECV(mpiposarr(1,1), npos*npar, MPI_DOUBLE_PRECISION, &
+             masterid, MPI_ANY_TAG, MPI_COMM_WORLD, status, ierr)
+
+        ! Calculate the probability for these parameter positions.
+        DO k=1,npos
+           lp_mpi(k) = -0.5*func(mpiposarr(:,k))
+        ENDDO
+              
+        ! Send that back to the master
+        call MPI_ISEND(lp_mpi(1), npos, MPI_DOUBLE_PRECISION, &
+             masterid, BEGIN, MPI_COMM_WORLD, rqst, ierr)
+
      ENDDO
-     
+
+
   ENDIF
  
   !this is the master process

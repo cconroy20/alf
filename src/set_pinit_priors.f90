@@ -112,7 +112,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prlo%sigma2.EQ.test%sigma2) prlo%sigma2   = 10.0
   IF (prlo%velz.EQ.test%velz) prlo%velz         = -1E3
   IF (prlo%velz2.EQ.test%velz2) prlo%velz2      = -1E3
-  IF (prlo%logtrans.EQ.test%logtrans) prlo%logtrans = -5.0
+  IF (prlo%logtrans.EQ.test%logtrans) prlo%logtrans = -6.0
   DO i=1,neml 
      IF (prlo%logemnorm(i).EQ.test%logemnorm(i)) prlo%logemnorm(i) = -8.0
   ENDDO
