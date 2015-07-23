@@ -9,7 +9,7 @@
 #F90 = ifort 
 #---------------------
 #MPI
-F90 = mpifort
+F90 = mpifort 
 
 #========================
 # Compiler Optimizations

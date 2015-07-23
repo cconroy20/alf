@@ -30,7 +30,7 @@ PROGRAM ALF
   IMPLICIT NONE
 
   !number of chain steps to print to file
-  INTEGER, PARAMETER :: nmcmc=100
+  INTEGER, PARAMETER :: nmcmc=500
   !sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
@@ -75,7 +75,7 @@ PROGRAM ALF
   IF (fit_type.EQ.1.OR.fit_type.EQ.2) mwimf=1
 
   prhi%logm7g = -3.0
-  prhi%loghot = -2.0
+  prhi%loghot = -3.0
 
   ! Initialize MPI, and get the total number of processes and
   ! your process number
@@ -392,7 +392,7 @@ PROGRAM ALF
      !here, "best-fit" is the mean of the posterior distributions
      OPEN(14,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
           TRIM(file)//TRIM(tag)//'.bestp',STATUS='REPLACE')
-     WRITE(*,'(" Elapsed Time: ",F7.3," hr")') (time2-time1)/3600.
+     WRITE(14,'(" Elapsed Time: ",F7.3," hr")') (time2-time1)/3600.
      WRITE(14,'("#   dopowell  =",I2)') dopowell
      WRITE(14,'("#   fit_type  =",I2)') fit_type
      WRITE(14,'("#   fit_trans =",I2)') fit_trans

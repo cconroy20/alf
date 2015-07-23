@@ -24,8 +24,16 @@ FUNCTION FUNC(nposarr,spec,funit)
   func = 0.0
   tpow = 0
 
+  IF (SIZE(nposarr).NE.npar.AND.SIZE(nposarr).NE.npowell) THEN
+     WRITE(*,*) 'FUNC ERROR: size(nposarr) NE npar or npowell'
+  ENDIF
+
+  !this is for Powell minimization
   IF (SIZE(nposarr).LT.npar) THEN
-     tposarr(1:5) = nposarr(1:5)
+     !coppy over the default parameters first
+     CALL STR2ARR(1,npos,tposarr) !str->arr
+     !only copy the first four params (velz,sigma,age,[Fe/H])
+     tposarr(1:npowell) = nposarr(1:npowell)
   ELSE
      tposarr = nposarr
   ENDIF
