@@ -11,7 +11,6 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   TYPE(PARAMS), INTENT(inout) :: pos,prlo,prhi
   TYPE(PARAMS) :: test
   REAL(DP), OPTIONAL :: velz
-  INTEGER :: i
   
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!

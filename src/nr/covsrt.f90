@@ -6,7 +6,6 @@ SUBROUTINE covsrt(covar,maska)
   REAL(SP), DIMENSION(:,:), INTENT(INOUT) :: covar
   LOGICAL(LGT), DIMENSION(:), INTENT(IN) :: maska
   INTEGER(I4B) :: ma,mfit,j,k
-
   ma=assert_eq(size(covar,1),size(covar,2),size(maska),'covsrt')
   mfit=count(maska)
   covar(mfit+1:ma,1:ma)=0.0

@@ -35,6 +35,8 @@ MODULE ALF_VARS
   !force the IMF to be a MW IMF if set
   !this is automatically assumed if fit_type=1,2
   INTEGER :: mwimf=0
+  !flag to implement fake element response functions (for testing)
+  INTEGER :: fake_response=0
 
   !the options below have not been tested/used in a long time
 

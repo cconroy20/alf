@@ -29,8 +29,6 @@ PROGRAM WRITE_A_MODEL
   pos%sigma  = 200.0
   pos%logage = 1.0
 
-  pos%logemnorm(5)=-6.0
-
   ires = 10.
 
   !pos%sigma   = 10.0
@@ -71,7 +69,7 @@ PROGRAM WRITE_A_MODEL
   !pos%logemnorm = -10.0
 
   !force a constant instrumental resolution
-  datmax=1E4
+  datmax=10000
   DO i=1,datmax
      data(i)%lam=i+3500
   ENDDO

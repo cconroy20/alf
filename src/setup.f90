@@ -7,8 +7,8 @@ SUBROUTINE SETUP()
   
   REAL(DP) :: d1,l1um=1E4, t13=1.3,t23=2.3,sig0=99.,lamlo,lamhi
   REAL(DP), DIMENSION(nimf*nimf) :: tmp
-  REAL(DP), DIMENSION(nl) :: test2,smooth=0.0,lam
-  INTEGER :: stat,i,vv,j,k,ii,shift
+  REAL(DP), DIMENSION(nl) :: dumi,smooth=0.0,lam
+  INTEGER :: stat,i,vv,j,k,ii,shift=100
   INTEGER, PARAMETER :: ntrans=22800
   REAL(DP), DIMENSION(ntrans) :: ltrans,ftrans,strans
 
@@ -90,26 +90,29 @@ SUBROUTINE SETUP()
   sspgrid%logagegrid_rfcn = LOG10((/1.0,3.0,5.0,9.0,13.0/))
 
 
-  IF (1.EQ.0) THEN
+  !create fake response functions by shifting
+  !the wavelengths by n pixels
+  IF (fake_response.EQ.1) THEN
 
-     !create fake response functions for Cr, Mn, and Co, by shifting
-     !the wavelengths by n pixels
-     !shift = 150
-     !test2 = sspgrid%crp / sspgrid%solar
-     !sspgrid%crp = 1.0
-     !sspgrid%crp(shift:nl-1) = test2(1:nl-shift)
-     !sspgrid%crp = sspgrid%crp * sspgrid%solar
+     DO i=1,nage_rfcn
+
+        dumi = sspgrid%crp(:,i) / sspgrid%solar(:,i)
+        sspgrid%crp(:,i) = 1.0
+        sspgrid%crp(shift:nl-1,i) = dumi(1:nl-shift)
+        sspgrid%crp(:,i) = sspgrid%crp(:,i) * sspgrid%solar(:,i)
      
-     !test2 = sspgrid%mnp / sspgrid%solar
-     !sspgrid%mnp = 1.0
-     !sspgrid%mnp(shift:nl-1) = test2(1:nl-shift)
-     !sspgrid%mnp = sspgrid%mnp * sspgrid%solar
+        dumi = sspgrid%mnp(:,i) / sspgrid%solar(:,i)
+        sspgrid%mnp = 1.0
+        sspgrid%mnp(shift:nl-1,i) = dumi(1:nl-shift)
+        sspgrid%mnp(:,i) = sspgrid%mnp(:,i) * sspgrid%solar(:,i)
   
-     !test2 = sspgrid%cop / sspgrid%solar
-     !sspgrid%cop = 1.0
-     !sspgrid%cop(shift:nl-1) = test2(1:nl-shift)
-     !sspgrid%cop = sspgrid%cop * sspgrid%solar
+        dumi = sspgrid%cop(:,i) / sspgrid%solar(:,i)
+        sspgrid%cop = 1.0
+        sspgrid%cop(shift:nl-1,i) = dumi(1:nl-shift)
+        sspgrid%cop(:,i) = sspgrid%cop(:,i) * sspgrid%solar(:,i)
  
+     ENDDO
+
   ENDIF
 
 

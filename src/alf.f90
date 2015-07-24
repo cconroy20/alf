@@ -24,7 +24,7 @@ PROGRAM ALF
   !---------------------------------------------------------------!
 
   USE alf_vars; USE alf_utils; USE mpi
-  USE nr, ONLY : ran,locate,powell,ran1
+  USE nr, ONLY : locate,powell
   USE ran_state, ONLY : ran_seed,ran_init
 
   IMPLICIT NONE
@@ -42,7 +42,7 @@ PROGRAM ALF
   !Powell iteration tolerance
   REAL(DP), PARAMETER :: ftol=0.1
 
-  INTEGER  :: i,j,k,totacc=0,iter=30, fit_velz,npos
+  INTEGER  :: i,j,k,totacc=0,iter=30,npos
   REAL(DP) :: velz,msto,minchi2=huge_number,fret,wdth,bret=huge_number
   REAL(DP), DIMENSION(nl)   :: mspec=0.0,mspecmw=0.0,lam=0.0
   REAL(DP), DIMENSION(nfil) :: m2l=0.0,m2lmw=0.0
@@ -51,17 +51,17 @@ PROGRAM ALF
   REAL(DP), DIMENSION(3,npar+2*nfil) :: runtot=0.0
   REAL(DP), DIMENSION(npar,npar)     :: xi=0.0
   CHARACTER(10) :: time
+  REAL(DP)      :: time1,time2  
   CHARACTER(50) :: file='',tag=''
   TYPE(PARAMS)  :: opos,prlo,prhi,bpos
   !the next three definitions are for emcee
   REAL(DP), DIMENSION(npar,nwalkers) :: pos_emcee
   REAL(DP), DIMENSION(nwalkers)      :: lp_emcee,lp_mpi
   INTEGER,  DIMENSION(nwalkers)      :: accept_emcee
-  REAL(DP) :: time1,time2  
 
   !variables for MPI
-  INTEGER :: ierr, taskid, ntasks, received_tag, rqst, status(MPI_STATUS_SIZE)
-  INTEGER :: KILL=99, BEGIN=0
+  INTEGER :: ierr,taskid,ntasks,received_tag,rqst,status(MPI_STATUS_SIZE)
+  INTEGER :: KILL=99,BEGIN=0
   LOGICAL :: wait=.TRUE.
   INTEGER, PARAMETER :: masterid=0
  
@@ -155,26 +155,25 @@ PROGRAM ALF
         ! Get the number of parameter positions that were sent
         CALL MPI_RECV(npos, 1, MPI_INTEGER, &
              masterid, MPI_ANY_TAG, MPI_COMM_WORLD, status, ierr)
-        ! figure out what tag it was sent with.  This call does not return 
-        ! until a parameter vector is received
+        !figure out what tag it was sent with.  This call does not return 
+        !until a parameter vector is received
         received_tag = status(MPI_TAG)
-        ! Check if this is the kill tag
-        if ((received_tag.EQ.KILL).OR.(npos.EQ.0)) EXIT
+        !Check if this is the kill tag
+        IF ((received_tag.EQ.KILL).OR.(npos.EQ.0)) EXIT
         ! Otherwise look for data from the master
         CALL MPI_RECV(mpiposarr(1,1), npos*npar, MPI_DOUBLE_PRECISION, &
              masterid, MPI_ANY_TAG, MPI_COMM_WORLD, status, ierr)
 
-        ! Calculate the probability for these parameter positions.
+        !Calculate the probability for these parameter positions
         DO k=1,npos
            lp_mpi(k) = -0.5*func(mpiposarr(:,k))
         ENDDO
               
-        ! Send that back to the master
-        call MPI_ISEND(lp_mpi(1), npos, MPI_DOUBLE_PRECISION, &
+        !Send that back to the master
+        CALL MPI_ISEND(lp_mpi(1), npos, MPI_DOUBLE_PRECISION, &
              masterid, BEGIN, MPI_COMM_WORLD, rqst, ierr)
 
      ENDDO
-
 
   ENDIF
  
@@ -392,7 +391,7 @@ PROGRAM ALF
      !here, "best-fit" is the mean of the posterior distributions
      OPEN(14,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
           TRIM(file)//TRIM(tag)//'.bestp',STATUS='REPLACE')
-     WRITE(14,'(" Elapsed Time: ",F7.3," hr")') (time2-time1)/3600.
+     WRITE(14,'("#  Elapsed Time: ",F7.3," hr")') (time2-time1)/3600.
      WRITE(14,'("#   dopowell  =",I2)') dopowell
      WRITE(14,'("#   fit_type  =",I2)') fit_type
      WRITE(14,'("#   fit_trans =",I2)') fit_trans

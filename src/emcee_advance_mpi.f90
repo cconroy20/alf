@@ -1,4 +1,4 @@
-subroutine emcee_advance_mpi (ndim, nwalkers, a, pin, lpin, &
+SUBROUTINE EMCEE_ADVANCE_MPI (ndim, nwalkers, a, pin, lpin, &
      pout, lpout, accept, nworkers)
 
   ! This subroutine advances an ensemble of walkers using the
@@ -40,75 +40,74 @@ subroutine emcee_advance_mpi (ndim, nwalkers, a, pin, lpin, &
   !   A binary list indicating whether or not each proposal was
   !   accepted.
   
-  USE mpi
-  USE alf_vars; USE alf_utils, ONLY : func, myran, function_parallel_map
+  USE mpi; USE alf_vars
+  USE alf_utils, ONLY : func, myran, function_parallel_map
   IMPLICIT NONE
 
-  integer, intent(in) :: ndim, nwalkers
-  double precision, intent(in) :: a
-  double precision, intent(in), dimension(ndim,nwalkers) :: pin
-  double precision, intent(in), dimension(nwalkers) :: lpin
+  INTEGER, INTENT(in)  :: ndim, nwalkers
+  REAL(DP), INTENT(in) :: a
+  REAL(DP), INTENT(in), DIMENSION(ndim,nwalkers) :: pin
+  REAL(DP), INTENT(in), DIMENSION(nwalkers) :: lpin
+  INTEGER, INTENT(in) :: nworkers
+  REAL(DP), INTENT(inout), DIMENSION(ndim,nwalkers) :: pout
+  REAL(DP), INTENT(inout), DIMENSION(nwalkers) :: lpout
+  INTEGER, INTENT(out), DIMENSION(nwalkers) :: accept
 
-  double precision, intent(out), dimension(ndim,nwalkers) :: pout
-  double precision, intent(out), dimension(nwalkers) :: lpout
-  integer, intent(out), dimension(nwalkers) :: accept
-
-  integer :: k, ri
-  double precision :: r, z, diff
-        
-  INTEGER, intent(in) :: nworkers
-  DOUBLE PRECISION, dimension(nwalkers) :: zarr, lpnew
-  DOUBLE PRECISION, dimension(ndim,nwalkers) :: qarr
+  INTEGER  :: k, ri
+  REAL(DP) :: z, diff
+  REAL(DP), DIMENSION(nwalkers) :: zarr, lpnew
+  REAL(DP), DIMENSION(ndim,nwalkers) :: qarr
                 
-  !rqst = MPI_REQUEST_NULL
+  !---------------------------------------------------------------!
+  !---------------------------------------------------------------!
 
-  ! Loop over the walkers to propose new positions
-  do k=1,nwalkers
+  !Loop over the walkers to propose new positions
+  DO k=1,nwalkers
      
-     ! Compute a random stretch factor and store it
+     !Compute a random stretch factor and store it
      z = (a - 1.d0) * myran() + 1.d0
      z = z * z / a
      zarr(k) = z
      
-     ! Select the helper walker.
-     ri = ceiling((nwalkers-1) * myran())
-     if (ri .ge. k) then
+     !Select the helper walker
+     ri = CEILING((nwalkers-1) * myran())
+     IF (ri.GE.k) THEN
         ri = ri + 2
-     endif
+     ENDIF
      
-     ! Compute the proposal position and store it
+     !Compute the proposal position and store it
      qarr(:,k) = (1.d0 - z) * pin(:, ri) + z * pin(:, k)
      
-  enddo
+  ENDDO
   
-  call function_parallel_map(ndim, nwalkers, nworkers, qarr, lpnew)
+  CALL FUNCTION_PARALLEL_MAP(ndim, nwalkers, nworkers, qarr, lpnew)
   
-  ! Now loop over walkers to accept/reject, and update
-  do k=1,nwalkers
+  !Now loop over walkers to accept/reject, and update
+  DO k=1,nwalkers
      
-     diff = (ndim - 1.d0) * log(zarr(k)) + lpnew(k) - lpin(k)
+     diff = (ndim - 1.d0) * LOG(zarr(k)) + lpnew(k) - lpin(k)
      
-     ! Accept or reject.
-     if (diff .ge. 0.d0) then
+     !Accept or reject
+     IF (diff.GE.0.d0) THEN
         accept(k) = 1
-     else
-        if (diff .ge. log(myran())) then
+     ELSE
+        IF (diff.GE.LOG(myran())) THEN
            accept(k) = 1
-        else
+        ELSE
            accept(k) = 0
-        endif
-     endif
+        ENDIF
+     ENDIF
      
-     ! Do the update.
-     if (accept(k) .eq. 1) then
+     !Do the update
+     IF (accept(k).EQ.1) then
         pout(:, k) = qarr(:, k)
-        lpout(k) = lpnew(k)
-     else
+        lpout(k)   = lpnew(k)
+     ELSE
         pout(:, k) = pin(:, k)
-        lpout(k) = lpin(k)
-     endif
+        lpout(k)   = lpin(k)
+     ENDIF
      
-  enddo
+  ENDDO
   
-end subroutine emcee_advance_mpi
-      
+END SUBROUTINE EMCEE_ADVANCE_MPI
+

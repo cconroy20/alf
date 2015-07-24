@@ -68,10 +68,11 @@ MODULE ALF_UTILS
 
   INTERFACE
      SUBROUTINE FUNCTION_PARALLEL_MAP(ndim, nk, nworkers, pos, lnpout)
-       integer, intent(in) :: ndim, nk, nworkers
-       double precision, intent(in), dimension(ndim,nk) :: pos
-       double precision, intent(out), dimension(nk) :: lnpout
-     END SUBROUTINE FUNCTION_PARALLEL_MAP
+       USE alf_vars
+       INTEGER, INTENT(in) :: ndim, nk, nworkers
+       REAL(DP), INTENT(in), DIMENSION(ndim,nk) :: pos
+       REAL(DP), INTENT(out), DIMENSION(nk) :: lnpout
+    END SUBROUTINE FUNCTION_PARALLEL_MAP
   END INTERFACE
 
   INTERFACE

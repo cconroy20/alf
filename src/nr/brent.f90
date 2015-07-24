@@ -16,8 +16,10 @@ FUNCTION brent(ax,bx,cx,func,tol,xmin)
   INTEGER(I4B), PARAMETER :: ITMAX=100
   REAL(SP), PARAMETER :: CGOLD=0.3819660_sp,ZEPS=1.0e-3_sp*epsilon(ax)
   INTEGER(I4B) :: iter
-  REAL(SP) :: a,b,d,e,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm
+  REAL(SP) :: a,b,d=1.,e,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm
   
+  brent=0.0
+
   a=min(ax,cx)
   b=max(ax,cx)
   v=bx

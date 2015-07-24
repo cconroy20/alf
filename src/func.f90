@@ -26,6 +26,7 @@ FUNCTION FUNC(nposarr,spec,funit)
 
   IF (SIZE(nposarr).NE.npar.AND.SIZE(nposarr).NE.npowell) THEN
      WRITE(*,*) 'FUNC ERROR: size(nposarr) NE npar or npowell'
+     STOP
   ENDIF
 
   !this is for Powell minimization

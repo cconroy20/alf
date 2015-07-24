@@ -14,7 +14,6 @@ SUBROUTINE STR2ARR(switch,str,arr)
   TYPE(PARAMS), INTENT(inout) :: str
   REAL(DP), DIMENSION(npar), INTENT(inout) :: arr
   INTEGER, INTENT(in) :: switch
-  INTEGER :: i
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
