@@ -55,8 +55,8 @@ PROGRAM ALF
   CHARACTER(50) :: file='',tag=''
   TYPE(PARAMS)  :: opos,prlo,prhi,bpos
   !the next three definitions are for emcee
-  REAL(DP), DIMENSION(npar,nwalkers) :: pos_emcee
-  REAL(DP), DIMENSION(nwalkers)      :: lp_emcee,lp_mpi
+  REAL(DP), DIMENSION(npar,nwalkers) :: pos_emcee_in,pos_emcee_out
+  REAL(DP), DIMENSION(nwalkers)      :: lp_emcee_in,lp_emcee_out,lp_mpi
   INTEGER,  DIMENSION(nwalkers)      :: accept_emcee
 
   !variables for MPI
@@ -261,7 +261,7 @@ PROGRAM ALF
         
         !random initialization of each walker
         CALL SET_PINIT_PRIORS(opos,prlo,prhi,velz=velz)
-        CALL STR2ARR(1,opos,pos_emcee(:,j))
+        CALL STR2ARR(1,opos,pos_emcee_in(:,j))
 
         IF (dopowell.EQ.1) THEN
            !use the best-fit position from Powell, with small
@@ -272,12 +272,12 @@ PROGRAM ALF
            DO i=1,npowell
               IF (i.LE.2) wdth = 10.0
               IF (i.GT.2) wdth = 0.2
-              pos_emcee(i,j) = bposarr(i) + wdth*(2.*myran()-1.0)
+              pos_emcee_in(i,j) = bposarr(i) + wdth*(2.*myran()-1.0)
            ENDDO
         ENDIF
 
         !Compute the initial log-probability for each walker
-        lp_emcee(j) = -0.5*func(pos_emcee(:, j))
+        lp_emcee_in(j) = -0.5*func(pos_emcee_in(:, j))
    
      ENDDO
 
@@ -285,8 +285,10 @@ PROGRAM ALF
      WRITE(*,*) '   burning in...'
      WRITE(*,'(A)',advance='no') '      Progress:'
      DO i=1,nburn
-        CALL EMCEE_ADVANCE_MPI(npar,nwalkers,2.d0,pos_emcee,&
-             lp_emcee,pos_emcee,lp_emcee,accept_emcee,ntasks-1)
+        CALL EMCEE_ADVANCE_MPI(npar,nwalkers,2.d0,pos_emcee_in,&
+             lp_emcee_in,pos_emcee_out,lp_emcee_out,accept_emcee,ntasks-1)
+        pos_emcee_in = pos_emcee_out
+        lp_emcee_in  = lp_emcee_out
         IF (i.EQ.nburn/4.*1) THEN
            WRITE (*,'(A)',advance='no') ' ...25%'
            CALL FLUSH()
@@ -307,13 +309,15 @@ PROGRAM ALF
      WRITE(*,*) '   production run...'
      DO i=1,nmcmc
         
-        CALL EMCEE_ADVANCE_MPI(npar,nwalkers,2.d0,pos_emcee,&
-             lp_emcee,pos_emcee,lp_emcee,accept_emcee,ntasks-1)
+        CALL EMCEE_ADVANCE_MPI(npar,nwalkers,2.d0,pos_emcee_in,&
+             lp_emcee_in,pos_emcee_out,lp_emcee_out,accept_emcee,ntasks-1)
+        pos_emcee_in = pos_emcee_out
+        lp_emcee_in  = lp_emcee_out
         totacc = totacc + SUM(accept_emcee)
         
         DO j=1,nwalkers,nsample
            
-           CALL STR2ARR(2,opos,pos_emcee(:,j)) !arr->str
+           CALL STR2ARR(2,opos,pos_emcee_in(:,j)) !arr->str
            
            !kill the emission lines for computing M/L
            !since unconstrained lines can really mess up R,I bands
@@ -339,23 +343,23 @@ PROGRAM ALF
            
            IF (fit_type.EQ.1) THEN
               !these parameters aren't actually being updated
-              pos_emcee(nparsimp+1:,j) = 0.0 
+              pos_emcee_in(nparsimp+1:,j) = 0.0 
            ELSE IF (fit_type.EQ.2) THEN
               !these parameters aren't actually being updated
-              pos_emcee(npowell+1:,j) = 0.0 
+              pos_emcee_in(npowell+1:,j) = 0.0 
            ENDIF
            
            !write the chain element to file
-           WRITE(12,'(ES12.5,1x,99(F9.4,1x))') -2.0*lp_emcee(j),&
-                pos_emcee(:, j),m2l,m2lmw
+           WRITE(12,'(ES12.5,1x,99(F9.4,1x))') -2.0*lp_emcee_in(j),&
+                pos_emcee_in(:, j),m2l,m2lmw
            
            !keep the model with the lowest chi2
-           IF (-2.0*lp_emcee(j).LT.minchi2) THEN
-              bposarr = pos_emcee(:, j)
-              minchi2 = -2.0*lp_emcee(j)
+           IF (-2.0*lp_emcee_in(j).LT.minchi2) THEN
+              bposarr = pos_emcee_in(:, j)
+              minchi2 = -2.0*lp_emcee_in(j)
            ENDIF
            
-           CALL UPDATE_RUNTOT(runtot,pos_emcee(:,j),m2l,m2lmw)
+           CALL UPDATE_RUNTOT(runtot,pos_emcee_in(:,j),m2l,m2lmw)
            
         ENDDO
         CALL FLUSH(12)

@@ -16,7 +16,7 @@ F90 = mpifort
 #  (Uncomment only one)
 #========================
 # GNU
-F90FLAGS = -O
+F90FLAGS = -O -Wall
 #---------------------
 # Intel 
 #F90FLAGS = -O3 -assume byterecl
