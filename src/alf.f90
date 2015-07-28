@@ -30,18 +30,18 @@ PROGRAM ALF
   IMPLICIT NONE
 
   !number of chain steps to print to file
-  INTEGER, PARAMETER :: nmcmc=1
+  INTEGER, PARAMETER :: nmcmc=100
   !sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=100
+  INTEGER, PARAMETER :: nburn=1000
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=1024
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !Powell iteration tolerance
   REAL(DP), PARAMETER :: ftol=0.1
-  INTEGER, PARAMETER :: test_time=1
+  INTEGER, PARAMETER :: test_time=0
   
   INTEGER  :: i,j,k,totacc=0,iter=30,npos
   REAL(DP) :: velz,msto,minchi2=huge_number,fret,wdth,bret=huge_number
