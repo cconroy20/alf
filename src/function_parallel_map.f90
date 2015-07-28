@@ -34,7 +34,7 @@ SUBROUTINE FUNCTION_PARALLEL_MAP(ndim, nk, nworkers, pos, lnpout)
   REAL(DP), INTENT(in), DIMENSION(ndim,nk) :: pos
   REAL(DP), INTENT(out), DIMENSION(nk) :: lnpout
 
-  INTEGER :: k, ierr, status(MPI_STATUS_SIZE), BEGIN=0
+  integer :: k, ierr, status(MPI_STATUS_SIZE), BEGIN=0
   INTEGER :: npos, walk_per_work, extra, offset
 
   !Compute useful numbers for worker to walker ratio
@@ -46,21 +46,25 @@ SUBROUTINE FUNCTION_PARALLEL_MAP(ndim, nk, nworkers, pos, lnpout)
   ! Send chunks of new positions to workers
   offset = 1
   DO k=1,nworkers
+
      IF (k.LE.extra) then
         !add an extra position
         npos = walk_per_work + 1
      ELSE
         npos = walk_per_work
      ENDIF
+
      ! Tell the worker how many positions to expect
      CALL MPI_SEND(npos, 1, MPI_INTEGER, &
           k, BEGIN, MPI_COMM_WORLD, ierr)
+     
      ! Dispatch proposals to worker to figure out lnp
      CALL MPI_SEND(pos(1,offset), ndim*npos, MPI_DOUBLE_PRECISION, &
           k, BEGIN, MPI_COMM_WORLD, ierr)
-     
+
      ! now increment offset
      offset = offset + npos
+
   ENDDO
   
   !Loop over the workers to get the proposal lnp

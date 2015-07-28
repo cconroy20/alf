@@ -30,18 +30,19 @@ PROGRAM ALF
   IMPLICIT NONE
 
   !number of chain steps to print to file
-  INTEGER, PARAMETER :: nmcmc=500
+  INTEGER, PARAMETER :: nmcmc=1
   !sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=1
+  INTEGER, PARAMETER :: nburn=100
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=512
+  INTEGER, PARAMETER :: nwalkers=1024
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !Powell iteration tolerance
   REAL(DP), PARAMETER :: ftol=0.1
-
+  INTEGER, PARAMETER :: test_time=1
+  
   INTEGER  :: i,j,k,totacc=0,iter=30,npos
   REAL(DP) :: velz,msto,minchi2=huge_number,fret,wdth,bret=huge_number
   REAL(DP), DIMENSION(nl)   :: mspec=0.0,mspecmw=0.0,lam=0.0
@@ -51,7 +52,8 @@ PROGRAM ALF
   REAL(DP), DIMENSION(3,npar+2*nfil) :: runtot=0.0
   REAL(DP), DIMENSION(npar,npar)     :: xi=0.0
   CHARACTER(10) :: time
-  REAL(DP)      :: time1,time2  
+  REAL(SP)      :: time2
+  REAL(SP), DIMENSION(2) :: dumt
   CHARACTER(50) :: file='',tag=''
   TYPE(PARAMS)  :: opos,prlo,prhi,bpos
   !the next three definitions are for emcee
@@ -60,7 +62,7 @@ PROGRAM ALF
   INTEGER,  DIMENSION(nwalkers)      :: accept_emcee
 
   !variables for MPI
-  INTEGER :: ierr,taskid,ntasks,received_tag,rqst,status(MPI_STATUS_SIZE)
+  INTEGER :: ierr,taskid,ntasks,received_tag,status(MPI_STATUS_SIZE)
   INTEGER :: KILL=99,BEGIN=0
   LOGICAL :: wait=.TRUE.
   INTEGER, PARAMETER :: masterid=0
@@ -111,9 +113,10 @@ PROGRAM ALF
      WRITE(*,'("  filename   = ",A)') TRIM(file)//TRIM(tag)
      WRITE(*,'(" ************************************")') 
      CALL DATE_AND_TIME(TIME=time)
-     CALL CPU_TIME(time1)
+     CALL DTIME(dumt,time2)
      WRITE(*,*) 
      WRITE(*,*) 'Start Time '//time(1:2)//':'//time(3:4)
+     
   ENDIF
 
   !read in the data and wavelength boundaries
@@ -152,26 +155,38 @@ PROGRAM ALF
      ! Start event loop
      DO WHILE (wait)
 
-        ! Get the number of parameter positions that were sent
+        ! Look for data from the master. This call can accept up
+        ! to ``nwalkers`` paramater positions, but it expects
+        ! that the actual number of positions is smaller and is
+        ! given by the MPI_TAG.  This call does not return until
+        ! a set of parameter vectors is received
         CALL MPI_RECV(npos, 1, MPI_INTEGER, &
              masterid, MPI_ANY_TAG, MPI_COMM_WORLD, status, ierr)
-        !figure out what tag it was sent with.  This call does not return 
-        !until a parameter vector is received
         received_tag = status(MPI_TAG)
-        !Check if this is the kill tag
         IF ((received_tag.EQ.KILL).OR.(npos.EQ.0)) EXIT
-        ! Otherwise look for data from the master
         CALL MPI_RECV(mpiposarr(1,1), npos*npar, MPI_DOUBLE_PRECISION, &
              masterid, MPI_ANY_TAG, MPI_COMM_WORLD, status, ierr)
+   
+        IF (taskid.EQ.1.AND.test_time.EQ.1) THEN
+           CALL DATE_AND_TIME(TIME=time)
+           WRITE(*,*) '1 Time '//time(1:2)//':'//time(3:4)//':'&
+                //time(5:9),npos,taskid
+        ENDIF
 
         !Calculate the probability for these parameter positions
         DO k=1,npos
            lp_mpi(k) = -0.5*func(mpiposarr(:,k))
         ENDDO
-              
-        !Send that back to the master
-        CALL MPI_ISEND(lp_mpi(1), npos, MPI_DOUBLE_PRECISION, &
-             masterid, BEGIN, MPI_COMM_WORLD, rqst, ierr)
+
+         IF (taskid.EQ.1.AND.test_time.EQ.1) THEN
+           CALL DATE_AND_TIME(TIME=time)
+           WRITE(*,*) '2 Time '//time(1:2)//':'//time(3:4)//':'&
+                //time(5:9),npos,taskid
+        ENDIF
+             
+        !Send it back to the master
+        CALL MPI_SEND(lp_mpi(1), npos, MPI_DOUBLE_PRECISION, &
+             masterid, BEGIN, MPI_COMM_WORLD, ierr)
 
      ENDDO
 
@@ -321,17 +336,15 @@ PROGRAM ALF
            
            !kill the emission lines for computing M/L
            !since unconstrained lines can really mess up R,I bands
-           opos%logemline_h = -8.0
+           opos%logemline_h    = -8.0
            opos%logemline_oiii = -8.0
-           opos%logemline_nii = -8.0
-           opos%logemline_sii = -8.0
-           opos%logemline_ni = -8.0
+           opos%logemline_nii  = -8.0
+           opos%logemline_sii  = -8.0
+           opos%logemline_ni   = -8.0
 
            !compute the main sequence turn-off mass
-           msto = 10**( msto_fit0 + msto_fit1*opos%logage )
-           msto = MIN(MAX(msto,0.8),3.)
-           
-           CALL GETMODEL(opos,mspecmw,mw=1)     !get spectra for MW IMF
+           msto = MIN(MAX(10**(msto_fit0+msto_fit1*opos%logage),0.8),3.)           
+           CALL GETMODEL(opos,mspecmw,mw=1)     !get spectrum for MW IMF
            CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
            
            IF (mwimf.EQ.0) THEN
@@ -373,13 +386,14 @@ PROGRAM ALF
      CLOSE(12)
      
      CALL DATE_AND_TIME(TIME=time)
-     CALL CPU_TIME(time2)
+     CALL DTIME(dumt,time2)
+     WRITE(*,*) time2/3600
      WRITE(*,*) 'End Time   '//time(1:2)//':'//time(3:4)
-     WRITE(*,'(" Elapsed Time: ",F7.3," hr")') (time2-time1)/3600.
+     WRITE(*,'(" Elapsed Time: ",F7.3," hr")') time2/3600.
      WRITE(*,*) 
      WRITE(*,'("  Facc: ",F5.2)') REAL(totacc)/REAL(nmcmc*nwalkers)
 
-     
+
      !---------------------------------------------------------------!
      !--------------------Write results to file----------------------!
      !---------------------------------------------------------------!
@@ -395,7 +409,7 @@ PROGRAM ALF
      !here, "best-fit" is the mean of the posterior distributions
      OPEN(14,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
           TRIM(file)//TRIM(tag)//'.bestp',STATUS='REPLACE')
-     WRITE(14,'("#  Elapsed Time: ",F7.3," hr")') (time2-time1)/3600.
+     WRITE(14,'("#  Elapsed Time: ",F7.3," hr")') time2/3600.
      WRITE(14,'("#   dopowell  =",I2)') dopowell
      WRITE(14,'("#   fit_type  =",I2)') fit_type
      WRITE(14,'("#   fit_trans =",I2)') fit_trans
