@@ -3,7 +3,7 @@ PROGRAM WRITE_A_MODEL
   !write a model to file
 
   USE alf_vars; USE alf_utils
-  USE nr, ONLY : gasdev,ran,locate,powell,ran1
+  USE nr, ONLY : gasdev,locate,powell,ran1
   USE ran_state, ONLY : ran_seed,ran_init
 
   IMPLICIT NONE

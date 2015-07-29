@@ -387,7 +387,6 @@ PROGRAM ALF
      
      CALL DATE_AND_TIME(TIME=time)
      CALL DTIME(dumt,time2)
-     WRITE(*,*) time2/3600
      WRITE(*,*) 'End Time   '//time(1:2)//':'//time(3:4)
      WRITE(*,'(" Elapsed Time: ",F7.3," hr")') time2/3600.
      WRITE(*,*) 

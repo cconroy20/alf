@@ -70,6 +70,7 @@ SUBROUTINE FUNCTION_PARALLEL_MAP(ndim, nk, nworkers, pos, lnpout)
   !Loop over the workers to get the proposal lnp
   offset=1
   DO k=1,nworkers
+
      IF (k.LE.extra) then
         !add an extra position
         npos = walk_per_work + 1
@@ -82,6 +83,7 @@ SUBROUTINE FUNCTION_PARALLEL_MAP(ndim, nk, nworkers, pos, lnpout)
           k, MPI_ANY_TAG, MPI_COMM_WORLD, status, ierr)
      
      offset = offset + npos
+
   ENDDO
   
 END SUBROUTINE FUNCTION_PARALLEL_MAP
