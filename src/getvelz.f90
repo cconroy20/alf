@@ -10,7 +10,7 @@ FUNCTION GETVELZ()
   IMPLICIT NONE
 
   REAL(DP) :: getvelz, chi2,lo,hi
-  INTEGER, PARAMETER :: nv=1000
+  INTEGER, PARAMETER :: nv=2000
   INTEGER :: i,i1,i2
   REAL(DP), DIMENSION(nl) :: mflx,dflx
   REAL(DP), DIMENSION(nv) :: tvz,tchi2,tvza

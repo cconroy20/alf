@@ -34,7 +34,7 @@ PROGRAM ALF
   !sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=1000
+  INTEGER, PARAMETER :: nburn=2000
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=1024
   !start w/ powell minimization?
@@ -142,6 +142,8 @@ PROGRAM ALF
   !fold the masked regions into the errors
   data%err = data%err * data%wgt
 
+  !data%lam = data%lam / 1.033
+  
   !set initial params, step sizes, and prior ranges
   CALL SET_PINIT_PRIORS(opos,prlo,prhi)
   !convert the structures into their equivalent arrays
@@ -211,7 +213,8 @@ PROGRAM ALF
         velz = getvelz()
      ENDIF
      opos%velz = velz
-     WRITE(*,'("    best velocity: ",F6.1)') velz
+     WRITE(*,'("    best velocity: ",F7.1)') velz
+
      CALL STR2ARR(1,opos,oposarr)   !str->arr
 
      !initialize the random number generator
@@ -247,7 +250,7 @@ PROGRAM ALF
         !use the best-fit Powell position for the first MCMC position
         CALL STR2ARR(2,opos,bposarr) !arr->str
         
-        WRITE(*,'("    best velocity: ",F6.1)') opos%velz
+        WRITE(*,'("    best velocity: ",F7.1)') opos%velz
         WRITE(*,'("    best sigma:    ",F6.1)') opos%sigma
         WRITE(*,'("    best age:      ",F6.1)') 10**opos%logage
         
@@ -363,8 +366,8 @@ PROGRAM ALF
            ENDIF
            
            !write the chain element to file
-           WRITE(12,'(ES12.5,1x,99(F9.4,1x))') -2.0*lp_emcee_in(j),&
-                pos_emcee_in(:, j),m2l,m2lmw
+           WRITE(12,'(ES12.5,1x,F11.4,99(F9.4,1x))') &
+                -2.0*lp_emcee_in(j),pos_emcee_in(:, j),m2l,m2lmw
            
            !keep the model with the lowest chi2
            IF (-2.0*lp_emcee_in(j).LT.minchi2) THEN
@@ -419,13 +422,14 @@ PROGRAM ALF
      WRITE(14,'("#  Nburn      = ",I5)') nburn
      WRITE(14,'("#  Nchain     = ",I5)') nmcmc
      WRITE(14,'("#  Ncores     = ",I5)') ntasks
-     WRITE(14,'(ES12.5,1x,99(F9.4,1x))') bpos%chi2, runtot(2,:)/runtot(1,:)
+     WRITE(14,'("#  Facc: ",F5.2)') REAL(totacc)/REAL(nmcmc*nwalkers)
+     WRITE(14,'(ES12.5,1x,F11.4,99(F9.4,1x))') bpos%chi2,runtot(2,:)/runtot(1,:)
      CLOSE(14)
 
      !write one sigma errors on parameters
      OPEN(15,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
           TRIM(file)//TRIM(tag)//'.errp',STATUS='REPLACE')
-     WRITE(15,'(ES12.5,1x,99(F9.4,1x))') 0.0, &
+     WRITE(15,'(ES12.5,1x,F11.4,99(F9.4,1x))') 0.0, &
           SQRT( runtot(3,:)/runtot(1,:) - runtot(2,:)**2/runtot(1,:)**2 )
      CLOSE(15)
 

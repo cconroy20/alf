@@ -112,6 +112,8 @@ FUNCTION FUNC(nposarr,spec,funit)
            WRITE(*,'("model:",2000F14.2)') mspec(i1:i2)*1E3
            WRITE(*,*)
            WRITE(*,'("errors:",2000F14.2)') idata(i1:i2)%err
+           WRITE(*,*)
+           WRITE(*,'("params:",100F14.2)') tposarr
            STOP
         ENDIF
         

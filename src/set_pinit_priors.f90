@@ -159,7 +159,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prhi%loghot.EQ.test%loghot) prhi%loghot   = -1.0
   IF (prhi%sigma.EQ.test%sigma) prhi%sigma      = 1E3
   IF (prhi%sigma2.EQ.test%sigma2) prhi%sigma2   = 1E3
-  IF (prhi%velz.EQ.test%velz) prhi%velz         = 1E4
+  IF (prhi%velz.EQ.test%velz) prhi%velz         = 2E4
   IF (prhi%velz2.EQ.test%velz2) prhi%velz2      = 1E3
   IF (prhi%logtrans.EQ.test%logtrans) prhi%logtrans = 1.0
   IF (prhi%logemline_h.EQ.test%logemline_h) prhi%logemline_h          = 1.0
