@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -J alf_single
+#SBATCH -J alf1
 #SBATCH -n 2 # Number of cores requested
 #SBATCH -N 1 # Ensure that all cores are on one machine
 #SBATCH -t 48:00:00 # Runtime
