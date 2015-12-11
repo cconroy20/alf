@@ -27,6 +27,7 @@ MODULE ALF_VARS
   !don't turn this on - the "correct" version is just as fast
   INTEGER :: velbroad_simple=0
   !flag to include transmission spectrum in fitting
+  !even if flag is set, only included in full model
   INTEGER :: fit_trans=1
   !0: fit the full model (IMF, all abundances, nuisance params, etc)
   !1: only fit velz, sigma, SSP age, Fe,C,N,O,Mg,Si,Ca,Ti,Na

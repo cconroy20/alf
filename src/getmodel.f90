@@ -31,8 +31,11 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   !vary age in the response functions
   IF (use_age_dep_resp_fcns.EQ.0) THEN
      !force the use of the 13 Gyr response fcn
-     vr = nage_rfcn-1
-     dr = 1.0
+     !vr = nage_rfcn-1
+     !dr = 1.0
+     !force the use of the 5 Gyr response fcn
+     vr = 3
+     dr = 0.0
   ELSE
      !should be using mass-weighted age here
      vr = MAX(MIN(locate(sspgrid%logagegrid_rfcn,pos%logage),nage_rfcn-1),1)
@@ -198,6 +201,17 @@ SUBROUTINE GETMODEL(pos,spec,mw)
         ENDDO
      ENDIF
 
+     !apply an atmosphereric transmission function
+     IF (fit_trans.EQ.1) THEN
+        !atm trans applied in the observed frame
+        tmp_ltrans = sspgrid%lam / (1+pos%velz/clight*1E5)
+        tmp_ftrans(1:nl_fit) = linterp(tmp_ltrans,&
+             sspgrid%atm_trans,sspgrid%lam(1:nl_fit))
+        spec(1:nl_fit) = spec(1:nl_fit) * &
+             (1+(tmp_ftrans(1:nl_fit)-1)*10**pos%logtrans)
+     ENDIF
+
+
   ENDIF
 
   !velocity broaden the model
@@ -207,16 +221,6 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   !apply a template error function
   IF (apply_temperrfcn.EQ.1) THEN
      spec(1:nl_fit) = spec(1:nl_fit) / temperrfcn(1:nl_fit)
-  ENDIF
-
-  !apply an atmosphereric transmission function
-  IF (fit_trans.EQ.1) THEN
-     !atm trans applied in the observed frame
-     tmp_ltrans = sspgrid%lam / (1+pos%velz/clight*1E5)
-     tmp_ftrans(1:nl_fit) = linterp(tmp_ltrans,&
-          sspgrid%atm_trans,sspgrid%lam(1:nl_fit))
-     spec(1:nl_fit) = spec(1:nl_fit) * &
-          (1+(tmp_ftrans(1:nl_fit)-1)*10**pos%logtrans)
   ENDIF
 
 
