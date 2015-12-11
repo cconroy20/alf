@@ -40,10 +40,10 @@ clean :
 	rm -rf *.o *.mod *.MOD *~
 
 alf : alf.o $(COMMON) 
-	$(F90) $(F90FLAGS) -o alf.exe alf.o $(COMMON)
+	$(F90) $(F90FLAGS) -o ../bin/alf.exe alf.o $(COMMON)
 
 write_a_model : write_a_model.o $(COMMON) 
-	$(F90) -o write_a_model.exe write_a_model.o $(COMMON)
+	$(F90) -o ../bin/write_a_model.exe write_a_model.o $(COMMON)
 
 alf.o : alf_vars.o nrtype.o nr.o alf_utils.o ran_state.o nrutil.o
 
