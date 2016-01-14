@@ -38,6 +38,8 @@ MODULE ALF_VARS
   INTEGER :: mwimf=0
   !flag to implement fake element response functions (for testing)
   INTEGER :: fake_response=0
+  !flag to fit a single IMF slope
+  INTEGER :: fit_oneimf=0
 
   !the options below have not been tested/used in a long time
 

@@ -160,9 +160,14 @@ SUBROUTINE GETMODEL(pos,spec,mw)
         vv1 = MAX(MIN(locate(sspgrid%imfx,pos%imf1),nimf-1),1)
         dx1 = (pos%imf1-sspgrid%imfx(vv1))/(sspgrid%imfx(vv1+1)-sspgrid%imfx(vv1))
         dx1 = MAX(MIN(dx1,1.0),-1.0)
-        vv2 = MAX(MIN(locate(sspgrid%imfx,pos%imf2),nimf-1),1)
-        dx2 = (pos%imf2-sspgrid%imfx(vv2))/(sspgrid%imfx(vv2+1)-sspgrid%imfx(vv2))
-        dx2 = MAX(MIN(dx2,1.0),-1.0)
+        IF (fit_oneimf.EQ.0) THEN
+           vv2 = MAX(MIN(locate(sspgrid%imfx,pos%imf2),nimf-1),1)
+           dx2 = (pos%imf2-sspgrid%imfx(vv2))/(sspgrid%imfx(vv2+1)-sspgrid%imfx(vv2))
+           dx2 = MAX(MIN(dx2,1.0),-1.0)
+        ELSE
+           vv2 = vv1
+           dx2 = dx1
+        ENDIF
         tmp(1:nl_fit) = (1-dx1)*(1-dx2)*sspgrid%imf(1:nl_fit,vv1,vv2)+&
              dx1*(1-dx2)*sspgrid%imf(1:nl_fit,vv1+1,vv2)+&
              (1-dx1)*dx2*sspgrid%imf(1:nl_fit,vv1,vv2+1)+&

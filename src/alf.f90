@@ -91,6 +91,9 @@ PROGRAM ALF
   CALL MPI_COMM_SIZE( MPI_COMM_WORLD, ntasks, ierr )
 
   !initialize the random number generator
+  !set each task to sleep for a different length of time
+  !so that each task has its own unique random number seed
+  CALL SLEEP(taskid)
   CALL INIT_RANDOM_SEED()
 
   IF (IARGC().LT.1) THEN

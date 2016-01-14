@@ -9,7 +9,7 @@ PROGRAM WRITE_A_MODEL
   IMPLICIT NONE
 
   INTEGER  :: i
-  REAL(DP) :: s2n,lmin,lmax,ires=0.
+  REAL(DP) :: s2n,lmin,lmax,ires=0.,emnorm
   REAL(DP), DIMENSION(nl) :: mspec,lam,err,gdev
   CHARACTER(100)  :: file=''
   TYPE(PARAMS)   :: pos
@@ -22,12 +22,19 @@ PROGRAM WRITE_A_MODEL
   !compute an array of gaussian deviates
   CALL GASDEV(gdev)
 
-  file = 'age+10.0_sn+100_sigma200_Ha-6.spec'
+  file = 'age+10.0_sigma300.spec'
   s2n  = 1000.0
   lmin = 3800.
   lmax = 10000.
-  pos%sigma  = 200.0
+  pos%sigma  = 300.0
+  pos%sigma2 = 200.
   pos%logage = 1.0
+  emnorm = -1.5
+  !pos%logemline_h=emnorm
+  !pos%logemline_oiii=emnorm
+  !pos%logemline_sii=emnorm
+  !pos%logemline_ni=emnorm
+  !pos%logemline_nii=emnorm
 
   ires = 10.
 
@@ -60,13 +67,12 @@ PROGRAM WRITE_A_MODEL
   pos%imf1    = 1.3
   pos%imf2    = 2.3
   pos%logfy   = -5.0
-  pos%sigma2  = 300.
-  !pos%velz    = 0.0
+  !pos%sigma2  = 300.
+  pos%velz    = 0.0
   pos%velz2   = 0.0
   pos%logm7g  = -5.0
   pos%hotteff = 20.0
   pos%loghot  = -5.0
-  !pos%logemnorm = -10.0
 
   !force a constant instrumental resolution
   datmax=10000
