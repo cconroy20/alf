@@ -24,7 +24,11 @@ SUBROUTINE GETM2L(msto,lam,spec,pos,m2l,mw)
   IF (PRESENT(mw)) THEN
      mass = getmass(msto,krpa_imf1,krpa_imf2,krpa_imf3)
   ELSE
-     mass = getmass(msto,pos%imf1,pos%imf2,krpa_imf3)
+     IF (fit_oneimf.EQ.0) THEN
+        mass = getmass(msto,pos%imf1,pos%imf2,krpa_imf3)
+     ELSE
+        mass = getmass(msto,pos%imf1,pos%imf1,krpa_imf3)
+     ENDIF
   ENDIF
 
   !loop over the three filters
