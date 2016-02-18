@@ -34,7 +34,7 @@ PROGRAM ALF
   !sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=50000
+  INTEGER, PARAMETER :: nburn=20000
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=1024
   !start w/ powell minimization?
@@ -76,7 +76,10 @@ PROGRAM ALF
   fit_type  = 0
   !dont fit transmission function in cases where the input
   !spectrum has already been redshifted to ~0.0
-  fit_trans = 0
+  fit_trans = 1
+
+  !fit two-part power-law IMF if fit_oneimf=0
+  fit_oneimf=0
 
   prhi%logm7g = -3.0
   prhi%loghot = -3.0
