@@ -85,10 +85,10 @@ FUNCTION FUNC(nposarr,spec,funit)
         
         !fit a polynomial to the ratio of model and data
         IF (fit_poly.EQ.1) THEN
-           CALL CONTNORMSPEC(sspgrid%lam,idata%flx/mspec,idata%err,&
-                tl1,tl2,mflx,coeff=tcoeff)
+           CALL CONTNORMSPEC(sspgrid%lam,idata%flx/mspec,&
+                idata%err/mspec,tl1,tl2,mflx,coeff=tcoeff)
            poly = 0.0
-           npow = MIN(NINT((tl2-tl1)/100.0),npolymax)
+           npow = MIN(NINT((tl2-tl1)/poly_dlam),npolymax)
            DO j=1,npow+1 
               poly = poly + tcoeff(j)*(sspgrid%lam-ml)**(j-1)
            ENDDO

@@ -82,6 +82,8 @@ MODULE ALF_VARS
   INTEGER, PARAMETER :: nimf = 35
   !max degree of polynomial used for continuum fitting
   INTEGER, PARAMETER :: npolymax = 14
+  !wavelength interval used to determine polynomial degree
+  REAL, PARAMETER :: poly_dlam = 100.0
   !max number of data wavelength points
   INTEGER, PARAMETER :: ndat = 100000
   !total number of parameters in the simple model

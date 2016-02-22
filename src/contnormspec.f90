@@ -47,9 +47,9 @@ SUBROUTINE CONTNORMSPEC(lam,flx,err,il1,il2,flxout,coeff)
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
-  !divide by a power-law of degree npow. one degree per 100A.
+  !divide by a power-law of degree npow. one degree per poly_dlam.
   !don't let things get out of hand (force Npow<=npolymax)
-  npow = MIN(NINT((il2-il1)/100.0),npolymax)
+  npow = MIN(NINT((il2-il1)/poly_dlam),npolymax)
   
   i1 = MIN(MAX(locate(lam,il1-buff),1),nl-1)
   i2 = MIN(MAX(locate(lam,il2+buff),2),nl)
