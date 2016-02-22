@@ -73,13 +73,12 @@ PROGRAM ALF
 
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
-  fit_type  = 0
+  fit_type   = 0
   !dont fit transmission function in cases where the input
   !spectrum has already been de-redshifted to ~0.0
-  fit_trans = 1
-
+  fit_trans  = 1
   !fit two-part power-law IMF if fit_oneimf=0
-  fit_oneimf=0
+  fit_oneimf = 0
 
   !set low upper prior limits to kill these parameters
   prhi%logm7g = -3.0
