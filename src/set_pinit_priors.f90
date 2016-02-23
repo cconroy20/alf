@@ -105,11 +105,11 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prlo%teff.EQ.test%teff) prlo%teff       = -75.0
   IF (prlo%imf1.EQ.test%imf1) prlo%imf1       = 0.5
   IF (prlo%imf2.EQ.test%imf2) prlo%imf2       = 0.5
-  IF (prlo%logfy.EQ.test%logfy) prlo%logfy    = -5.0
+  IF (prlo%logfy.EQ.test%logfy) prlo%logfy    = -6.0
   IF (prlo%fy_logage.EQ.test%fy_logage) prlo%fy_logage = LOG10(0.5)
-  IF (prlo%logm7g.EQ.test%logm7g) prlo%logm7g   = -5.0
+  IF (prlo%logm7g.EQ.test%logm7g) prlo%logm7g   = -6.0
   IF (prlo%hotteff.EQ.test%hotteff) prlo%hotteff= 8.0
-  IF (prlo%loghot.EQ.test%loghot) prlo%loghot   = -5.0
+  IF (prlo%loghot.EQ.test%loghot) prlo%loghot   = -6.0
   IF (prlo%sigma.EQ.test%sigma) prlo%sigma      = 10.0
   IF (prlo%sigma2.EQ.test%sigma2) prlo%sigma2   = 10.0
   IF (prlo%velz.EQ.test%velz) prlo%velz         = -1E3
@@ -167,5 +167,28 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prhi%logemline_sii.EQ.test%logemline_sii) prhi%logemline_sii    = 1.0
   IF (prhi%logemline_ni.EQ.test%logemline_ni) prhi%logemline_ni       = 1.0
   IF (prhi%logemline_nii.EQ.test%logemline_nii) prhi%logemline_nii    = 1.0
+
+
+  !reset the initial parameters if the priors have been altered
+
+  IF (prhi%logtrans.NE.test%logtrans) &
+       pos%logtrans = myran()*(prhi%logtrans-prlo%logtrans)+prlo%logtrans
+  IF (prhi%logfy.NE.test%logfy) &
+       pos%logfy = myran()*(prhi%logfy-prlo%logfy)+prlo%logfy
+  IF (prhi%loghot.NE.test%loghot) &
+       pos%loghot = myran()*(prhi%loghot-prlo%loghot)+prlo%loghot
+  IF (prhi%logm7g.NE.test%logm7g) &
+       pos%logm7g = myran()*(prhi%logm7g-prlo%logm7g)+prlo%logm7g
+  IF (prhi%logemline_h.NE.test%logemline_h) &
+       pos%logemline_h = myran()*(prhi%logemline_h-prlo%logemline_h)+prlo%logemline_h
+  IF (prhi%logemline_oiii.NE.test%logemline_oiii) &
+       pos%logemline_oiii = myran()*(prhi%logemline_oiii-prlo%logemline_oiii)+prlo%logemline_oiii
+  IF (prhi%logemline_sii.NE.test%logemline_sii) &
+       pos%logemline_sii = myran()*(prhi%logemline_sii-prlo%logemline_sii)+prlo%logemline_sii
+  IF (prhi%logemline_ni.NE.test%logemline_ni) &
+       pos%logemline_ni = myran()*(prhi%logemline_ni-prlo%logemline_ni)+prlo%logemline_ni
+  IF (prhi%logemline_nii.NE.test%logemline_nii) &
+       pos%logemline_nii = myran()*(prhi%logemline_nii-prlo%logemline_nii)+prlo%logemline_nii
+
 
 END SUBROUTINE SET_PINIT_PRIORS

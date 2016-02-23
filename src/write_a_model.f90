@@ -17,45 +17,38 @@ PROGRAM WRITE_A_MODEL
   !-----------------------------------------------------------!
   !-----------------------------------------------------------!
 
+  !instrumental resolution (<10 -> no broadening)
+  ires = 1.
+
   !initialize the random number generator
   CALL INIT_RANDOM_SEED()
   !compute an array of gaussian deviates
   CALL GASDEV(gdev)
 
-  file = 'age+10.0_sigma300.spec'
-  s2n  = 1000.0
-  lmin = 3800.
-  lmax = 10000.
-  pos%sigma  = 300.0
-  pos%sigma2 = 200.
-  pos%logage = 1.0
-  emnorm = -1.5
-  !pos%logemline_h=emnorm
-  !pos%logemline_oiii=emnorm
-  !pos%logemline_sii=emnorm
-  !pos%logemline_ni=emnorm
-  !pos%logemline_nii=emnorm
+  file = 'model3.spec'
+  s2n    = 500.0
+  lmin   = 3900.
+  lmax   = 10000.
+  emnorm = -5.0
 
-  ires = 10.
-
-  !pos%sigma   = 10.0
-  !pos%logage  = LOG10(8.0)
-  pos%feh     = 0.0
-  pos%ah      = 0.0
+  pos%sigma   = 300.0
+  pos%logage  = LOG10(12.0)
+  pos%feh     = 0.05
+  pos%ah      = 0.35
   pos%nhe     = 0.0
-  pos%ch      = 0.0
-  pos%nh      = 0.0
-  pos%nah     = 0.0
-  pos%mgh     = 0.0
-  pos%sih     = 0.0
+  pos%ch      = 0.25
+  pos%nh      = 0.25
+  pos%nah     = 0.5
+  pos%mgh     = 0.35
+  pos%sih     = 0.35
   pos%kh      = 0.0
-  pos%cah     = 0.0
-  pos%tih     = 0.0
-  pos%vh      = 0.0
-  pos%crh     = 0.0
-  pos%mnh     = 0.0
-  pos%coh     = 0.0
-  pos%nih     = 0.0
+  pos%cah     = 0.05
+  pos%tih     = 0.25
+  pos%vh      = 0.25
+  pos%crh     = 0.05
+  pos%mnh     = 0.05
+  pos%coh     = 0.25
+  pos%nih     = 0.05
   pos%cuh     = 0.0
   pos%rbh     = 0.0
   pos%srh     = 0.0
@@ -63,18 +56,26 @@ PROGRAM WRITE_A_MODEL
   pos%zrh     = 0.0
   pos%bah     = 0.0
   pos%euh     = 0.0
-  pos%teff    = 0.0
-  pos%imf1    = 1.3
-  pos%imf2    = 2.3
+  pos%teff    = -40.0
+  pos%imf1    = 2.5
+  pos%imf2    = 2.5
   pos%logfy   = -5.0
-  !pos%sigma2  = 300.
-  pos%velz    = 0.0
+  pos%fy_logage = 0.3
+  pos%logtrans  = -5.0
+  pos%sigma2  = 300.
+  pos%velz    = 5000.
   pos%velz2   = 0.0
   pos%logm7g  = -5.0
   pos%hotteff = 20.0
-  pos%loghot  = -5.0
+  pos%loghot  = -4.0
+  pos%logemline_h=emnorm
+  pos%logemline_oiii=emnorm
+  pos%logemline_sii=emnorm
+  pos%logemline_ni=emnorm
+  pos%logemline_nii=emnorm
 
   !force a constant instrumental resolution
+  !needs to be done this way for setup.f90 to work
   datmax=10000
   DO i=1,datmax
      data(i)%lam=i+3500
@@ -118,7 +119,7 @@ PROGRAM WRITE_A_MODEL
        TRIM(file),STATUS='REPLACE')
   DO i=1,nl
      IF (lam(i).GE.lmin.AND.lam(i).LE.lmax) THEN
-        WRITE(12,'(F10.3,2ES12.4,2x,F3.1)') lam(i),mspec(i),err(i),1.0
+        WRITE(12,'(F10.3,2ES12.4,2x,2F4.1)') lam(i),mspec(i),err(i),1.0,ires
      ENDIF
   ENDDO
   CLOSE(12)

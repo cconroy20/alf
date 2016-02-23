@@ -34,7 +34,7 @@ PROGRAM ALF
   !sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=50000
+  INTEGER, PARAMETER :: nburn=10000
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=1024
   !start w/ powell minimization?
@@ -76,13 +76,22 @@ PROGRAM ALF
   fit_type   = 0
   !dont fit transmission function in cases where the input
   !spectrum has already been de-redshifted to ~0.0
-  fit_trans  = 1
+  fit_trans  = 0
   !fit two-part power-law IMF if fit_oneimf=0
   fit_oneimf = 0
 
   !set low upper prior limits to kill these parameters
-  prhi%logm7g = -3.0
-  prhi%loghot = -3.0
+  prhi%logm7g = -5.0
+  prhi%loghot = -5.0
+
+  prhi%logtrans = -5.0
+  prhi%logfy    = -5.0
+  prhi%logemline_h    = -5.0
+  prhi%logemline_oiii = -5.0
+  prhi%logemline_sii  = -5.0
+  prhi%logemline_nii  = -5.0
+  prhi%logemline_ni   = -5.0
+
 
   IF (fit_type.EQ.1.OR.fit_type.EQ.2) mwimf=1
 
@@ -152,8 +161,6 @@ PROGRAM ALF
   !fold the masked regions into the errors
   data%err = data%err * data%wgt
 
-  !data%lam = data%lam / 1.033
-  
   !set initial params, step sizes, and prior ranges
   CALL SET_PINIT_PRIORS(opos,prlo,prhi)
   !convert the structures into their equivalent arrays
@@ -308,6 +315,11 @@ PROGRAM ALF
         !Compute the initial log-probability for each walker
         lp_emcee_in(j) = -0.5*func(pos_emcee_in(:, j))
    
+        IF (-2.*lp_emcee_in(j).GE.huge_number/2.) THEN
+           WRITE(*,*) 'ALF ERROR: initial lnp out of bounds!'
+           STOP
+        ENDIF
+
      ENDDO
 
      !burn-in

@@ -274,7 +274,7 @@ SUBROUTINE SETUP()
   !smooth the models to the input instrumental resolution
   IF (MAXVAL(data(1:datmax)%ires).GT.10.0) THEN
 
-     !the interpolation here is a massive extrapoltion beyond the range
+     !the interpolation here is a massive extrapolation beyond the range
      !of the data.  This *should't* matter since we dont use the model
      !beyond the range of the data, but I should double check this at some point
      smooth = linterp(data(1:datmax)%lam,data(1:datmax)%ires,sspgrid%lam)

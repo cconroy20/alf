@@ -163,8 +163,8 @@ MODULE ALF_VARS
           cuh=0.0,rbh=0.0,srh=0.0,yh=0.0,zrh=0.0,bah=0.0,euh=0.0,&
           teff=0.0,imf1=1.3,imf2=2.3,logfy=-4.0,sigma2=0.0,velz2=0.0,&
           logm7g=-4.0,hotteff=20.0,loghot=-4.0,fy_logage=0.3,logtrans=-4.0,&
-          logemline_h=-5.0,logemline_oiii=-5.0,logemline_sii=-5.0,&
-          logemline_ni=-5.0,logemline_nii=-5.0
+          logemline_h=-4.0,logemline_oiii=-4.0,logemline_sii=-4.0,&
+          logemline_ni=-4.0,logemline_nii=-4.0
      REAL(DP) :: chi2=huge_number
   END TYPE PARAMS
   
