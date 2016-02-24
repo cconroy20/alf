@@ -2,8 +2,8 @@ FUNCTION GETVELZ()
 
   !function to estimate the recession velocity
   !this routine is used to get a first-guess at the velocity
-  !so that the subsequent Powell minimization (in specfit)
-  !coverges faster.  uses 4100<lambda<5000A
+  !so that the subsequent Powell minimization (in alf)
+  !coverges faster.  uses only the first wavelength chunk
 
   USE alf_vars; USE nr, ONLY : locate
   USE alf_utils, ONLY : linterp,contnormspec
@@ -36,7 +36,10 @@ FUNCTION GETVELZ()
      
      lo = MAX(l1(1),data(1)%lam0)+50
      hi = MIN(l2(1),data(datmax)%lam0)-50
-     IF (lo.GE.hi) CYCLE
+     IF (lo.GE.hi) THEN
+        WRITE(*,*) 'GETVELZ ERROR:, lo>hi'
+        STOP
+     ENDIF
 
      CALL CONTNORMSPEC(sspgrid%lam,iidata%flx,iidata%err,lo,hi,dflx)
      !use a 5 Gyr Zsol SSP

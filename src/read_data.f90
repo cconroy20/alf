@@ -96,7 +96,7 @@ SUBROUTINE READ_DATA(file)
   CLOSE(10)
 
   IF (i.GT.ndat) THEN
-     WRITE(*,*) 'READ_DATA ERROR: data file is too long, returning'
+     WRITE(*,*) 'READ_DATA ERROR: data file length exceeds ndat, returning'
      STOP
   ENDIF
 

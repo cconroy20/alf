@@ -24,17 +24,17 @@ SUBROUTINE CONTNORMSPEC(lam,flx,err,il1,il2,flxout,coeff)
   USE alf_vars; USE nr, ONLY : locate, lfit
   IMPLICIT NONE
 
-  REAL(DP), DIMENSION(nl), INTENT(in) :: lam,flx,err
+  REAL(DP), DIMENSION(:), INTENT(in) :: lam,flx,err
   REAL(DP), INTENT(in) :: il1,il2
-  REAL(DP), DIMENSION(nl), INTENT(inout) :: flxout
+  REAL(DP), DIMENSION(:), INTENT(inout) :: flxout
   REAL(DP), DIMENSION(ncoeff), OPTIONAL :: coeff
   REAL(DP), PARAMETER :: buff=0.0
-  REAL(DP), DIMENSION(nl) :: poly
+  REAL(DP), DIMENSION(ndat) :: poly
   REAL(DP), DIMENSION(20) :: tcoeff=0.0
   LOGICAL, DIMENSION(20)  :: mask=.TRUE.
   REAL(DP), DIMENSION(20,20) :: covar
   REAL(DP) :: ml,chi2sqr
-  INTEGER  :: i1,i2,npow ,i
+  INTEGER  :: i1,i2,npow,i,n1,n2
   INTERFACE
      SUBROUTINE NPOLY(x,arr)
        USE nrtype
@@ -47,12 +47,19 @@ SUBROUTINE CONTNORMSPEC(lam,flx,err,il1,il2,flxout,coeff)
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
+  n1 = SIZE(lam)
+  n2 = SIZE(flxout)
+  IF (n1.NE.n2) THEN
+     WRITE(*,*) 'CONTNORMSPEC ERROR: n1 NE n2'
+     STOP
+  ENDIF
+
   !divide by a power-law of degree npow. one degree per poly_dlam.
   !don't let things get out of hand (force Npow<=npolymax)
   npow = MIN(NINT((il2-il1)/poly_dlam),npolymax)
   
-  i1 = MIN(MAX(locate(lam,il1-buff),1),nl-1)
-  i2 = MIN(MAX(locate(lam,il2+buff),2),nl)
+  i1 = MIN(MAX(locate(lam(1:n1),il1-buff),1),n1-1)
+  i2 = MIN(MAX(locate(lam(1:n1),il2+buff),2),n1)
   ml = (il1+il2)/2.0
 
   !simple linear least squares polynomial fit
@@ -65,9 +72,9 @@ SUBROUTINE CONTNORMSPEC(lam,flx,err,il1,il2,flxout,coeff)
 
   poly = 0.0
   DO i=1,npow+1 
-     poly = poly + tcoeff(i)*(lam-ml)**(i-1)
+     poly(1:n1) = poly(1:n1) + tcoeff(i)*(lam(1:n1)-ml)**(i-1)
   ENDDO
-  flxout = flx / poly
+  flxout(1:n1) = flx(1:n1) / poly(1:n1)
 
 
 

@@ -15,9 +15,9 @@ MODULE ALF_UTILS
   INTERFACE
      SUBROUTINE CONTNORMSPEC(lam,flx,err,il1,il2,flxout,coeff)
        USE alf_vars
-       REAL(DP), DIMENSION(nl), INTENT(in) :: lam,flx,err
+       REAL(DP), DIMENSION(:), INTENT(in) :: lam,flx,err
        REAL(DP), INTENT(in) :: il1,il2
-       REAL(DP), DIMENSION(nl), INTENT(inout) :: flxout
+       REAL(DP), DIMENSION(:), INTENT(inout) :: flxout
        REAL(DP), DIMENSION(ncoeff), OPTIONAL :: coeff
      END SUBROUTINE CONTNORMSPEC
   END INTERFACE

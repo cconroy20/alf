@@ -85,7 +85,7 @@ MODULE ALF_VARS
   !wavelength interval used to determine polynomial degree
   REAL, PARAMETER :: poly_dlam = 100.0
   !max number of data wavelength points
-  INTEGER, PARAMETER :: ndat = 100000
+  INTEGER, PARAMETER :: ndat = 30000
   !total number of parameters in the simple model
   INTEGER, PARAMETER :: nparsimp = 14
   !number of filters
