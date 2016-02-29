@@ -25,8 +25,8 @@ PROGRAM WRITE_A_MODEL
   !compute an array of gaussian deviates
   CALL GASDEV(gdev)
 
-  file = 'model3.spec'
-  s2n    = 500.0
+  file = 'model4_sn1E4.spec'
+  s2n    = 1E4
   lmin   = 3900.
   lmax   = 10000.
   emnorm = -5.0
@@ -57,8 +57,8 @@ PROGRAM WRITE_A_MODEL
   pos%bah     = 0.0
   pos%euh     = 0.0
   pos%teff    = -40.0
-  pos%imf1    = 2.5
-  pos%imf2    = 2.5
+  pos%imf1    = 1.3
+  pos%imf2    = 2.3
   pos%logfy   = -5.0
   pos%fy_logage = 0.3
   pos%logtrans  = -5.0

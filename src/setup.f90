@@ -132,7 +132,7 @@ SUBROUTINE SETUP()
   sspgrid%logfkrpa   = LOG10(sspgrid%logfkrpa+tiny_number)
   sspgrid%logagegrid = LOG10((/1.0,3.0,5.0,7.0,9.0,11.0,13.5/))
 
-  !vary two power-law slopes, from 0.1<M<0.5 and 0.5<M<1.0
+  !read in two power-law slopes, from 0.1<M<0.5 and 0.5<M<1.0
   OPEN(22,FILE=TRIM(SPECFIT_HOME)//'/infiles/CvD_t13.5.ssp.'//&
        'imf_varydoublex.s100',STATUS='OLD',iostat=stat,ACTION='READ')
   DO i=1,nstart-1

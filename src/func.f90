@@ -64,13 +64,7 @@ FUNCTION FUNC(nposarr,spec,funit)
         spec = mspec
      ENDIF
 
-     !de-redshift the data and interpolate to model wavelength array
-   !  data%lam0 = data%lam / (1+npos%velz/clight*1E5)
-   !  CALL LINTERP3(data(1:datmax)%lam0,data(1:datmax)%flx,&
-   !       data(1:datmax)%err,data(1:datmax)%wgt,&
-   !       sspgrid%lam(1:nl_fit),idata(1:nl_fit)%flx,&
-   !       idata(1:nl_fit)%err,idata(1:nl_fit)%wgt)
-
+     !redshift the model and interpolate to data wavelength array
      oneplusz = (1+npos%velz/clight*1E5)
      zmspec = 0.0
      zmspec(1:datmax) = LINTERP(sspgrid%lam(1:nl_fit)*oneplusz,&
@@ -81,32 +75,27 @@ FUNCTION FUNC(nposarr,spec,funit)
         
         tl1 = MAX(l1(i)*oneplusz,data(1)%lam)
         tl2 = MIN(l2(i)*oneplusz,data(datmax)%lam)
+        ml  = (tl1+tl2)/2.0
         !if wavelength interval falls completely outside 
         !of the range of the data, then skip
         IF (tl1.GE.tl2) CYCLE
         
         i1 = MIN(MAX(locate(data(1:datmax)%lam,tl1),1),datmax-1)
         i2 = MIN(MAX(locate(data(1:datmax)%lam,tl2),2),datmax)
-        ml = (tl1+tl2)/2.0
-        
+
         !fit a polynomial to the ratio of model and data
         IF (fit_poly.EQ.1) THEN
-           !CALL CONTNORMSPEC(sspgrid%lam,idata%flx/mspec,&
-           !     idata%err/mspec,tl1,tl2,mflx,coeff=tcoeff)
            CALL CONTNORMSPEC(data(1:datmax)%lam,&
                 data(1:datmax)%flx/zmspec(1:datmax),&
-                data(1:datmax)%err/zmspec(1:datmax),tl1,tl2,mflx(1:datmax),&
-                coeff=tcoeff)
+                data(1:datmax)%err/zmspec(1:datmax),tl1,tl2,&
+                mflx(1:datmax),coeff=tcoeff)
            poly = 0.0
            npow = MIN(NINT((tl2-tl1)/poly_dlam),npolymax)
            DO j=1,npow+1 
-              !poly = poly + tcoeff(j)*(sspgrid%lam-ml)**(j-1)
               poly = poly + tcoeff(j)*(data%lam-ml)**(j-1)
            ENDDO
            mflx  = zmspec * poly
-           !dflx  = idata%flx
            dflx  = data%flx
-           !tchi2 = SUM((dflx(i1:i2)-mflx(i1:i2))**2/idata(i1:i2)%err**2)
            tchi2 = SUM((dflx(i1:i2)-mflx(i1:i2))**2/data(i1:i2)%err**2)
         ELSE
        !    CALL CONTNORMSPEC(sspgrid%lam,idata%flx,idata%err,tl1,tl2,dflx)
@@ -140,8 +129,6 @@ FUNCTION FUNC(nposarr,spec,funit)
                 tl1/1E4,tl2/1E4,SQRT( SUM( (dflx(i1:i2)/mflx(i1:i2)-1)**2 )/&
                 (i2-i1+1) )*100,tchi2/(i2-i1)
            DO j=i1,i2
-            !  WRITE(funit,'(F9.2,4ES12.4)') sspgrid%lam(j),mflx(j),&
-            !       dflx(j),idata(j)%flx/idata(j)%err,poly(j)
               WRITE(funit,'(F9.2,4ES12.4)') data(j)%lam,mflx(j),&
                    dflx(j),data(j)%flx/data(j)%err,poly(j)
            ENDDO

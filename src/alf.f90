@@ -13,8 +13,9 @@ PROGRAM ALF
   !    subtle art and the code can easily fool you if you don't know
   !    what you're doing.  Make sure you understand *why* the code is 
   !    settling on a particular parameter value.  
-  ! 4. Wavelength-dependent instrumental broadening is included but 
-  !    will not be accurate in the limit of modest-large redshift
+  ! 4. Wavelength-dependent instrumental broadening is included but
+  !    will not be accurate in the limit of modest-large redshift b/c
+  !    this is implemented in the model restframe at code setup time
 
   !To Do: 
   !1. add SFH and metal-poor/metal-rich component
@@ -34,7 +35,7 @@ PROGRAM ALF
   !sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=10000
+  INTEGER, PARAMETER :: nburn=10000  !1E4 seems to be good enough
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=1024
   !start w/ powell minimization?
@@ -76,22 +77,20 @@ PROGRAM ALF
   fit_type   = 0
   !dont fit transmission function in cases where the input
   !spectrum has already been de-redshifted to ~0.0
-  fit_trans  = 0
+  fit_trans  = 1
   !fit two-part power-law IMF if fit_oneimf=0
   fit_oneimf = 0
 
   !set low upper prior limits to kill these parameters
-  prhi%logm7g = -5.0
-  prhi%loghot = -5.0
-
-  prhi%logtrans = -5.0
-  prhi%logfy    = -5.0
-  prhi%logemline_h    = -5.0
-  prhi%logemline_oiii = -5.0
-  prhi%logemline_sii  = -5.0
-  prhi%logemline_nii  = -5.0
-  prhi%logemline_ni   = -5.0
-
+  !prhi%logm7g = -5.0
+  !prhi%loghot = -5.0
+  !prhi%logtrans = -5.0
+  !prhi%logfy    = -5.0
+  !prhi%logemline_h    = -5.0
+  !prhi%logemline_oiii = -5.0
+  !prhi%logemline_sii  = -5.0
+  !prhi%logemline_nii  = -5.0
+  !prhi%logemline_ni   = -5.0
 
   IF (fit_type.EQ.1.OR.fit_type.EQ.2) mwimf=1
 
@@ -126,7 +125,7 @@ PROGRAM ALF
      WRITE(*,'("   fit_type  =",I2)') fit_type
      WRITE(*,'("      mwimf  =",I2)') mwimf
      WRITE(*,'("  age-dep Rf =",I2)') use_age_dep_resp_fcns
-     WRITE(*,'("  Nwalkers   = ",I5)') nwalkers
+     WRITE(*,'("  Nwalkers   = ",I6)') nwalkers
      WRITE(*,'("  Nburn      = ",I5)') nburn
      WRITE(*,'("  Nchain     = ",I5)') nmcmc
      WRITE(*,'("  filename   = ",A)') TRIM(file)//TRIM(tag)
@@ -401,7 +400,6 @@ PROGRAM ALF
            CALL UPDATE_RUNTOT(runtot,pos_emcee_in(:,j),m2l,m2lmw)
            
         ENDDO
-        CALL FLUSH(12)
         
      ENDDO
      
