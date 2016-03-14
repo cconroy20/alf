@@ -11,7 +11,8 @@ PROGRAM WRITE_A_MODEL
   INTEGER  :: i
   REAL(DP) :: s2n,lmin,lmax,ires=0.,emnorm
   REAL(DP), DIMENSION(nl) :: mspec,lam,err,gdev
-  CHARACTER(100)  :: file=''
+  CHARACTER(100) :: file=''
+  CHARACTER(50)  :: infile=''
   TYPE(PARAMS)   :: pos
   
   !-----------------------------------------------------------!
@@ -25,30 +26,30 @@ PROGRAM WRITE_A_MODEL
   !compute an array of gaussian deviates
   CALL GASDEV(gdev)
 
-  file = 'model4_sn1E4.spec'
+  file = 'model_snl2.spec'
   s2n    = 1E4
-  lmin   = 3900.
-  lmax   = 10000.
+  lmin   = 3700.
+  lmax   = 11000.
   emnorm = -5.0
 
-  pos%sigma   = 300.0
-  pos%logage  = LOG10(12.0)
-  pos%feh     = 0.05
-  pos%ah      = 0.35
+  pos%sigma   = 252.6
+  pos%logage  = 1.196
+  pos%feh     = -0.05
+  pos%ah      = 0.45
   pos%nhe     = 0.0
-  pos%ch      = 0.25
+  pos%ch      = 0.30
   pos%nh      = 0.25
-  pos%nah     = 0.5
-  pos%mgh     = 0.35
+  pos%nah     = 0.6
+  pos%mgh     = 0.26
   pos%sih     = 0.35
   pos%kh      = 0.0
   pos%cah     = 0.05
-  pos%tih     = 0.25
+  pos%tih     = 0.15
   pos%vh      = 0.25
   pos%crh     = 0.05
   pos%mnh     = 0.05
-  pos%coh     = 0.25
-  pos%nih     = 0.05
+  pos%coh     = 0.30
+  pos%nih     = 0.00
   pos%cuh     = 0.0
   pos%rbh     = 0.0
   pos%srh     = 0.0
@@ -56,12 +57,12 @@ PROGRAM WRITE_A_MODEL
   pos%zrh     = 0.0
   pos%bah     = 0.0
   pos%euh     = 0.0
-  pos%teff    = -40.0
-  pos%imf1    = 1.3
-  pos%imf2    = 2.3
-  pos%logfy   = -5.0
-  pos%fy_logage = 0.3
-  pos%logtrans  = -5.0
+  pos%teff    = -53.0
+  pos%imf1    = 2.48
+  pos%imf2    = 1.43
+  pos%logfy   = -2.29
+  pos%fy_logage = -0.15
+  pos%logtrans  = -3.9
   pos%sigma2  = 300.
   pos%velz    = 5000.
   pos%velz2   = 0.0
@@ -76,11 +77,15 @@ PROGRAM WRITE_A_MODEL
 
   !force a constant instrumental resolution
   !needs to be done this way for setup.f90 to work
-  datmax=10000
-  DO i=1,datmax
-     data(i)%lam=i+3500
-  ENDDO
-  data(1:datmax)%ires = ires
+  !datmax=10000
+  !DO i=1,datmax
+  !   data(i)%lam=i+3500
+  !ENDDO
+  !data(1:datmax)%ires = ires
+
+  !use the LRIS instrumental dispersion
+  infile = 'snl2_lris'
+  CALL READ_DATA(infile)
 
   !read in the SSPs and bandpass filters
   CALL SETUP()

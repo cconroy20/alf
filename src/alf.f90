@@ -35,7 +35,7 @@ PROGRAM ALF
   !sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=10000  !1E4 seems to be good enough
+  INTEGER, PARAMETER :: nburn=20000  !1E4 seems to be good enough
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=1024
   !start w/ powell minimization?
@@ -82,8 +82,8 @@ PROGRAM ALF
   fit_oneimf = 0
 
   !set low upper prior limits to kill these parameters
-  !prhi%logm7g = -5.0
-  !prhi%loghot = -5.0
+  !prhi%logm7g   = -5.0
+  !prhi%loghot   = -5.0
   !prhi%logtrans = -5.0
   !prhi%logfy    = -5.0
   !prhi%logemline_h    = -5.0
@@ -125,8 +125,8 @@ PROGRAM ALF
      WRITE(*,'("   fit_type  =",I2)') fit_type
      WRITE(*,'("      mwimf  =",I2)') mwimf
      WRITE(*,'("  age-dep Rf =",I2)') use_age_dep_resp_fcns
-     WRITE(*,'("  Nwalkers   = ",I6)') nwalkers
-     WRITE(*,'("  Nburn      = ",I5)') nburn
+     WRITE(*,'("  Nwalkers   = ",I5)') nwalkers
+     WRITE(*,'("  Nburn      = ",I6)') nburn
      WRITE(*,'("  Nchain     = ",I5)') nmcmc
      WRITE(*,'("  filename   = ",A)') TRIM(file)//TRIM(tag)
      WRITE(*,'(" ************************************")') 
