@@ -48,44 +48,46 @@ SUBROUTINE SETUP()
   CLOSE(15)
 
   !read in the ATLAS SSPs
-  DO j=1,nage_rfcn
+  DO k=1,nzmet
 
-     IF (j.EQ.1) THEN
-        OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t01_Zp0.0.abund.krpa.s100',&
-             STATUS='OLD',iostat=stat,ACTION='READ')
-     ELSE IF (j.EQ.2) THEN
-        OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t03_Zp0.0.abund.krpa.s100',&
-             STATUS='OLD',iostat=stat,ACTION='READ')
-      ELSE IF (j.EQ.3) THEN
-        OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t05_Zp0.0.abund.krpa.s100',&
-             STATUS='OLD',iostat=stat,ACTION='READ')
-     ELSE IF (j.EQ.4) THEN
-        OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t09_Zp0.0.abund.krpa.s100',&
-             STATUS='OLD',iostat=stat,ACTION='READ')
-     ELSE IF (j.EQ.5) THEN
-        OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t13_Zp0.0.abund.krpa.s100',&
-             STATUS='OLD',iostat=stat,ACTION='READ')
-     ENDIF
+     DO j=1,nage_rfcn
 
-     READ(20,*) !burn the header
-     READ(20,*)
-     DO i=1,nstart-1
-        READ(20,*) 
+        IF (j.EQ.1) THEN
+           OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t01_Z'//&
+                charz(k)//'.abund.krpa.s100',STATUS='OLD',iostat=stat,ACTION='READ')
+        ELSE IF (j.EQ.2) THEN
+           OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t03_Z'//&
+                charz(k)//'.abund.krpa.s100',STATUS='OLD',iostat=stat,ACTION='READ')
+        ELSE IF (j.EQ.3) THEN
+           OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t05_Z'//&
+                charz(k)//'.abund.krpa.s100',STATUS='OLD',iostat=stat,ACTION='READ')
+        ELSE IF (j.EQ.4) THEN
+           OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t09_Z'//&
+                charz(k)//'.abund.krpa.s100',STATUS='OLD',iostat=stat,ACTION='READ')
+        ELSE IF (j.EQ.5) THEN
+           OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t13_Z'//&
+                charz(k)//'.abund.krpa.s100',STATUS='OLD',iostat=stat,ACTION='READ')
+        ENDIF
+
+        READ(20,*) !burn the header
+        READ(20,*)
+        DO i=1,nstart-1
+           READ(20,*) 
+        ENDDO
+        DO i=1,nl
+           READ(20,*) sspgrid%lam(i),sspgrid%solar(i,j,k),sspgrid%nap(i,j,k),&
+                sspgrid%nam(i,j,k),sspgrid%cap(i,j,k),sspgrid%cam(i,j,k),sspgrid%fep(i,j,k),&
+                sspgrid%fem(i,j,k),sspgrid%cp(i,j,k),sspgrid%cm(i,j,k),d1,&
+                sspgrid%np(i,j,k),sspgrid%nm(i,j,k),sspgrid%ap(i,j,k),sspgrid%tip(i,j,k),&
+                sspgrid%tim(i,j,k),sspgrid%mgp(i,j,k),sspgrid%mgm(i,j,k),sspgrid%sip(i,j,k),&
+                sspgrid%sim(i,j,k),sspgrid%teffp(i,j,k),sspgrid%teffm(i,j,k),sspgrid%crp(i,j,k),&
+                sspgrid%mnp(i,j,k),sspgrid%bap(i,j,k),sspgrid%bam(i,j,k),sspgrid%nip(i,j,k),&
+                sspgrid%cop(i,j,k),sspgrid%eup(i,j,k),sspgrid%srp(i,j,k),sspgrid%kp(i,j,k),&
+                sspgrid%vp(i,j,k),sspgrid%cup(i,j,k),sspgrid%nap6(i,j,k),sspgrid%nap9(i,j,k)
+        ENDDO
+        CLOSE(20)
+
      ENDDO
-     DO i=1,nl
-        READ(20,*) sspgrid%lam(i),sspgrid%solar(i,j),sspgrid%nap(i,j),&
-             sspgrid%nam(i,j),sspgrid%cap(i,j),sspgrid%cam(i,j),sspgrid%fep(i,j),&
-             sspgrid%fem(i,j),sspgrid%cp(i,j),sspgrid%cm(i,j),d1,&
-             sspgrid%np(i,j),sspgrid%nm(i,j),sspgrid%ap(i,j),&
-             sspgrid%tip(i,j),sspgrid%tim(i,j),sspgrid%mgp(i,j),sspgrid%mgm(i,j),&
-             sspgrid%sip(i,j),sspgrid%sim(i,j),sspgrid%hep(i,j),sspgrid%hem(i,j),&
-             sspgrid%teffp(i,j),sspgrid%teffm(i,j),sspgrid%crp(i,j),sspgrid%mnp(i,j),&
-             sspgrid%bap(i,j),sspgrid%bam(i,j),sspgrid%nip(i,j),sspgrid%cop(i,j),&
-             sspgrid%eup(i,j),sspgrid%srp(i,j),sspgrid%kp(i,j),sspgrid%vp(i,j),&
-             sspgrid%cup(i,j),sspgrid%nap6(i,j),sspgrid%nap9(i,j)
-     ENDDO
-     CLOSE(20)
-
   ENDDO
 
   lam = sspgrid%lam
@@ -96,24 +98,27 @@ SUBROUTINE SETUP()
   !the wavelengths by n pixels
   IF (fake_response.EQ.1) THEN
 
-     DO i=1,nage_rfcn
+     WRITE(*,*) 'ERROR: this option is not currently supported'
+     STOP
 
-        dumi = sspgrid%crp(:,i) / sspgrid%solar(:,i)
-        sspgrid%crp(:,i) = 1.0
-        sspgrid%crp(shift:nl-1,i) = dumi(1:nl-shift)
-        sspgrid%crp(:,i) = sspgrid%crp(:,i) * sspgrid%solar(:,i)
+     !DO i=1,nage_rfcn
+
+        !dumi = sspgrid%crp(:,i) / sspgrid%solar(:,i)
+        !sspgrid%crp(:,i) = 1.0
+        !sspgrid%crp(shift:nl-1,i) = dumi(1:nl-shift)
+        !sspgrid%crp(:,i) = sspgrid%crp(:,i) * sspgrid%solar(:,i)
      
-        dumi = sspgrid%mnp(:,i) / sspgrid%solar(:,i)
-        sspgrid%mnp = 1.0
-        sspgrid%mnp(shift:nl-1,i) = dumi(1:nl-shift)
-        sspgrid%mnp(:,i) = sspgrid%mnp(:,i) * sspgrid%solar(:,i)
+        !dumi = sspgrid%mnp(:,i) / sspgrid%solar(:,i)
+        !sspgrid%mnp = 1.0
+        !sspgrid%mnp(shift:nl-1,i) = dumi(1:nl-shift)
+        !sspgrid%mnp(:,i) = sspgrid%mnp(:,i) * sspgrid%solar(:,i)
   
-        dumi = sspgrid%cop(:,i) / sspgrid%solar(:,i)
-        sspgrid%cop = 1.0
-        sspgrid%cop(shift:nl-1,i) = dumi(1:nl-shift)
-        sspgrid%cop(:,i) = sspgrid%cop(:,i) * sspgrid%solar(:,i)
+        !dumi = sspgrid%cop(:,i) / sspgrid%solar(:,i)
+        !sspgrid%cop = 1.0
+        !sspgrid%cop(shift:nl-1,i) = dumi(1:nl-shift)
+        !sspgrid%cop(:,i) = sspgrid%cop(:,i) * sspgrid%solar(:,i)
  
-     ENDDO
+     !ENDDO
 
   ENDIF
 
@@ -286,42 +291,42 @@ SUBROUTINE SETUP()
      smooth = linterp(data(1:datmax)%lam,data(1:datmax)%ires,sspgrid%lam)
      smooth = MIN(MAX(smooth,0.0),MAXVAL(data(1:datmax)%ires))
 
-     DO j=1,nage_rfcn
-        CALL VELBROAD(lam,sspgrid%solar(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%nap(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%nam(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%cap(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%cam(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%fep(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%fem(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%cp(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%cm(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%np(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%nm(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%ap(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%tip(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%tim(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%mgp(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%mgm(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%sip(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%sim(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%hep(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%hem(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%teffp(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%teffm(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%crp(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%mnp(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%bap(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%bam(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%nip(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%cop(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%eup(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%srp(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%kp(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%vp(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%cup(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%nap6(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%nap9(:,j),sig0,lamlo,lamhi,smooth)
+     DO k=1,nzmet
+        DO j=1,nage_rfcn
+           CALL VELBROAD(lam,sspgrid%solar(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%nap(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%nam(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%cap(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%cam(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%fep(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%fem(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%cp(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%cm(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%np(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%nm(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%ap(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%tip(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%tim(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%mgp(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%mgm(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%sip(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%sim(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%teffp(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%teffm(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%crp(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%mnp(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%bap(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%bam(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%nip(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%cop(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%eup(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%srp(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%kp(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%vp(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%cup(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%nap6(:,j,k),sig0,lamlo,lamhi,smooth)
+           CALL VELBROAD(lam,sspgrid%nap9(:,j,k),sig0,lamlo,lamhi,smooth)
+        ENDDO
      ENDDO
 
      DO i=1,nhot

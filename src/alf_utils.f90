@@ -1,11 +1,11 @@
 MODULE ALF_UTILS
 
   INTERFACE
-     SUBROUTINE ADD_RESPONSE(spec,pos,range,dr,vr,solar,plus,minus)
+     SUBROUTINE ADD_RESPONSE(spec,pos,range,dr,vr,dm,vm,solar,plus,minus)
        USE alf_vars
-       INTEGER, INTENT(in) :: vr
+       INTEGER, INTENT(in) :: vr,vm
        REAL(SP), INTENT(in) :: range
-       REAL(DP), INTENT(in) :: pos,dr
+       REAL(DP), INTENT(in) :: pos,dr,dm
        REAL(DP), DIMENSION(nl), INTENT(inout) :: spec
        REAL(DP), DIMENSION(nl,nage_rfcn), INTENT(in) :: plus,solar
        REAL(DP), DIMENSION(nl,nage_rfcn), INTENT(in), OPTIONAL :: minus

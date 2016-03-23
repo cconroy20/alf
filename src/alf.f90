@@ -37,7 +37,7 @@ PROGRAM ALF
   !length of chain burn-in
   INTEGER, PARAMETER :: nburn=10  !1E4 seems to be good enough
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=128 !1024
+  INTEGER, PARAMETER :: nwalkers=256 !1024
 
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
