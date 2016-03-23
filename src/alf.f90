@@ -35,15 +35,15 @@ PROGRAM ALF
   !sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=20000  !1E4 seems to be good enough
+  INTEGER, PARAMETER :: nburn=10000  !1E4 seems to be good enough
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=1024
+
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !Powell iteration tolerance
   REAL(DP), PARAMETER :: ftol=0.1
   INTEGER, PARAMETER :: test_time=0
-  
   INTEGER  :: i,j,k,totacc=0,iter=30,npos
   REAL(DP) :: velz,msto,minchi2=huge_number,fret,wdth,bret=huge_number
   REAL(DP), DIMENSION(nl)   :: mspec=0.0,mspecmw=0.0,lam=0.0

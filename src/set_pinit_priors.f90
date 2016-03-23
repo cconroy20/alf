@@ -34,10 +34,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   pos%coh       = myran()*0.4-0.2
   pos%nih       = myran()*0.4-0.2
   pos%cuh       = myran()*0.4-0.2
-  pos%rbh       = myran()*0.4-0.2
   pos%srh       = myran()*0.4-0.2
-  pos%yh        = myran()*0.4-0.2
-  pos%zrh       = myran()*0.4-0.2
   pos%bah       = myran()*0.4-0.2
   pos%euh       = myran()*0.4-0.2
   pos%teff      = myran()*80-40
@@ -96,10 +93,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prlo%coh.EQ.test%coh) prlo%coh          = -0.3
   IF (prlo%nih.EQ.test%nih) prlo%nih          = -0.3
   IF (prlo%cuh.EQ.test%cuh) prlo%cuh          = -0.3
-  IF (prlo%rbh.EQ.test%rbh) prlo%rbh          = -0.3
   IF (prlo%srh.EQ.test%srh) prlo%srh          = -0.3
-  IF (prlo%yh.EQ.test%yh) prlo%yh             = -0.3
-  IF (prlo%zrh.EQ.test%zrh) prlo%zrh          = -0.6
   IF (prlo%bah.EQ.test%bah) prlo%bah          = -0.6
   IF (prlo%euh.EQ.test%euh) prlo%euh          = -0.6
   IF (prlo%teff.EQ.test%teff) prlo%teff       = -75.0
@@ -143,10 +137,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prhi%coh.EQ.test%coh) prhi%coh          = 0.5
   IF (prhi%nih.EQ.test%nih) prhi%nih          = 0.5
   IF (prhi%cuh.EQ.test%cuh) prhi%cuh          = 0.5
-  IF (prhi%rbh.EQ.test%rbh) prhi%rbh          = 0.5
   IF (prhi%srh.EQ.test%srh) prhi%srh          = 0.5
-  IF (prhi%yh.EQ.test%yh) prhi%yh             = 0.5
-  IF (prhi%zrh.EQ.test%zrh) prhi%zrh          = 0.5
   IF (prhi%bah.EQ.test%bah) prhi%bah          = 0.5
   IF (prhi%euh.EQ.test%euh) prhi%euh          = 0.5
   IF (prhi%teff.EQ.test%teff) prhi%teff       = 75.0

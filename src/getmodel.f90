@@ -142,14 +142,8 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      CALL ADD_RESPONSE(spec,pos%nih,0.3,dr,vr,sspgrid%solar,sspgrid%nip)
      !vary [Cu/H]
      CALL ADD_RESPONSE(spec,pos%cuh,0.3,dr,vr,sspgrid%solar,sspgrid%cup)
-     !vary [Rb/H]
-     CALL ADD_RESPONSE(spec,pos%rbh,0.3,dr,vr,sspgrid%solar,sspgrid%rbp)
      !vary [Sr/H]
      CALL ADD_RESPONSE(spec,pos%srh,0.3,dr,vr,sspgrid%solar,sspgrid%srp)
-     !vary [Y/H]
-     CALL ADD_RESPONSE(spec,pos%yh,0.3,dr,vr,sspgrid%solar,sspgrid%yp)
-     !vary [Zr/H]
-     CALL ADD_RESPONSE(spec,pos%zrh,0.3,dr,vr,sspgrid%solar,sspgrid%zrp)
      !vary [Ba/H]
      CALL ADD_RESPONSE(spec,pos%bah,0.3,dr,vr,sspgrid%solar,sspgrid%bap,sspgrid%bam)
      !vary [Eu/H]

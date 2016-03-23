@@ -5,7 +5,7 @@ SUBROUTINE SETUP()
   USE alf_vars; USE nr, ONLY : locate; USE alf_utils, ONLY : linterp,velbroad
   IMPLICIT NONE
   
-  REAL(DP) :: d1,l1um=1E4, t13=1.3,t23=2.3,sig0=99.,lamlo,lamhi
+  REAL(DP) :: d1,d2,d3,d4,d5,d6,d7,l1um=1E4,t13=1.3,t23=2.3,sig0=99.,lamlo,lamhi
   REAL(DP), DIMENSION(nimf*nimf) :: tmp
   REAL(DP), DIMENSION(nl) :: dumi,smooth=0.0,lam
   INTEGER :: stat,i,vv,j,k,ii,shift=100
@@ -72,15 +72,14 @@ SUBROUTINE SETUP()
      DO i=1,nl
         READ(20,*) sspgrid%lam(i),sspgrid%solar(i,j),sspgrid%nap(i,j),&
              sspgrid%nam(i,j),sspgrid%cap(i,j),sspgrid%cam(i,j),sspgrid%fep(i,j),&
-             sspgrid%fem(i,j),sspgrid%cp(i,j),sspgrid%cm(i,j),d1,sspgrid%zp(i,j),&
-             sspgrid%zm(i,j),sspgrid%np(i,j),sspgrid%nm(i,j),sspgrid%ap(i,j),&
+             sspgrid%fem(i,j),sspgrid%cp(i,j),sspgrid%cm(i,j),d1,d2,d3,&
+             sspgrid%np(i,j),sspgrid%nm(i,j),sspgrid%ap(i,j),&
              sspgrid%tip(i,j),sspgrid%tim(i,j),sspgrid%mgp(i,j),sspgrid%mgm(i,j),&
              sspgrid%sip(i,j),sspgrid%sim(i,j),sspgrid%hep(i,j),sspgrid%hem(i,j),&
              sspgrid%teffp(i,j),sspgrid%teffm(i,j),sspgrid%crp(i,j),sspgrid%mnp(i,j),&
              sspgrid%bap(i,j),sspgrid%bam(i,j),sspgrid%nip(i,j),sspgrid%cop(i,j),&
              sspgrid%eup(i,j),sspgrid%srp(i,j),sspgrid%kp(i,j),sspgrid%vp(i,j),&
-             sspgrid%yp(i,j),sspgrid%zrp(i,j),sspgrid%rbp(i,j),&
-             sspgrid%cup(i,j),sspgrid%nap6(i,j),sspgrid%nap9(i,j)
+             d4,d5,d6,sspgrid%cup(i,j),sspgrid%nap6(i,j),sspgrid%nap9(i,j)
      ENDDO
      CLOSE(20)
 
@@ -290,8 +289,6 @@ SUBROUTINE SETUP()
         CALL VELBROAD(lam,sspgrid%fem(:,j),sig0,lamlo,lamhi,smooth)
         CALL VELBROAD(lam,sspgrid%cp(:,j),sig0,lamlo,lamhi,smooth)
         CALL VELBROAD(lam,sspgrid%cm(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%zp(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%zm(:,j),sig0,lamlo,lamhi,smooth)
         CALL VELBROAD(lam,sspgrid%np(:,j),sig0,lamlo,lamhi,smooth)
         CALL VELBROAD(lam,sspgrid%nm(:,j),sig0,lamlo,lamhi,smooth)
         CALL VELBROAD(lam,sspgrid%ap(:,j),sig0,lamlo,lamhi,smooth)
@@ -315,9 +312,6 @@ SUBROUTINE SETUP()
         CALL VELBROAD(lam,sspgrid%srp(:,j),sig0,lamlo,lamhi,smooth)
         CALL VELBROAD(lam,sspgrid%kp(:,j),sig0,lamlo,lamhi,smooth)
         CALL VELBROAD(lam,sspgrid%vp(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%yp(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%zrp(:,j),sig0,lamlo,lamhi,smooth)
-        CALL VELBROAD(lam,sspgrid%rbp(:,j),sig0,lamlo,lamhi,smooth)
         CALL VELBROAD(lam,sspgrid%cup(:,j),sig0,lamlo,lamhi,smooth)
         CALL VELBROAD(lam,sspgrid%nap6(:,j),sig0,lamlo,lamhi,smooth)
         CALL VELBROAD(lam,sspgrid%nap9(:,j),sig0,lamlo,lamhi,smooth)

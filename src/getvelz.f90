@@ -43,14 +43,14 @@ FUNCTION GETVELZ()
 
      CALL CONTNORMSPEC(sspgrid%lam,iidata%flx,iidata%err,lo,hi,dflx)
      !use a 5 Gyr Zsol SSP
-     CALL CONTNORMSPEC(sspgrid%lam,10**sspgrid%logfkrpa(:,4),&
+     CALL CONTNORMSPEC(sspgrid%lam,10**sspgrid%logfkrpa(:,3),&
           iidata%wgt*SQRT(10**sspgrid%logfkrpa(:,3)),lo,hi,mflx)
 
      i1 = MIN(MAX(locate(sspgrid%lam,lo),1),nl_fit-1)
      i2 = MIN(MAX(locate(sspgrid%lam,hi),2),nl_fit)
      tchi2(i) = SUM(iidata(i1:i2)%flx**2/iidata(i1:i2)%err**2*&
           (dflx(i1:i2)-mflx(i1:i2))**2) / (i2-i1)
-     
+
      IF (tchi2(i).LT.chi2) THEN
         chi2    = tchi2(i)
         getvelz = tvz(i)
@@ -59,16 +59,17 @@ FUNCTION GETVELZ()
   ENDDO
 
   !test to see if the solution is good
-  !we take all points with delta(chi2/dof)<1 and
+  !we take all points with delta(chi2/dof)<0.5 and
   !ask how large is the range in velocities
+  !if the range in velz is >1E3 then we've failed
   tchi2 = tchi2 - MINVAL(tchi2)
   tvza  = getvelz
   DO i=1,nv
-     IF (tchi2(i).LT.1.0) tvza(i)=tvz(i)
+     IF (tchi2(i).LT.0.5) tvza(i)=tvz(i)
   ENDDO
-
   IF ((MAXVAL(tvza)-MINVAL(tvza)).GT.1E3) THEN
      WRITE(*,'("   Failed to find a redshift solution, setting velz=0.0")')
+     WRITE(*,'("    delta(velz|chi2<0.5) = ",F8.2)') MAXVAL(tvza)-MINVAL(tvza)
      getvelz = 0.0
   ENDIF
 

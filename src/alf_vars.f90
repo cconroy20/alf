@@ -160,7 +160,7 @@ MODULE ALF_VARS
      REAL(DP) :: velz=0.0,sigma=0.0,logage=1.0,feh=0.0,ah=0.0,&
           nhe=0.0,ch=0.0,nh=0.0,nah=0.0,mgh=0.0,sih=0.0,kh=0.0,&
           cah=0.0,tih=0.0,vh=0.0,crh=0.0,mnh=0.0,coh=0.0,nih=0.0,&
-          cuh=0.0,rbh=0.0,srh=0.0,yh=0.0,zrh=0.0,bah=0.0,euh=0.0,&
+          cuh=0.0,srh=0.0,bah=0.0,euh,&
           teff=0.0,imf1=1.3,imf2=2.3,logfy=-4.0,sigma2=0.0,velz2=0.0,&
           logm7g=-4.0,hotteff=20.0,loghot=-4.0,fy_logage=0.3,logtrans=-4.0,&
           logemline_h=-4.0,logemline_oiii=-4.0,logemline_sii=-4.0,&
@@ -173,7 +173,7 @@ MODULE ALF_VARS
      REAL(DP), DIMENSION(nl) :: lam,m7g
      REAL(DP), DIMENSION(nl,nage_rfcn) :: solar,hep,hem,nap,nam,cap,cam,&
           fep,fem,cp,cm,ap,np,nm,tip,tim,mgp,mgm,sip,sim,crp,mnp,bap,bam,&
-          nip,cup,cop,eup,srp,kp,vp,yp,zp,zm,zrp,rbp,teffp,teffm,nap6,nap9
+          nip,cup,cop,eup,srp,kp,vp,teffp,teffm,nap6,nap9
      REAL(DP), DIMENSION(nage_rfcn)    :: logagegrid_rfcn
      REAL(DP), DIMENSION(nage)         :: logagegrid
      REAL(DP), DIMENSION(nl,nage)      :: logfkrpa
