@@ -12,21 +12,29 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   REAL(DP), DIMENSION(nl), INTENT(out) :: spec
   INTEGER, OPTIONAL :: mw
   REAL(DP), DIMENSION(nl) :: tmp,tmpr,yspec
-  INTEGER :: vt,vv1,vv2,i,vr
-  REAL(DP) :: dt,fy,dx1,dx2,lsig,vz,dr
+  INTEGER :: vt,vv1,vv2,i,vr,vm
+  REAL(DP) :: dt,fy,dx1,dx2,lsig,vz,dr,dm
   REAL(DP), DIMENSION(nl)   :: tmp_ltrans, tmp_ftrans
   REAL(DP), DIMENSION(neml) :: emnormall=1.0
   
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
-  !vary age of the empirical SSPs
+  !vary age and metallicity of the empirical SSPs
   vt   = MAX(MIN(locate(sspgrid%logagegrid,pos%logage),nage-1),1)
   dt   = (pos%logage-sspgrid%logagegrid(vt))/&
        (sspgrid%logagegrid(vt+1)-sspgrid%logagegrid(vt))
   dt   = MAX(MIN(dt,1.5),-0.3)  !0.5<age<15 Gyr
-  spec(1:nl_fit) = 10**(dt*sspgrid%logfkrpa(1:nl_fit,vt+1) + &
-       (1-dt)*sspgrid%logfkrpa(1:nl_fit,vt))
+  vm   = MAX(MIN(locate(sspgrid%logzgrid,pos%zh),nzmet-1),1)
+  dm   = (pos%zh-sspgrid%logzgrid(vm)) / &
+       (sspgrid%logzgrid(vm+1)-sspgrid%logzgrid(vm))
+  dm   = MAX(MIN(dm,1.5),-1.0) ! -2.0<[Z/H]<0.45
+  spec(1:nl_fit) = &
+       dt*dm*sspgrid%logfkrpa(1:nl_fit,vt+1,vm+1) + &
+       (1-dt)*dm*sspgrid%logfkrpa(1:nl_fit,vt,vm+1) + & 
+       dt*(1-dm)*sspgrid%logfkrpa(1:nl_fit,vt+1,vm) + & 
+       (1-dt)*(1-dm)*sspgrid%logfkrpa(1:nl_fit,vt,vm)
+  spec(1:nl_fit) = 10**spec(1:nl_fit)
 
   !vary age in the response functions
   IF (use_age_dep_resp_fcns.EQ.0) THEN
@@ -52,18 +60,21 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      dt    = (pos%fy_logage-sspgrid%logagegrid(vt))/&
           (sspgrid%logagegrid(vt+1)-sspgrid%logagegrid(vt))
      dt    = MAX(MIN(dt,1.0),-0.3) !0.5<age<13 Gyr
-     yspec(1:nl_fit) = 10**(dt*sspgrid%logfkrpa(1:nl_fit,vt+1) + &
-          (1-dt)*sspgrid%logfkrpa(1:nl_fit,vt))
-     spec(1:nl_fit)  = (1-fy)*spec(1:nl_fit) + fy*yspec(1:nl_fit)
+     yspec(1:nl_fit) = &
+          dt*dm*sspgrid%logfkrpa(1:nl_fit,vt+1,vm+1) + &
+          (1-dt)*dm*sspgrid%logfkrpa(1:nl_fit,vt,vm+1) + & 
+          dt*(1-dm)*sspgrid%logfkrpa(1:nl_fit,vt+1,vm) + & 
+          (1-dt)*(1-dm)*sspgrid%logfkrpa(1:nl_fit,vt,vm)
+      spec(1:nl_fit)  = (1-fy)*spec(1:nl_fit) + fy*10**yspec(1:nl_fit)
   ENDIF
   
-  !vary [Fe/H]
-  CALL ADD_RESPONSE(spec,pos%feh,0.3,dr,vr,sspgrid%solar,sspgrid%fep,sspgrid%fem)
-
-  !Only sigma, velz, logage, and [Fe/H] are fit when either
+ 
+  !Only sigma, velz, logage, and [Z/H] are fit when either
   !fitting in Powell mode or "super simple" mode
   IF (powell_fitting.EQ.0.AND.fit_type.NE.2) THEN
 
+     !vary [Fe/H]
+     CALL ADD_RESPONSE(spec,pos%feh,0.3,dr,vr,sspgrid%solar,sspgrid%fep,sspgrid%fem)
      !vary [O/H]
      CALL ADD_RESPONSE(spec,pos%ah,0.3,dr,vr,sspgrid%solar,sspgrid%ap)
      !vary [C/H]

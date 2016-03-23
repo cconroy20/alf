@@ -17,6 +17,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
 
   !setup the first position
   pos%logage    = myran()*0.4+0.6
+  pos%zh        = myran()*0.5-0.4
   pos%feh       = myran()*0.4-0.2
   pos%ah        = myran()*0.4-0.2
   pos%nhe       = myran()*0.4-0.2
@@ -76,7 +77,8 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
      !cover the full range
      IF (prlo%logage.EQ.test%logage) prlo%logage = LOG10(0.5)
   ENDIF
-  IF (prlo%feh.EQ.test%feh) prlo%feh          = -1.0
+  IF (prlo%zh.EQ.test%zh) prlo%zh             = -1.8
+  IF (prlo%feh.EQ.test%feh) prlo%feh          = -0.3
   IF (prlo%ah.EQ.test%ah) prlo%ah             = -0.3
   IF (prlo%nhe.EQ.test%nhe) prlo%nhe          = -0.3
   IF (prlo%ch.EQ.test%ch) prlo%ch             = -0.3
@@ -120,6 +122,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   !if you change the prior on the age, also change the max 
   !age allowed in getmodel
   IF (prhi%logage.EQ.test%logage) prhi%logage = LOG10(15.0)
+  IF (prhi%zh.EQ.test%zh) prhi%zh             = 0.3
   IF (prhi%feh.EQ.test%feh) prhi%feh          = 0.5
   IF (prhi%ah.EQ.test%ah) prhi%ah             = 0.5
   IF (prhi%nhe.EQ.test%nhe) prhi%nhe          = 0.5
@@ -161,7 +164,9 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
 
 
   !reset the initial parameters if the priors have been altered
-
+  !this should be done for every parameter to ensure that the altered parameters
+  !do not fall outside of the prior range.  In practice only these params are 
+  !frequently altered.
   IF (prhi%logtrans.NE.test%logtrans) &
        pos%logtrans = myran()*(prhi%logtrans-prlo%logtrans)+prlo%logtrans
   IF (prhi%logfy.NE.test%logfy) &

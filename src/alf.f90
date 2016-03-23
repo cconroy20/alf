@@ -31,13 +31,13 @@ PROGRAM ALF
   IMPLICIT NONE
 
   !number of chain steps to print to file
-  INTEGER, PARAMETER :: nmcmc=100
+  INTEGER, PARAMETER :: nmcmc=1000
   !sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=10000  !1E4 seems to be good enough
+  INTEGER, PARAMETER :: nburn=10  !1E4 seems to be good enough
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=1024
+  INTEGER, PARAMETER :: nwalkers=128 !1024
 
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
@@ -270,6 +270,7 @@ PROGRAM ALF
         WRITE(*,'("    best velocity: ",F7.1)') opos%velz
         WRITE(*,'("    best sigma:    ",F6.1)') opos%sigma
         WRITE(*,'("    best age:      ",F6.1)') 10**opos%logage
+        WRITE(*,'("    best [Z/H]:    ",F6.1)') opos%zh
         
      ENDIF
      

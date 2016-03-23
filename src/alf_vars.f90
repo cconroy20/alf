@@ -67,21 +67,21 @@ MODULE ALF_VARS
   INTEGER :: nlint = 0
   !total number of emission lines
   INTEGER, PARAMETER :: neml = 11
-  !number of coefficients for the polynomial fitting
-  INTEGER, PARAMETER :: ncoeff = 30
   !number of parameters
-  INTEGER, PARAMETER :: npar = 38
+  INTEGER, PARAMETER :: npar = 39
   !number of ages in the empirical SSP grid
   INTEGER, PARAMETER :: nage = 7
+  !number of metallicities in the empirical SSP grid
+  INTEGER, PARAMETER :: nzmet=5
   !number of parameters used when fitting in Powell model
-  !and in the supersimple mode (fit_type=2)
+  !or in the super-simple mode (fit_type=2)
   INTEGER, PARAMETER :: npowell = 4
   !number of ages in the response functions
   INTEGER, PARAMETER :: nage_rfcn = 5
   !number of IMF values in the SSP grid
   INTEGER, PARAMETER :: nimf = 35
   !max degree of polynomial used for continuum fitting
-  INTEGER, PARAMETER :: npolymax = 14
+  INTEGER, PARAMETER :: npolymax = 20
   !wavelength interval used to determine polynomial degree
   REAL, PARAMETER :: poly_dlam = 100.0
   !max number of data wavelength points
@@ -157,14 +157,14 @@ MODULE ALF_VARS
   
   !structure for the set of parameters necessary to generate a model
   TYPE PARAMS
-     REAL(DP) :: velz=0.0,sigma=0.0,logage=1.0,feh=0.0,ah=0.0,&
+     REAL(DP) :: velz=0.0,sigma=0.0,logage=1.0,zh=0.0,feh=0.0,ah=0.0,&
           nhe=0.0,ch=0.0,nh=0.0,nah=0.0,mgh=0.0,sih=0.0,kh=0.0,&
           cah=0.0,tih=0.0,vh=0.0,crh=0.0,mnh=0.0,coh=0.0,nih=0.0,&
-          cuh=0.0,srh=0.0,bah=0.0,euh,&
-          teff=0.0,imf1=1.3,imf2=2.3,logfy=-4.0,sigma2=0.0,velz2=0.0,&
-          logm7g=-4.0,hotteff=20.0,loghot=-4.0,fy_logage=0.3,logtrans=-4.0,&
-          logemline_h=-4.0,logemline_oiii=-4.0,logemline_sii=-4.0,&
-          logemline_ni=-4.0,logemline_nii=-4.0
+          cuh=0.0,srh=0.0,bah=0.0,euh=0.0,teff=0.0,imf1=1.3,imf2=2.3,&
+          logfy=-4.0,sigma2=0.0,velz2=0.0,logm7g=-4.0,hotteff=20.0,&
+          loghot=-4.0,fy_logage=0.3,logtrans=-4.0,logemline_h=-4.0,&
+          logemline_oiii=-4.0,logemline_sii=-4.0,logemline_ni=-4.0,&
+          logemline_nii=-4.0
      REAL(DP) :: chi2=huge_number
   END TYPE PARAMS
   
@@ -174,14 +174,15 @@ MODULE ALF_VARS
      REAL(DP), DIMENSION(nl,nage_rfcn) :: solar,hep,hem,nap,nam,cap,cam,&
           fep,fem,cp,cm,ap,np,nm,tip,tim,mgp,mgm,sip,sim,crp,mnp,bap,bam,&
           nip,cup,cop,eup,srp,kp,vp,teffp,teffm,nap6,nap9
-     REAL(DP), DIMENSION(nage_rfcn)    :: logagegrid_rfcn
-     REAL(DP), DIMENSION(nage)         :: logagegrid
-     REAL(DP), DIMENSION(nl,nage)      :: logfkrpa
-     REAL(DP), DIMENSION(nl,nimf,nimf) :: imf
-     REAL(DP), DIMENSION(nimf)         :: imfx
-     REAL(DP), DIMENSION(nl,4)         :: hotspec
-     REAL(DP), DIMENSION(nl)           :: atm_trans
-     REAL(DP), DIMENSION(4)            :: teffarrhot
+     REAL(DP), DIMENSION(nage_rfcn)     :: logagegrid_rfcn
+     REAL(DP), DIMENSION(nage)          :: logagegrid
+     REAL(DP), DIMENSION(nzmet)         :: logzgrid
+     REAL(DP), DIMENSION(nl,nage,nzmet) :: logfkrpa
+     REAL(DP), DIMENSION(nl,nimf,nimf)  :: imf
+     REAL(DP), DIMENSION(nimf)          :: imfx
+     REAL(DP), DIMENSION(nl,4)          :: hotspec
+     REAL(DP), DIMENSION(nl)            :: atm_trans
+     REAL(DP), DIMENSION(4)             :: teffarrhot
   END TYPE SSP
 
   !structure for the data

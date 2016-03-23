@@ -16,7 +16,7 @@ FUNCTION FUNC(nposarr,spec,funit)
   REAL(DP), DIMENSION(nl)   :: mspec
   REAL(DP), DIMENSION(ndat) :: mflx,dflx,poly,zmspec
   REAL(DP), DIMENSION(npar) :: tposarr=0.0
-  REAL(DP), DIMENSION(ncoeff) :: tcoeff
+  REAL(DP), DIMENSION(npolymax) :: tcoeff
   INTEGER  :: i,i1,i2,j,npow,tpow
   TYPE(PARAMS)   :: npos
 
@@ -34,7 +34,7 @@ FUNCTION FUNC(nposarr,spec,funit)
   IF (SIZE(nposarr).LT.npar) THEN
      !coppy over the default parameters first
      CALL STR2ARR(1,npos,tposarr) !str->arr
-     !only copy the first four params (velz,sigma,age,[Fe/H])
+     !only copy the first four params (velz,sigma,age,[Z/H])
      tposarr(1:npowell) = nposarr(1:npowell)
   ELSE
      tposarr = nposarr

@@ -5,12 +5,13 @@ SUBROUTINE SETUP()
   USE alf_vars; USE nr, ONLY : locate; USE alf_utils, ONLY : linterp,velbroad
   IMPLICIT NONE
   
-  REAL(DP) :: d1,d2,d3,d4,d5,d6,d7,l1um=1E4,t13=1.3,t23=2.3,sig0=99.,lamlo,lamhi
+  REAL(DP) :: d1,d2,d3,l1um=1E4,t13=1.3,t23=2.3,sig0=99.,lamlo,lamhi
   REAL(DP), DIMENSION(nimf*nimf) :: tmp
   REAL(DP), DIMENSION(nl) :: dumi,smooth=0.0,lam
   INTEGER :: stat,i,vv,j,k,ii,shift=100
   INTEGER, PARAMETER :: ntrans=22800
   REAL(DP), DIMENSION(ntrans) :: ltrans,ftrans,strans
+  CHARACTER(4), DIMENSION(nzmet) :: charz
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -20,6 +21,8 @@ SUBROUTINE SETUP()
      WRITE(*,*) 'ALF ERROR: SPECFIT_HOME environment variable not set!'
      STOP
   ENDIF
+
+  charz = (/'m1.5','m1.0','m0.5','p0.0','p0.3'/)
 
   !if the data has not been read in, then we need to manually
   !define the lower and upper limits for the instrumental resolution
@@ -48,19 +51,19 @@ SUBROUTINE SETUP()
   DO j=1,nage_rfcn
 
      IF (j.EQ.1) THEN
-        OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t01.abund.krpa.s100',&
+        OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t01_Zp0.0.abund.krpa.s100',&
              STATUS='OLD',iostat=stat,ACTION='READ')
      ELSE IF (j.EQ.2) THEN
-        OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t03.abund.krpa.s100',&
+        OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t03_Zp0.0.abund.krpa.s100',&
              STATUS='OLD',iostat=stat,ACTION='READ')
       ELSE IF (j.EQ.3) THEN
-        OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t05.abund.krpa.s100',&
+        OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t05_Zp0.0.abund.krpa.s100',&
              STATUS='OLD',iostat=stat,ACTION='READ')
      ELSE IF (j.EQ.4) THEN
-        OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t09.abund.krpa.s100',&
+        OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t09_Zp0.0.abund.krpa.s100',&
              STATUS='OLD',iostat=stat,ACTION='READ')
      ELSE IF (j.EQ.5) THEN
-        OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t13.abund.krpa.s100',&
+        OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t13_Zp0.0.abund.krpa.s100',&
              STATUS='OLD',iostat=stat,ACTION='READ')
      ENDIF
 
@@ -72,14 +75,14 @@ SUBROUTINE SETUP()
      DO i=1,nl
         READ(20,*) sspgrid%lam(i),sspgrid%solar(i,j),sspgrid%nap(i,j),&
              sspgrid%nam(i,j),sspgrid%cap(i,j),sspgrid%cam(i,j),sspgrid%fep(i,j),&
-             sspgrid%fem(i,j),sspgrid%cp(i,j),sspgrid%cm(i,j),d1,d2,d3,&
+             sspgrid%fem(i,j),sspgrid%cp(i,j),sspgrid%cm(i,j),d1,&
              sspgrid%np(i,j),sspgrid%nm(i,j),sspgrid%ap(i,j),&
              sspgrid%tip(i,j),sspgrid%tim(i,j),sspgrid%mgp(i,j),sspgrid%mgm(i,j),&
              sspgrid%sip(i,j),sspgrid%sim(i,j),sspgrid%hep(i,j),sspgrid%hem(i,j),&
              sspgrid%teffp(i,j),sspgrid%teffm(i,j),sspgrid%crp(i,j),sspgrid%mnp(i,j),&
              sspgrid%bap(i,j),sspgrid%bam(i,j),sspgrid%nip(i,j),sspgrid%cop(i,j),&
              sspgrid%eup(i,j),sspgrid%srp(i,j),sspgrid%kp(i,j),sspgrid%vp(i,j),&
-             d4,d5,d6,sspgrid%cup(i,j),sspgrid%nap6(i,j),sspgrid%nap9(i,j)
+             sspgrid%cup(i,j),sspgrid%nap6(i,j),sspgrid%nap9(i,j)
      ENDDO
      CLOSE(20)
 
@@ -115,21 +118,25 @@ SUBROUTINE SETUP()
   ENDIF
 
 
-  !read in empirical spectra as a function of age
-  OPEN(21,FILE=TRIM(SPECFIT_HOME)//'/infiles/CvD_krpaIMF.ssp.s100',&
-       STATUS='OLD',iostat=stat,ACTION='READ')
-  DO i=1,nstart-1
-     READ(21,*) 
+  !read in empirical spectra as a function of age and metallicity
+  DO j=1,nzmet
+     OPEN(21,FILE=TRIM(SPECFIT_HOME)//'/infiles/CvD_krpaIMF_Z'//charz(j)//&
+          '.ssp.s100',STATUS='OLD',iostat=stat,ACTION='READ')
+     DO i=1,nstart-1
+        READ(21,*) 
+     ENDDO
+     DO i=1,nl
+        !order of the logfkrpa array is lam,age,zmet
+        READ(21,*) d1,sspgrid%logfkrpa(i,1,j),sspgrid%logfkrpa(i,2,j),&
+             sspgrid%logfkrpa(i,3,j),sspgrid%logfkrpa(i,4,j),sspgrid%logfkrpa(i,5,j),&
+             sspgrid%logfkrpa(i,6,j),sspgrid%logfkrpa(i,7,j)
+     ENDDO
+     CLOSE(21)
   ENDDO
-  DO i=1,nl
-     READ(21,*) d1,sspgrid%logfkrpa(i,1),sspgrid%logfkrpa(i,2),&
-          sspgrid%logfkrpa(i,3),sspgrid%logfkrpa(i,4),sspgrid%logfkrpa(i,5),&
-          sspgrid%logfkrpa(i,6),sspgrid%logfkrpa(i,7)
-  ENDDO
-  CLOSE(21)
 
   sspgrid%logfkrpa   = LOG10(sspgrid%logfkrpa+tiny_number)
   sspgrid%logagegrid = LOG10((/1.0,3.0,5.0,7.0,9.0,11.0,13.5/))
+  sspgrid%logzgrid   = (/-1.5,-1.0,-0.5,0.0,0.3/)
 
   !read in two power-law slopes, from 0.1<M<0.5 and 0.5<M<1.0
   OPEN(22,FILE=TRIM(SPECFIT_HOME)//'/infiles/CvD_t13.5.ssp.'//&
@@ -167,7 +174,7 @@ SUBROUTINE SETUP()
   CLOSE(23)
 
   !read in hot stars 
-  OPEN(24,FILE=TRIM(SPECFIT_HOME)//'/infiles/ap00t8000g4.00at12.spec.s100',&
+  OPEN(24,FILE=TRIM(SPECFIT_HOME)//'/infiles/ap00t08000g4.00at12.spec.s100',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   DO i=1,nstart-1
      READ(24,*) 
@@ -210,7 +217,7 @@ SUBROUTINE SETUP()
   vv = locate(sspgrid%lam(1:nl),l1um)
   DO i=1,nhot
      sspgrid%hotspec(:,i) = sspgrid%hotspec(:,i)/sspgrid%hotspec(vv,i)*&
-          10**sspgrid%logfkrpa(vv,nage)
+          10**sspgrid%logfkrpa(vv,nage,nzmet-1)
   ENDDO
   !hot star Teff in kK
   sspgrid%teffarrhot = (/8.0,10.,20.,30./)
@@ -330,8 +337,10 @@ SUBROUTINE SETUP()
      ENDDO
 
      sspgrid%logfkrpa = 10**sspgrid%logfkrpa
-     DO i=1,nage
-        CALL VELBROAD(lam,sspgrid%logfkrpa(:,i),sig0,lamlo,lamhi,smooth)
+     DO j=1,nzmet
+        DO i=1,nage
+           CALL VELBROAD(lam,sspgrid%logfkrpa(:,i,j),sig0,lamlo,lamhi,smooth)
+        ENDDO
      ENDDO
      sspgrid%logfkrpa = LOG10(sspgrid%logfkrpa+tiny_number)
 

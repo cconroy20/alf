@@ -18,7 +18,7 @@ MODULE ALF_UTILS
        REAL(DP), DIMENSION(:), INTENT(in) :: lam,flx,err
        REAL(DP), INTENT(in) :: il1,il2
        REAL(DP), DIMENSION(:), INTENT(inout) :: flxout
-       REAL(DP), DIMENSION(ncoeff), OPTIONAL :: coeff
+       REAL(DP), DIMENSION(npolymax), OPTIONAL :: coeff
      END SUBROUTINE CONTNORMSPEC
   END INTERFACE
 
