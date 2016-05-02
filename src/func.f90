@@ -14,7 +14,7 @@ FUNCTION FUNC(nposarr,spec,funit)
   INTEGER, INTENT(in), OPTIONAL :: funit
   REAL(DP) :: func,pr,tchi2,ml,tl1,tl2,oneplusz
   REAL(DP), DIMENSION(nl)   :: mspec
-  REAL(DP), DIMENSION(ndat) :: mflx,dflx,poly,zmspec
+  REAL(DP), DIMENSION(ndat) :: mflx,poly,zmspec
   REAL(DP), DIMENSION(npar) :: tposarr=0.0
   REAL(DP), DIMENSION(npolymax) :: tcoeff
   INTEGER  :: i,i1,i2,j,npow,tpow
@@ -95,8 +95,7 @@ FUNCTION FUNC(nposarr,spec,funit)
               poly = poly + tcoeff(j)*(data%lam-ml)**(j-1)
            ENDDO
            mflx  = zmspec * poly
-           dflx  = data%flx
-           tchi2 = SUM((dflx(i1:i2)-mflx(i1:i2))**2/data(i1:i2)%err**2)
+           tchi2 = SUM((data(i1:i2)%flx-mflx(i1:i2))**2/data(i1:i2)%err**2)
         ELSE
        !    CALL CONTNORMSPEC(sspgrid%lam,idata%flx,idata%err,tl1,tl2,dflx)
        !    CALL CONTNORMSPEC(sspgrid%lam,mspec,idata%wgt*SQRT(mspec),&
@@ -111,11 +110,11 @@ FUNCTION FUNC(nposarr,spec,funit)
         IF (isnan(tchi2)) THEN
            WRITE(*,'(" FUNC ERROR: chi2 returned a NaN")') 
            WRITE(*,'(" error occured at wavelength interval: ",I1)') i
-           WRITE(*,'("data:",2000F14.2)') dflx(i1:i2)
+           WRITE(*,'("data:",2000F14.2)') data(i1:i2)%flx
            WRITE(*,*)
            WRITE(*,'("model:",2000F14.2)') mspec(i1:i2)*1E3
            WRITE(*,*)
-           WRITE(*,'("errors:",2000F14.2)') idata(i1:i2)%err
+           WRITE(*,'("errors:",2000F14.2)') data(i1:i2)%err
            WRITE(*,*)
            WRITE(*,'("params:",100F14.2)') tposarr
            STOP
@@ -126,11 +125,11 @@ FUNCTION FUNC(nposarr,spec,funit)
         IF (PRESENT(funit)) THEN
            !write final results to screen and file
            WRITE(*,'(2x,F5.2,"um-",F5.2,"um:"," rms:",F5.1,"%, ","Chi2/dof:",F5.1)') &
-                tl1/1E4,tl2/1E4,SQRT( SUM( (dflx(i1:i2)/mflx(i1:i2)-1)**2 )/&
+                tl1/1E4,tl2/1E4,SQRT( SUM( (data(i1:i2)%flx/mflx(i1:i2)-1)**2 )/&
                 (i2-i1+1) )*100,tchi2/(i2-i1)
            DO j=i1,i2
               WRITE(funit,'(F9.2,4ES12.4)') data(j)%lam,mflx(j),&
-                   dflx(j),data(j)%flx/data(j)%err,poly(j)
+                   data(j)%flx,data(j)%flx/data(j)%err,poly(j)
            ENDDO
         ENDIF
 

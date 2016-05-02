@@ -1,8 +1,7 @@
 PROGRAM ALF
 
   !  Master program to fit the absorption line spectrum
-  !  of an old (>~1 Gyr), metal-rich ([Fe/H]>~-0.3) stellar
-  !  population to the CvD model SSPs.
+  !  of an old (>~1 Gyr) stellar population
 
   ! Some things to keep in mind:
   ! 1. The prior bounds on the parameters are specified in set_pinit_priors. 
@@ -18,8 +17,7 @@ PROGRAM ALF
   !    this is implemented in the model restframe at code setup time
 
   !To Do: 
-  !1. add SFH and metal-poor/metal-rich component
-  !2. prune the walkers mid-way through the burn in
+  !1. add SFH and MDF options
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -31,13 +29,13 @@ PROGRAM ALF
   IMPLICIT NONE
 
   !number of chain steps to print to file
-  INTEGER, PARAMETER :: nmcmc=1000
+  INTEGER, PARAMETER :: nmcmc=100
   !sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=10  !1E4 seems to be good enough
+  INTEGER, PARAMETER :: nburn=10000  !1E4 seems to be good enough
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=256 !1024
+  INTEGER, PARAMETER :: nwalkers=1024 !1024
 
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1

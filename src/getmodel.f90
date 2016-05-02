@@ -132,7 +132,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
              (1-dr)*(1-dm)*(sspgrid%nap9(1:nl_fit,vr,vm)-sspgrid%nap6(1:nl_fit,vr,vm))/&
              sspgrid%solar(1:nl_fit,vr,vm)
 
-        spec(1:nl_fit) = spec(1:nl_fit) * (tmpr(1:nl_fit)+tmp*(pos%nah-0.6)/0.6 )
+        spec(1:nl_fit) = spec(1:nl_fit) * (tmpr(1:nl_fit)+tmp(1:nl_fit)*(pos%nah-0.6)/0.6 )
 
      ENDIF
      

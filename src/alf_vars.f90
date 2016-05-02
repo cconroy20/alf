@@ -13,11 +13,13 @@ MODULE ALF_VARS
 
   !-----------------Define various parameters--------------------!
 
-  !flags for the user to choose:
+  !flags for the user to choose.  These can also be set at the 
+  !very beginning of alf.f90
 
-  !fit a polynomial to the ratio of model and data
-  !if zero, then both data and model are continuum divided
-  INTEGER :: fit_poly=1
+  !0: fit the full model (IMF, all abundances, nuisance params, etc)
+  !1: only fit velz, sigma, SSP age, Fe,C,N,O,Mg,Si,Ca,Ti,Na
+  !2: only fit velz, sigma, SSP age, Fe
+  INTEGER :: fit_type=0
   !turn on the use of age-dependent response functions
   INTEGER :: use_age_dep_resp_fcns=1
   !Turn off the IMF sensitivity at <7000A if this parameter is =1
@@ -29,24 +31,24 @@ MODULE ALF_VARS
   !flag to include transmission spectrum in fitting
   !even if flag is set, only included in full model
   INTEGER :: fit_trans=1
-  !0: fit the full model (IMF, all abundances, nuisance params, etc)
-  !1: only fit velz, sigma, SSP age, Fe,C,N,O,Mg,Si,Ca,Ti,Na
-  !2: only fit velz, sigma, SSP age, Fe
-  INTEGER :: fit_type=0
   !force the IMF to be a MW IMF if set
   !this is automatically assumed if fit_type=1,2
   INTEGER :: mwimf=0
-  !flag to implement fake element response functions (for testing)
-  INTEGER :: fake_response=0
   !flag to fit a single IMF slope
   INTEGER :: fit_oneimf=0
 
   !the options below have not been tested/used in a long time
+  !and so are effectively deprecated
 
+  !fit a polynomial to the ratio of model and data
+  !if zero, then both data and model are continuum divided
+  INTEGER :: fit_poly=1
   !mask emission lines? (if 0, then the em lines are incl in the fit)
   INTEGER :: maskem=0
   !apply template error function? (only works for SDSS stacks)
   INTEGER :: apply_temperrfcn=0
+  !flag to implement fake element response functions
+  INTEGER :: fake_response=0
 
   !--------------------------------------------------------------!
   !    the parameters below should not be modified unless you    !
@@ -63,7 +65,7 @@ MODULE ALF_VARS
   INTEGER :: nl_fit=nl
   !(max) number of wavelength intervals
   INTEGER, PARAMETER :: nlint_max = 10
-  !actual number of wavelength intervals
+  !actual number of wavelength intervals, set at run time
   INTEGER :: nlint = 0
   !total number of emission lines
   INTEGER, PARAMETER :: neml = 11
@@ -180,9 +182,9 @@ MODULE ALF_VARS
      REAL(DP), DIMENSION(nl,nage,nzmet) :: logfkrpa
      REAL(DP), DIMENSION(nl,nimf,nimf)  :: imf
      REAL(DP), DIMENSION(nimf)          :: imfx
-     REAL(DP), DIMENSION(nl,4)          :: hotspec
+     REAL(DP), DIMENSION(nl,nhot)       :: hotspec
      REAL(DP), DIMENSION(nl)            :: atm_trans
-     REAL(DP), DIMENSION(4)             :: teffarrhot
+     REAL(DP), DIMENSION(nhot)          :: teffarrhot
   END TYPE SSP
 
   !structure for the data
@@ -196,7 +198,7 @@ MODULE ALF_VARS
   !define the object for the raw data array
   TYPE(TDATA), DIMENSION(ndat) :: data
   !define the object for the data interpolated to the model arr
-  TYPE(TDATA), DIMENSION(nl) :: idata
+  TYPE(TDATA), DIMENSION(nl)  :: idata
 
 
 END MODULE ALF_VARS
