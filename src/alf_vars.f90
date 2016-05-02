@@ -81,7 +81,7 @@ MODULE ALF_VARS
   !number of ages in the response functions
   INTEGER, PARAMETER :: nage_rfcn = 5
   !number of IMF values in the SSP grid
-  INTEGER, PARAMETER :: nimf = 35
+  INTEGER, PARAMETER :: nimf = 16 !35
   !max degree of polynomial used for continuum fitting
   INTEGER, PARAMETER :: npolymax = 20
   !wavelength interval used to determine polynomial degree
@@ -180,7 +180,7 @@ MODULE ALF_VARS
      REAL(DP), DIMENSION(nage)          :: logagegrid
      REAL(DP), DIMENSION(nzmet)         :: logzgrid
      REAL(DP), DIMENSION(nl,nage,nzmet) :: logfkrpa
-     REAL(DP), DIMENSION(nl,nimf,nimf)  :: imf
+     REAL(DP), DIMENSION(nl,nimf,nimf,nage)  :: imf
      REAL(DP), DIMENSION(nimf)          :: imfx
      REAL(DP), DIMENSION(nl,nhot)       :: hotspec
      REAL(DP), DIMENSION(nl)            :: atm_trans

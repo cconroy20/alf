@@ -1,5 +1,8 @@
 SUBROUTINE ADD_RESPONSE(spec,pos,range,dr,vr,dm,vm,solar,plus,minus)
 
+  !perform bilinear interpolation over the age and metallicity-
+  !dependent response functions
+
   USE alf_vars
   IMPLICIT NONE
 

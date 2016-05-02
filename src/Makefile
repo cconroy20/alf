@@ -17,6 +17,7 @@ F90 = mpifort
 #========================
 # GNU
 F90FLAGS = -O
+#F90FLAGS = -O3 -fno-strict-overflow  #for odyssey
 #---------------------
 # Intel 
 #F90FLAGS = -O3 -assume byterecl
