@@ -36,6 +36,8 @@ MODULE ALF_VARS
   INTEGER :: mwimf=0
   !flag to fit a single IMF slope
   INTEGER :: fit_oneimf=0
+  !flag to fit either a double-power law IMF or power-law + cutoff
+  INTEGER :: fit_2ximf=1
 
   !the options below have not been tested/used in a long time
   !and so are effectively deprecated
@@ -81,7 +83,7 @@ MODULE ALF_VARS
   !number of ages in the response functions
   INTEGER, PARAMETER :: nage_rfcn = 5
   !number of IMF values in the SSP grid
-  INTEGER, PARAMETER :: nimf = 16 !35
+  INTEGER, PARAMETER :: nimf = 16
   !max degree of polynomial used for continuum fitting
   INTEGER, PARAMETER :: npolymax = 20
   !wavelength interval used to determine polynomial degree
@@ -114,7 +116,7 @@ MODULE ALF_VARS
   !flag used to tell the code if we are fitting in powell mode or not
   INTEGER :: powell_fitting=0
   !indices where x=1.3,x=2.3 in the IMF array
-  INTEGER :: i13=1,i23=1
+  INTEGER :: imfr1=1,imfr2=1
 
   !common array for filters
   REAL(DP), DIMENSION(nl,nfil) :: filters=0.0
@@ -180,8 +182,8 @@ MODULE ALF_VARS
      REAL(DP), DIMENSION(nage)          :: logagegrid
      REAL(DP), DIMENSION(nzmet)         :: logzgrid
      REAL(DP), DIMENSION(nl,nage,nzmet) :: logfkrpa
-     REAL(DP), DIMENSION(nl,nimf,nimf,nage)  :: imf
-     REAL(DP), DIMENSION(nimf)          :: imfx
+     REAL(DP), DIMENSION(nl,nimf,nimf,nage,nzmet)  :: imf
+     REAL(DP), DIMENSION(nimf)          :: imfx1,imfx2
      REAL(DP), DIMENSION(nl,nhot)       :: hotspec
      REAL(DP), DIMENSION(nl)            :: atm_trans
      REAL(DP), DIMENSION(nhot)          :: teffarrhot

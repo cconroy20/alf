@@ -51,10 +51,7 @@ PROGRAM WRITE_A_MODEL
   pos%coh     = 0.30
   pos%nih     = 0.00
   pos%cuh     = 0.0
-  pos%rbh     = 0.0
   pos%srh     = 0.0
-  pos%yh      = 0.0
-  pos%zrh     = 0.0
   pos%bah     = 0.0
   pos%euh     = 0.0
   pos%teff    = -53.0

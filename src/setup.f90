@@ -5,13 +5,15 @@ SUBROUTINE SETUP()
   USE alf_vars; USE nr, ONLY : locate; USE alf_utils, ONLY : linterp,velbroad
   IMPLICIT NONE
   
-  REAL(DP) :: d1,d2,d3,l1um=1E4,t13=1.3,t23=2.3,sig0=99.,lamlo,lamhi
+  REAL(DP) :: d1,d2,d3,l1um=1E4,t13=1.3,t23=2.3,m07=0.07,sig0=99.,lamlo,lamhi
   REAL(DP), DIMENSION(nimf*nimf) :: tmp
   REAL(DP), DIMENSION(nl) :: dumi,smooth=0.0,lam
-  INTEGER :: stat,i,vv,j,k,ii,shift=100
+  INTEGER :: stat,i,vv,j,k,t,z,ii,shift=100
   INTEGER, PARAMETER :: ntrans=22800
   REAL(DP), DIMENSION(ntrans) :: ltrans,ftrans,strans
   CHARACTER(4), DIMENSION(nzmet) :: charz
+  CHARACTER(5), DIMENSION(nage) :: chart
+  CHARACTER(20) :: imfstr
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -23,6 +25,13 @@ SUBROUTINE SETUP()
   ENDIF
 
   charz = (/'m1.5','m1.0','m0.5','p0.0','p0.3'/)
+  chart = (/'t01.0','t03.0','t05.0','t07.0','t09.0','t11.0','t13.5'/)
+
+  IF (fit_2ximf.EQ.1) THEN
+     imfstr = 'varydoublex'
+  ELSE
+     imfstr = 'varymcut_varyx'
+  ENDIF
 
   !if the data has not been read in, then we need to manually
   !define the lower and upper limits for the instrumental resolution
@@ -67,6 +76,11 @@ SUBROUTINE SETUP()
         ELSE IF (j.EQ.5) THEN
            OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t13_Z'//&
                 charz(k)//'.abund.krpa.s100',STATUS='OLD',iostat=stat,ACTION='READ')
+        ENDIF
+
+        IF (stat.NE.0) THEN
+           WRITE(*,*) 'SETUP ERROR: ATLAS models not found'
+           STOP
         ENDIF
 
         READ(20,*) !burn the header
@@ -127,6 +141,10 @@ SUBROUTINE SETUP()
   DO j=1,nzmet
      OPEN(21,FILE=TRIM(SPECFIT_HOME)//'/infiles/CvD_krpaIMF_Z'//charz(j)//&
           '.ssp.s100',STATUS='OLD',iostat=stat,ACTION='READ')
+     IF (stat.NE.0) THEN
+        WRITE(*,*) 'SETUP ERROR: empirical models not found'
+        STOP
+     ENDIF
      DO i=1,nstart-1
         READ(21,*) 
      ENDDO
@@ -143,29 +161,49 @@ SUBROUTINE SETUP()
   sspgrid%logagegrid = LOG10((/1.0,3.0,5.0,7.0,9.0,11.0,13.5/))
   sspgrid%logzgrid   = (/-1.5,-1.0,-0.5,0.0,0.3/)
 
-  !read in two power-law slopes, from 0.1<M<0.5 and 0.5<M<1.0
-  OPEN(22,FILE=TRIM(SPECFIT_HOME)//'/infiles/CvD_t13.5.ssp.'//&
-       'imf_varydoublex.s100',STATUS='OLD',iostat=stat,ACTION='READ')
-  DO i=1,nstart-1
-     READ(22,*) 
-  ENDDO
-  DO i=1,nl
-     READ(22,*) d1,tmp
-     ii=1
-     DO j=1,nimf
-        DO k=1,nimf
-           sspgrid%imf(i,j,k) = tmp(ii)
-           ii=ii+1
+  DO z=1,nzmet
+     DO t=1,nage
+        !read in two parameter IMF models
+        OPEN(22,FILE=TRIM(SPECFIT_HOME)//'/infiles/CvD.v3_'//chart(t)//'_Z'//&
+             charz(z)//'.ssp.'//'imf_'//TRIM(imfstr)//'.s100',STATUS='OLD',&
+             iostat=stat,ACTION='READ')
+        IF (stat.NE.0) THEN
+           WRITE(*,*) 'SETUP ERROR: IMF models not found'
+           STOP
+        ENDIF
+        DO i=1,nstart-1
+           READ(22,*) 
         ENDDO
+        DO i=1,nl
+           READ(22,*) d1,tmp
+           ii=1
+           DO j=1,nimf
+              DO k=1,nimf
+                 sspgrid%imf(i,j,k,t,z) = tmp(ii)
+                 ii=ii+1
+              ENDDO
+           ENDDO
+        ENDDO
+        CLOSE(22)
      ENDDO
   ENDDO
-  CLOSE(22)
-  !values of IMF slopes at the 35 grid points
+
+  !values of IMF parameters at the 16 grid points
   DO i=1,nimf
-     sspgrid%imfx(i) = 0.d2+REAL(i-1)/10.d0 
+     sspgrid%imfx1(i) = 0.d5+REAL(i-1)/5.d0 
   ENDDO
-  i13 = locate(sspgrid%imfx,t13+1E-3)
-  i23 = locate(sspgrid%imfx,t23+1E-3)
+  IF (fit_2ximf.EQ.1) THEN
+     DO i=1,nimf
+        sspgrid%imfx2(i) = 0.d5+REAL(i-1)/5.d0 
+     ENDDO
+     imfr1 = locate(sspgrid%imfx1,t13+1E-3)
+     imfr2 = locate(sspgrid%imfx2,t23+1E-3)
+  ELSE
+     sspgrid%imfx2 = (/0.07,0.10,0.15,0.2,0.25,0.3,0.35,0.4,&
+          0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8/)
+     imfr1 = locate(sspgrid%imfx1,t23+1E-3)
+     imfr2 = locate(sspgrid%imfx2,m07+1E-3)
+  ENDIF
 
   !read in M7III star, normalized to a 13 Gyr SSP at 1um
   OPEN(23,FILE=TRIM(SPECFIT_HOME)//'/infiles/M7III.spec.s100',&
@@ -335,9 +373,13 @@ SUBROUTINE SETUP()
 
      CALL VELBROAD(lam,sspgrid%m7g,sig0,lamlo,lamhi,smooth)
 
-     DO j=1,nimf
-        DO k=1,nimf
-           CALL VELBROAD(lam,sspgrid%imf(:,j,k),sig0,lamlo,lamhi,smooth)
+     DO z=1,nzmet
+        DO t=1,nage
+           DO j=1,nimf
+              DO k=1,nimf
+                 CALL VELBROAD(lam,sspgrid%imf(:,j,k,t,z),sig0,lamlo,lamhi,smooth)
+              ENDDO
+           ENDDO
         ENDDO
      ENDDO
 

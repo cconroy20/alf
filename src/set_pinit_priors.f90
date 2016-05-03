@@ -40,7 +40,11 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   pos%euh       = myran()*0.4-0.2
   pos%teff      = myran()*80-40
   pos%imf1      = myran()*0.6-0.3 + 1.3
-  pos%imf2      = myran()*0.6-0.3 + 2.3
+  IF (fit_2ximf.EQ.1) THEN
+     pos%imf2      = myran()*0.6-0.3 + 2.3
+  ELSE
+     pos%imf2      = myran()*0.1 + 0.1
+  ENDIF
   pos%logfy     = myran()*1-4
   pos%fy_logage = myran()*0.3
   pos%logm7g    = myran()*1-4
@@ -100,7 +104,11 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prlo%euh.EQ.test%euh) prlo%euh          = -0.6
   IF (prlo%teff.EQ.test%teff) prlo%teff       = -75.0
   IF (prlo%imf1.EQ.test%imf1) prlo%imf1       = 0.5
-  IF (prlo%imf2.EQ.test%imf2) prlo%imf2       = 0.5
+  IF (fit_2ximf.EQ.1) THEN
+     IF (prlo%imf2.EQ.test%imf2) prlo%imf2       = 0.5
+  ELSE
+     IF (prlo%imf2.EQ.test%imf2) prlo%imf2       = 0.08
+  ENDIF
   IF (prlo%logfy.EQ.test%logfy) prlo%logfy    = -6.0
   IF (prlo%fy_logage.EQ.test%fy_logage) prlo%fy_logage = LOG10(0.5)
   IF (prlo%logm7g.EQ.test%logm7g) prlo%logm7g   = -6.0
@@ -145,7 +153,11 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prhi%euh.EQ.test%euh) prhi%euh          = 0.5
   IF (prhi%teff.EQ.test%teff) prhi%teff       = 75.0
   IF (prhi%imf1.EQ.test%imf1) prhi%imf1       = 3.5
-  IF (prhi%imf2.EQ.test%imf2) prhi%imf2       = 3.5
+  IF (fit_2ximf.EQ.1) THEN
+     IF (prhi%imf2.EQ.test%imf2) prhi%imf2       = 3.5
+  ELSE
+     IF (prhi%imf2.EQ.test%imf2) prhi%imf2       = 0.5
+  ENDIF
   IF (prhi%logfy.EQ.test%logfy) prhi%logfy    = -0.7
   IF (prhi%fy_logage.EQ.test%fy_logage) prhi%fy_logage = LOG10(3.0)
   IF (prhi%logm7g.EQ.test%logm7g) prhi%logm7g   = -1.0

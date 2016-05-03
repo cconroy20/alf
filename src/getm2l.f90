@@ -22,12 +22,18 @@ SUBROUTINE GETM2L(msto,lam,spec,pos,m2l,mw)
   aspec  = spec*lsun/1E6*lam**2/clight/1E8/4/mypi/pc2cm**2
 
   IF (PRESENT(mw)) THEN
-     mass = getmass(msto,krpa_imf1,krpa_imf2,krpa_imf3)
+     mass = getmass(imflo,msto,krpa_imf1,krpa_imf2,krpa_imf3)
   ELSE
-     IF (fit_oneimf.EQ.0) THEN
-        mass = getmass(msto,pos%imf1,pos%imf2,krpa_imf3)
+     IF (fit_2ximf.EQ.1) THEN
+        !powerlaw IMFs with a fixed lower-mass cutoff
+        IF (fit_oneimf.EQ.0) THEN
+           mass = getmass(imflo,msto,pos%imf1,pos%imf2,krpa_imf3)
+        ELSE
+           mass = getmass(imflo,msto,pos%imf1,pos%imf1,krpa_imf3)
+        ENDIF
      ELSE
-        mass = getmass(msto,pos%imf1,pos%imf1,krpa_imf3)
+        !single powerlaw index with variable low-mass cutoff
+        mass = getmass(pos%imf2,msto,pos%imf1,pos%imf1,krpa_imf3)
      ENDIF
   ENDIF
 
