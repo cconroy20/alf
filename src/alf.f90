@@ -33,7 +33,7 @@ PROGRAM ALF
   !sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=10000  !1E4 seems to be good enough
+  INTEGER, PARAMETER :: nburn=5000  !1E4 seems to be good enough
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=1024 !1024
 
@@ -235,6 +235,32 @@ PROGRAM ALF
      !why is this being done here again?
      CALL INIT_RANDOM_SEED()
 
+     IF (1.EQ.0) THEN
+        opos%logemline_h    = -8.0
+        opos%logemline_oiii = -8.0
+        opos%logemline_nii  = -8.0
+        opos%logemline_sii  = -8.0
+        opos%logemline_ni   = -8.0
+        opos%logage=1.13
+        opos%logfy=-5.0
+        opos%logm7g=-5.0
+        opos%loghot=-5.0
+        opos%imf1=2.30
+        opos%imf2=0.07
+        opos%zh=0.0
+        opos%teff=0.0
+        msto = MIN(MAX(10**(msto_fit0+msto_fit1*opos%logage),0.8),3.)  
+        CALL GETMODEL(opos,mspecmw,mw=1)     !get spectrum for MW IMF
+        !CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
+        CALL GETM2L(msto,lam,10**sspgrid%logfkrpa(:,nage,nzmet-1),opos,m2lmw,mw=1)
+        write(*,'(2F7.2)') m2lmw(1:2)
+        CALL GETMODEL(opos,mspec)
+        CALL GETM2L(msto,lam,mspec,opos,m2l) ! compute M/L
+        write(*,'(2F7.2)') m2l(1:2)
+        stop
+     ENDIF
+
+
      !---------------------------------------------------------------!
      !---------------------Powell minimization-----------------------!
      !---------------------------------------------------------------!
@@ -367,6 +393,7 @@ PROGRAM ALF
            opos%logemline_ni   = -8.0
 
            !compute the main sequence turn-off mass
+           !NB: Need to update this for other metallicities
            msto = MIN(MAX(10**(msto_fit0+msto_fit1*opos%logage),0.8),3.)           
            CALL GETMODEL(opos,mspecmw,mw=1)     !get spectrum for MW IMF
            CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW

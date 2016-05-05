@@ -182,6 +182,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      !vary IMF
      !Note that this part of the model does not depend on age nor Z!
      IF (mwimf.EQ.0.AND..NOT.PRESENT(mw)) THEN
+
         vv1 = MAX(MIN(locate(sspgrid%imfx1,pos%imf1),nimf-1),1)
         dx1 = (pos%imf1-sspgrid%imfx1(vv1))/(sspgrid%imfx1(vv1+1)-sspgrid%imfx1(vv1))
         dx1 = MAX(MIN(dx1,1.0),-1.0)
@@ -193,12 +194,13 @@ SUBROUTINE GETMODEL(pos,spec,mw)
            vv2 = vv1
            dx2 = dx1
         ENDIF
-        tmp(1:nl_fit) = (1-dx1)*(1-dx2)*sspgrid%imf(1:nl_fit,vv1,vv2,7,4)+&
-             dx1*(1-dx2)*sspgrid%imf(1:nl_fit,vv1+1,vv2,7,4)+&
-             (1-dx1)*dx2*sspgrid%imf(1:nl_fit,vv1,vv2+1,7,4)+&
-             dx1*dx2*sspgrid%imf(1:nl_fit,vv1+1,vv2+1,7,4)
-        tmp(1:nl_fit) = tmp(1:nl_fit)/sspgrid%imf(1:nl_fit,imfr1,imfr2,7,4)
+        tmp(1:nl_fit) = (1-dx1)*(1-dx2)*sspgrid%imf(1:nl_fit,vv1,vv2,nage,nzmet-1)+&
+             dx1*(1-dx2)*sspgrid%imf(1:nl_fit,vv1+1,vv2,nage,nzmet-1)+&
+             (1-dx1)*dx2*sspgrid%imf(1:nl_fit,vv1,vv2+1,nage,nzmet-1)+&
+             dx1*dx2*sspgrid%imf(1:nl_fit,vv1+1,vv2+1,nage,nzmet-1)
+        tmp(1:nl_fit) = tmp(1:nl_fit)/sspgrid%imf(1:nl_fit,imfr1,imfr2,nage,nzmet-1)
         spec(1:nl_fit) = spec(1:nl_fit) * tmp(1:nl_fit)
+
      ENDIF
 
      !add emission lines

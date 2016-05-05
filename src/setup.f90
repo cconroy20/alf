@@ -24,7 +24,7 @@ SUBROUTINE SETUP()
      STOP
   ENDIF
 
-  charz = (/'m1.5','m1.0','m0.5','p0.0','p0.3'/)
+  charz = (/'m1.5','m1.0','m0.5','p0.0','p0.2'/)
   chart = (/'t01.0','t03.0','t05.0','t07.0','t09.0','t11.0','t13.5'/)
 
   IF (fit_2ximf.EQ.1) THEN
@@ -190,11 +190,11 @@ SUBROUTINE SETUP()
 
   !values of IMF parameters at the 16 grid points
   DO i=1,nimf
-     sspgrid%imfx1(i) = 0.d5+REAL(i-1)/5.d0 
+     sspgrid%imfx1(i) = 0.5+REAL(i-1)/5.d0 
   ENDDO
   IF (fit_2ximf.EQ.1) THEN
      DO i=1,nimf
-        sspgrid%imfx2(i) = 0.d5+REAL(i-1)/5.d0 
+        sspgrid%imfx2(i) = 0.5+REAL(i-1)/5.d0 
      ENDDO
      imfr1 = locate(sspgrid%imfx1,t13+1E-3)
      imfr2 = locate(sspgrid%imfx2,t23+1E-3)
