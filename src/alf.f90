@@ -245,14 +245,14 @@ PROGRAM ALF
         opos%logfy=-5.0
         opos%logm7g=-5.0
         opos%loghot=-5.0
-        opos%imf1=2.30
-        opos%imf2=0.07
+        opos%imf1=1.3
+        opos%imf2=2.3
         opos%zh=0.0
         opos%teff=0.0
         msto = MIN(MAX(10**(msto_fit0+msto_fit1*opos%logage),0.8),3.)  
         CALL GETMODEL(opos,mspecmw,mw=1)     !get spectrum for MW IMF
-        !CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
-        CALL GETM2L(msto,lam,10**sspgrid%logfkrpa(:,nage,nzmet-1),opos,m2lmw,mw=1)
+        CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
+        !CALL GETM2L(msto,lam,10**sspgrid%logfkrpa(:,nage,nzmet-1),opos,m2lmw,mw=1)
         write(*,'(2F7.2)') m2lmw(1:2)
         CALL GETMODEL(opos,mspec)
         CALL GETM2L(msto,lam,mspec,opos,m2l) ! compute M/L
@@ -331,8 +331,12 @@ PROGRAM ALF
            !larger variation.
            DO i=1,npowell
               IF (i.LE.2) wdth = 10.0
-              IF (i.GT.2) wdth = 0.2
+              IF (i.GT.2) wdth = 0.1
               pos_emcee_in(i,j) = bposarr(i) + wdth*(2.*myran()-1.0)
+              IF (pos_emcee_in(i,j).LE.prloarr(i)) &
+                   pos_emcee_in(i,j)=prloarr(i)+wdth
+              IF (pos_emcee_in(i,j).GE.prhiarr(i)) &
+                   pos_emcee_in(i,j)=prhiarr(i)-wdth
            ENDDO
         ENDIF
 

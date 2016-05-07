@@ -5,7 +5,7 @@ SUBROUTINE SETUP()
   USE alf_vars; USE nr, ONLY : locate; USE alf_utils, ONLY : linterp,velbroad
   IMPLICIT NONE
   
-  REAL(DP) :: d1,d2,d3,l1um=1E4,t13=1.3,t23=2.3,m07=0.07,sig0=99.,lamlo,lamhi
+  REAL(DP) :: d1,l1um=1E4,t13=1.3,t23=2.3,m07=0.07,sig0=99.,lamlo,lamhi
   REAL(DP), DIMENSION(nimf*nimf) :: tmp
   REAL(DP), DIMENSION(nl) :: dumi,smooth=0.0,lam
   INTEGER :: stat,i,vv,j,k,t,z,ii,shift=100
@@ -139,7 +139,7 @@ SUBROUTINE SETUP()
 
   !read in empirical spectra as a function of age and metallicity
   DO j=1,nzmet
-     OPEN(21,FILE=TRIM(SPECFIT_HOME)//'/infiles/CvD_krpaIMF_Z'//charz(j)//&
+     OPEN(21,FILE=TRIM(SPECFIT_HOME)//'/infiles/CvD.v3_krpaIMF_Z'//charz(j)//&
           '.ssp.s100',STATUS='OLD',iostat=stat,ACTION='READ')
      IF (stat.NE.0) THEN
         WRITE(*,*) 'SETUP ERROR: empirical models not found'
@@ -159,7 +159,7 @@ SUBROUTINE SETUP()
 
   sspgrid%logfkrpa   = LOG10(sspgrid%logfkrpa+tiny_number)
   sspgrid%logagegrid = LOG10((/1.0,3.0,5.0,7.0,9.0,11.0,13.5/))
-  sspgrid%logzgrid   = (/-1.5,-1.0,-0.5,0.0,0.3/)
+  sspgrid%logzgrid   = (/-1.5,-1.0,-0.5,0.0,0.25/)
 
   DO z=1,nzmet
      DO t=1,nage

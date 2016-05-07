@@ -54,13 +54,13 @@ MODULE ALF_VARS
 
   !--------------------------------------------------------------!
   !    the parameters below should not be modified unless you    !
-  !    know what you are doing!                                  !
+  !    really know what you are doing!                           !
   !--------------------------------------------------------------!
 
   !nstart and nend allow us to use only a subset of 
   !the full wavelength array
-  INTEGER, PARAMETER :: nstart = 2000   ! 0.38 um
-  INTEGER, PARAMETER :: nend   = 14125  ! 2.4 um
+  INTEGER, PARAMETER :: nstart = 1200  ! 0.38 um
+  INTEGER, PARAMETER :: nend   = 8600  !1.1um; 14125  ! 2.4 um
   !number of spectral elements in SSPs
   INTEGER, PARAMETER :: nl = nend-nstart+1
   !number actually used over the range to be fit
@@ -100,7 +100,8 @@ MODULE ALF_VARS
   REAL(DP), PARAMETER, DIMENSION(3) :: magsun = (/4.64,4.52,5.14/)
   !mag of sun in r,I,J filters (AB mag)
   !REAL(DP), PARAMETER, DIMENSION(3) :: magsun = (/4.64,4.52,4.56/)
-  !lower and upper limits for the IMF
+  !lower and upper limits for the IMF,
+  !except when the IMF cutoff parameterization is used
   REAL(DP), PARAMETER :: imflo=0.08,imfhi=100.0
   !power-law slopes for a Kroupa IMF
   REAL(DP), PARAMETER :: krpa_imf1=1.3,krpa_imf2=2.3,krpa_imf3=2.3

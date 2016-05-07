@@ -11,9 +11,9 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   TYPE(PARAMS), INTENT(in) :: pos
   REAL(DP), DIMENSION(nl), INTENT(out) :: spec
   INTEGER, OPTIONAL :: mw
-  REAL(DP), DIMENSION(nl) :: tmp,tmpr,yspec
-  INTEGER :: vt,vv1,vv2,i,vr,vm
-  REAL(DP) :: dt,fy,dx1,dx2,lsig,vz,dr,dm
+  REAL(DP), DIMENSION(nl) :: tmp,tmpr,yspec,tmp1,tmp2
+  INTEGER :: vt,vy,vv1,vv2,i,vr,vm,vh
+  REAL(DP) :: dt,fy,dx1,dx2,lsig,ve,dr,dm
   REAL(DP), DIMENSION(nl)   :: tmp_ltrans, tmp_ftrans
   REAL(DP), DIMENSION(neml) :: emnormall=1.0
   
@@ -56,15 +56,15 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   !only include these parameters in the "full" model
   IF (fit_type.EQ.0.AND.powell_fitting.EQ.0) THEN
      fy    = MAX(MIN(10**pos%logfy,1.0),0.0)
-     vt    = MAX(MIN(locate(sspgrid%logagegrid,pos%fy_logage),nage-1),1)
-     dt    = (pos%fy_logage-sspgrid%logagegrid(vt))/&
-          (sspgrid%logagegrid(vt+1)-sspgrid%logagegrid(vt))
+     vy    = MAX(MIN(locate(sspgrid%logagegrid,pos%fy_logage),nage-1),1)
+     dt    = (pos%fy_logage-sspgrid%logagegrid(vy))/&
+          (sspgrid%logagegrid(vy+1)-sspgrid%logagegrid(vy))
      dt    = MAX(MIN(dt,1.0),-0.3) !0.5<age<13 Gyr
      yspec(1:nl_fit) = &
-          dt*dm*sspgrid%logfkrpa(1:nl_fit,vt+1,vm+1) + &
-          (1-dt)*dm*sspgrid%logfkrpa(1:nl_fit,vt,vm+1) + & 
-          dt*(1-dm)*sspgrid%logfkrpa(1:nl_fit,vt+1,vm) + & 
-          (1-dt)*(1-dm)*sspgrid%logfkrpa(1:nl_fit,vt,vm)
+          dt*dm*sspgrid%logfkrpa(1:nl_fit,vy+1,vm+1) + &
+          (1-dt)*dm*sspgrid%logfkrpa(1:nl_fit,vy,vm+1) + & 
+          dt*(1-dm)*sspgrid%logfkrpa(1:nl_fit,vy+1,vm) + & 
+          (1-dt)*(1-dm)*sspgrid%logfkrpa(1:nl_fit,vy,vm)
       spec(1:nl_fit)  = (1-fy)*spec(1:nl_fit) + fy*10**yspec(1:nl_fit)
   ENDIF
   
@@ -146,12 +146,12 @@ SUBROUTINE GETMODEL(pos,spec,mw)
           sspgrid%teffp,sspgrid%teffm)
 
      !add a hot star
-     vt = MAX(MIN(locate(sspgrid%teffarrhot,pos%hotteff),nhot-1),1)
-     dt = (pos%hotteff-sspgrid%teffarrhot(vt))/&
-          (sspgrid%teffarrhot(vt+1)-sspgrid%teffarrhot(vt))
+     vh = MAX(MIN(locate(sspgrid%teffarrhot,pos%hotteff),nhot-1),1)
+     dt = (pos%hotteff-sspgrid%teffarrhot(vh))/&
+          (sspgrid%teffarrhot(vh+1)-sspgrid%teffarrhot(vh))
      fy = MAX(MIN(10**pos%loghot,1.0),0.0)
-     tmp(1:nl_fit)  = dt*sspgrid%hotspec(1:nl_fit,vt+1) + &
-          (1-dt)*sspgrid%hotspec(1:nl_fit,vt)
+     tmp(1:nl_fit)  = dt*sspgrid%hotspec(1:nl_fit,vh+1) + &
+          (1-dt)*sspgrid%hotspec(1:nl_fit,vh)
      spec(1:nl_fit) = (1-fy)*spec(1:nl_fit) + fy*tmp(1:nl_fit)
      
      !add in an M7 giant
@@ -180,25 +180,37 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      CALL ADD_RESPONSE(spec,pos%euh,0.3,dr,vr,dm,vm,sspgrid%solar,sspgrid%eup)
 
      !vary IMF
-     !Note that this part of the model does not depend on age nor Z!
      IF (mwimf.EQ.0.AND..NOT.PRESENT(mw)) THEN
 
         vv1 = MAX(MIN(locate(sspgrid%imfx1,pos%imf1),nimf-1),1)
         dx1 = (pos%imf1-sspgrid%imfx1(vv1))/(sspgrid%imfx1(vv1+1)-sspgrid%imfx1(vv1))
-        dx1 = MAX(MIN(dx1,1.0),-1.0)
+        dx1 = MAX(MIN(dx1,1.0),0.0)
         IF (fit_oneimf.EQ.0) THEN
            vv2 = MAX(MIN(locate(sspgrid%imfx2,pos%imf2),nimf-1),1)
            dx2 = (pos%imf2-sspgrid%imfx2(vv2))/(sspgrid%imfx2(vv2+1)-sspgrid%imfx2(vv2))
-           dx2 = MAX(MIN(dx2,1.0),-1.0)
+           dx2 = MAX(MIN(dx2,1.0),0.0)
         ELSE
            vv2 = vv1
            dx2 = dx1
         ENDIF
-        tmp(1:nl_fit) = (1-dx1)*(1-dx2)*sspgrid%imf(1:nl_fit,vv1,vv2,nage,nzmet-1)+&
-             dx1*(1-dx2)*sspgrid%imf(1:nl_fit,vv1+1,vv2,nage,nzmet-1)+&
-             (1-dx1)*dx2*sspgrid%imf(1:nl_fit,vv1,vv2+1,nage,nzmet-1)+&
-             dx1*dx2*sspgrid%imf(1:nl_fit,vv1+1,vv2+1,nage,nzmet-1)
-        tmp(1:nl_fit) = tmp(1:nl_fit)/sspgrid%imf(1:nl_fit,imfr1,imfr2,nage,nzmet-1)
+
+        !force use of the 13 Gyr IMF response functions
+        vt = nage-1
+        dt = 1.0
+
+        tmp1(1:nl_fit) = (1-dx1)*(1-dx2)*sspgrid%imf(1:nl_fit,vv1,vv2,vt,nzmet-1)+&
+             dx1*(1-dx2)*sspgrid%imf(1:nl_fit,vv1+1,vv2,vt,nzmet-1)+&
+             (1-dx1)*dx2*sspgrid%imf(1:nl_fit,vv1,vv2+1,vt,nzmet-1)+&
+             dx1*dx2*sspgrid%imf(1:nl_fit,vv1+1,vv2+1,vt,nzmet-1)
+        tmp1(1:nl_fit)  = tmp1(1:nl_fit)/sspgrid%imf(1:nl_fit,imfr1,imfr2,vt,nzmet-1)
+
+        tmp2(1:nl_fit) = (1-dx1)*(1-dx2)*sspgrid%imf(1:nl_fit,vv1,vv2,vt+1,nzmet-1)+&
+             dx1*(1-dx2)*sspgrid%imf(1:nl_fit,vv1+1,vv2,vt+1,nzmet-1)+&
+             (1-dx1)*dx2*sspgrid%imf(1:nl_fit,vv1,vv2+1,vt+1,nzmet-1)+&
+             dx1*dx2*sspgrid%imf(1:nl_fit,vv1+1,vv2+1,vt+1,nzmet-1)
+        tmp2(1:nl_fit)  = tmp2(1:nl_fit)/sspgrid%imf(1:nl_fit,imfr1,imfr2,vt+1,nzmet-1)
+
+        tmp(1:nl_fit)  = (1-dt)*tmp1(1:nl_fit) + dt*tmp2(1:nl_fit)
         spec(1:nl_fit) = spec(1:nl_fit) * tmp(1:nl_fit)
 
      ENDIF
@@ -222,10 +234,10 @@ SUBROUTINE GETMODEL(pos,spec,mw)
         DO i=1,neml
            !allow the em lines to be offset in velocity from the continuum
            !NB: velz2 is a *relative* shift between continuum and lines
-           vz   = emlines(i) / (1+pos%velz2/clight*1E5)
-           lsig = MAX(vz*pos%sigma2/clight*1E5,0.5)
+           ve   = emlines(i) / (1+pos%velz2/clight*1E5)
+           lsig = MAX(ve*pos%sigma2/clight*1E5,1.0) !min dlam=1.0A
            spec(1:nl_fit) = spec(1:nl_fit) + emnormall(i) * &
-                EXP(-(sspgrid%lam(1:nl_fit)-vz)**2/lsig**2/2.0)
+                EXP(-(sspgrid%lam(1:nl_fit)-ve)**2/lsig**2/2.0)
         ENDDO
      ENDIF
 
