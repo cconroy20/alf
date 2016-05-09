@@ -11,7 +11,7 @@ MODULE ALF_VARS
   INTEGER, PARAMETER :: DP = KIND(1.0D0)
   INTEGER, PARAMETER :: SP = KIND(1.0)
 
-  !-----------------Define various parameters--------------------!
+  !-------------------set various parameters---------------------!
 
   !flags for the user to choose.  These can also be set at the 
   !very beginning of alf.f90
@@ -20,27 +20,35 @@ MODULE ALF_VARS
   !1: only fit velz, sigma, SSP age, Fe,C,N,O,Mg,Si,Ca,Ti,Na
   !2: only fit velz, sigma, SSP age, Fe
   INTEGER :: fit_type=0
+
   !turn on the use of age-dependent response functions
   INTEGER :: use_age_dep_resp_fcns=1
-  !Turn off the IMF sensitivity at <7000A if this parameter is =1
-  INTEGER :: blueimf_off=0
-  !if set, compute velocity broadening via a simple method
-  !rather than the proper convolution in log_lambda space
-  !don't turn this on - the "correct" version is just as fast
-  INTEGER :: velbroad_simple=0
+  !if above is set to 0, fix the response functions to this age (Gyr)
+  REAL(DP), PARAMETER :: fix_age_dep_resp_fcns=10.0
+
+  !turn on the use of Z-dependent response functions
+  INTEGER :: use_z_dep_resp_fcns=0
+  !if above is set to 0, fix the response functions to this [Z/H]
+  REAL(DP), PARAMETER :: fix_z_dep_resp_fcns=0.0
+
   !flag to include transmission spectrum in fitting
   !even if flag is set, only included in full model
   INTEGER :: fit_trans=1
+
   !force the IMF to be a MW IMF if set
   !this is automatically assumed if fit_type=1,2
   INTEGER :: mwimf=0
+
   !flag to fit a single IMF slope
   INTEGER :: fit_oneimf=0
+
   !flag to fit either a double-power law IMF or power-law + cutoff
   INTEGER :: fit_2ximf=1
 
-  !the options below have not been tested/used in a long time
-  !and so are effectively deprecated
+  !--------------------------------------------------------------!
+  !  the options below have not been tested/used in a long time  !
+  !  and so are effectively deprecated                           !
+  !--------------------------------------------------------------!
 
   !fit a polynomial to the ratio of model and data
   !if zero, then both data and model are continuum divided
@@ -51,6 +59,12 @@ MODULE ALF_VARS
   INTEGER :: apply_temperrfcn=0
   !flag to implement fake element response functions
   INTEGER :: fake_response=0
+  !Turn off the IMF sensitivity at <7000A if this parameter is =1
+  INTEGER :: blueimf_off=0
+  !if set, compute velocity broadening via a simple method
+  !rather than the proper convolution in log_lambda space
+  !don't turn this on - the "correct" version is just as fast
+  INTEGER :: velbroad_simple=0
 
   !--------------------------------------------------------------!
   !    the parameters below should not be modified unless you    !
