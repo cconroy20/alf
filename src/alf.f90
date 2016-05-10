@@ -33,7 +33,7 @@ PROGRAM ALF
   !sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=5000  !1E4 seems to be good enough
+  INTEGER, PARAMETER :: nburn=10000  !1E4 seems to be good enough
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=1024 !1024
 
@@ -442,7 +442,7 @@ PROGRAM ALF
      CALL DATE_AND_TIME(TIME=time)
      CALL DTIME(dumt,time2)
      WRITE(*,*) 'End Time   '//time(1:2)//':'//time(3:4)
-     WRITE(*,'(" Elapsed Time: ",F7.3," hr")') time2/3600.
+     WRITE(*,'(" Elapsed Time: ",F6.2," hr")') time2/3600.
      WRITE(*,*) 
      WRITE(*,'("  Facc: ",F5.2)') REAL(totacc)/REAL(nmcmc*nwalkers)
 
@@ -462,7 +462,7 @@ PROGRAM ALF
      !here, "best-fit" is the mean of the posterior distributions
      OPEN(14,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
           TRIM(file)//TRIM(tag)//'.bestp',STATUS='REPLACE')
-     WRITE(14,'("#  Elapsed Time: ",F7.3," hr")') time2/3600.
+     WRITE(14,'("#  Elapsed Time: ",F6.2," hr")') time2/3600.
      WRITE(14,'("#   dopowell  =",I2)') dopowell
      WRITE(14,'("#   fit_type  =",I2)') fit_type
      WRITE(14,'("#   fit_trans =",I2)') fit_trans
