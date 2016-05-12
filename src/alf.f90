@@ -33,9 +33,9 @@ PROGRAM ALF
   !sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=10000  !1E4 seems to be good enough
+  INTEGER, PARAMETER :: nburn=1000  !1E4 seems to be good enough
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=1024 !1024
+  INTEGER, PARAMETER :: nwalkers=512 !1024
 
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
@@ -72,7 +72,7 @@ PROGRAM ALF
 
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
-  fit_type   = 0
+  fit_type   = 1
   !dont fit transmission function in cases where the input
   !spectrum has already been de-redshifted to ~0.0
   fit_trans  = 1
