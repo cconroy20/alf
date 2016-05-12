@@ -196,8 +196,7 @@ MODULE ALF_VARS
      REAL(DP), DIMENSION(nage_rfcn)     :: logagegrid_rfcn
      REAL(DP), DIMENSION(nage)          :: logagegrid
      REAL(DP), DIMENSION(nzmet)         :: logzgrid
-     REAL(DP), DIMENSION(nl,nage,nzmet) :: logfkrpa
-     REAL(DP), DIMENSION(nl,nimf,nimf,nage,nzmet)  :: imf
+     REAL(DP), DIMENSION(nl,nimf,nimf,nage,nzmet)  :: logssp
      REAL(DP), DIMENSION(nimf)          :: imfx1,imfx2
      REAL(DP), DIMENSION(nl,nhot)       :: hotspec
      REAL(DP), DIMENSION(nl)            :: atm_trans

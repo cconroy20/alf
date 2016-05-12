@@ -12,7 +12,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   REAL(DP), DIMENSION(nl), INTENT(out) :: spec
   INTEGER, OPTIONAL :: mw
   REAL(DP), DIMENSION(nl) :: tmp,tmpr,yspec,tmp1,tmp2
-  INTEGER :: vt,vy,vv1,vv2,i,vr,vm,vh,vm2
+  INTEGER  :: vt,vy,vv1,vv2,i,vr,vm,vh,vm2
   REAL(DP) :: dt,fy,dx1,dx2,lsig,ve,dr,dm,dm2,dh,dy
   REAL(DP), DIMENSION(nl)   :: tmp_ltrans, tmp_ftrans
   REAL(DP), DIMENSION(neml) :: emnormall=1.0
@@ -29,12 +29,62 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   dm   = (pos%zh-sspgrid%logzgrid(vm)) / &
        (sspgrid%logzgrid(vm+1)-sspgrid%logzgrid(vm))
   dm   = MAX(MIN(dm,1.5),-1.0) ! -2.0<[Z/H]<0.45
-  spec(1:nl_fit) = &
-       dt*dm*sspgrid%logfkrpa(1:nl_fit,vt+1,vm+1) + &
-       (1-dt)*dm*sspgrid%logfkrpa(1:nl_fit,vt,vm+1) + & 
-       dt*(1-dm)*sspgrid%logfkrpa(1:nl_fit,vt+1,vm) + & 
-       (1-dt)*(1-dm)*sspgrid%logfkrpa(1:nl_fit,vt,vm)
-  spec(1:nl_fit) = 10**spec(1:nl_fit)
+
+  !vary IMF
+  IF (mwimf.EQ.0.AND..NOT.PRESENT(mw).AND.fit_type.EQ.0.AND.powell_fitting.EQ.0) THEN
+     
+     vv1 = MAX(MIN(locate(sspgrid%imfx1,pos%imf1),nimf-1),1)
+     dx1 = (pos%imf1-sspgrid%imfx1(vv1))/(sspgrid%imfx1(vv1+1)-sspgrid%imfx1(vv1))
+     dx1 = MAX(MIN(dx1,1.0),0.0)
+     IF (fit_oneimf.EQ.0) THEN
+        vv2 = MAX(MIN(locate(sspgrid%imfx2,pos%imf2),nimf-1),1)
+        dx2 = (pos%imf2-sspgrid%imfx2(vv2))/(sspgrid%imfx2(vv2+1)-sspgrid%imfx2(vv2))
+        dx2 = MAX(MIN(dx2,1.0),0.0)
+     ELSE
+        vv2 = vv1
+        dx2 = dx1
+     ENDIF
+     
+     tmp1(1:nl_fit) = (1-dx1)*(1-dx2)*sspgrid%logssp(1:nl_fit,vv1,vv2,vt,nzmet-1)+&
+          dx1*(1-dx2)*sspgrid%logssp(1:nl_fit,vv1+1,vv2,vt,nzmet-1)+&
+          (1-dx1)*dx2*sspgrid%logssp(1:nl_fit,vv1,vv2+1,vt,nzmet-1)+&
+          dx1*dx2*sspgrid%logssp(1:nl_fit,vv1+1,vv2+1,vt,nzmet-1)
+     
+     tmp2(1:nl_fit) = (1-dx1)*(1-dx2)*sspgrid%logssp(1:nl_fit,vv1,vv2,vt+1,nzmet-1)+&
+          dx1*(1-dx2)*sspgrid%logssp(1:nl_fit,vv1+1,vv2,vt+1,nzmet-1)+&
+          (1-dx1)*dx2*sspgrid%logssp(1:nl_fit,vv1,vv2+1,vt+1,nzmet-1)+&
+          dx1*dx2*sspgrid%logssp(1:nl_fit,vv1+1,vv2+1,vt+1,nzmet-1)
+     
+     spec(1:nl_fit) = 10**( (1-dt)*tmp1(1:nl_fit) + dt*tmp2(1:nl_fit) )
+
+
+  ELSE
+  
+     !use a Kroupa IMF
+     spec(1:nl_fit) = &
+          dt*dm*sspgrid%logssp(1:nl_fit,imfr1,imfr2,vt+1,vm+1) + &
+          (1-dt)*dm*sspgrid%logssp(1:nl_fit,imfr1,imfr2,vt,vm+1) + & 
+          dt*(1-dm)*sspgrid%logssp(1:nl_fit,imfr1,imfr2,vt+1,vm) + & 
+          (1-dt)*(1-dm)*sspgrid%logssp(1:nl_fit,imfr1,imfr2,vt,vm)
+     spec(1:nl_fit) = 10**spec(1:nl_fit)
+
+  ENDIF
+  
+  !vary young population - both fraction and age
+  !only include these parameters in the "full" model
+  IF (fit_type.EQ.0.AND.powell_fitting.EQ.0) THEN
+     fy    = MAX(MIN(10**pos%logfy,1.0),0.0)
+     vy    = MAX(MIN(locate(sspgrid%logagegrid,pos%fy_logage),nage-1),1)
+     dy    = (pos%fy_logage-sspgrid%logagegrid(vy))/&
+          (sspgrid%logagegrid(vy+1)-sspgrid%logagegrid(vy))
+     dy    = MAX(MIN(dy,1.0),-0.3) !0.5<age<13 Gyr
+     yspec(1:nl_fit) = &
+          dy*dm*sspgrid%logssp(1:nl_fit,imfr1,imfr2,vy+1,vm+1) + &
+          (1-dy)*dm*sspgrid%logssp(1:nl_fit,imfr1,imfr2,vy,vm+1) + & 
+          dy*(1-dm)*sspgrid%logssp(1:nl_fit,imfr1,imfr2,vy+1,vm) + & 
+          (1-dy)*(1-dm)*sspgrid%logssp(1:nl_fit,imfr1,imfr2,vy,vm)
+      spec(1:nl_fit)  = (1-fy)*spec(1:nl_fit) + fy*10**yspec(1:nl_fit)
+  ENDIF
 
   !vary age in the response functions
   IF (use_age_dep_resp_fcns.EQ.0) THEN
@@ -52,7 +102,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      dr = MAX(MIN(dr,1.0),0.0)
   ENDIF
 
-  !turn off Z-dependence in the response functions
+  !vary metallicity in the response functions
   IF (use_z_dep_resp_fcns.EQ.0) THEN
      vm2   = MAX(MIN(locate(sspgrid%logzgrid,fix_z_dep_resp_fcns),nzmet-1),1)
      dm2   = (fix_z_dep_resp_fcns-sspgrid%logzgrid(vm2)) / &
@@ -61,22 +111,6 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   ELSE
      vm2 = vm
      dm2 = dm
-  ENDIF
-
-  !vary young population - both fraction and age
-  !only include these parameters in the "full" model
-  IF (fit_type.EQ.0.AND.powell_fitting.EQ.0) THEN
-     fy    = MAX(MIN(10**pos%logfy,1.0),0.0)
-     vy    = MAX(MIN(locate(sspgrid%logagegrid,pos%fy_logage),nage-1),1)
-     dy    = (pos%fy_logage-sspgrid%logagegrid(vy))/&
-          (sspgrid%logagegrid(vy+1)-sspgrid%logagegrid(vy))
-     dy    = MAX(MIN(dy,1.0),-0.3) !0.5<age<13 Gyr
-     yspec(1:nl_fit) = &
-          dy*dm*sspgrid%logfkrpa(1:nl_fit,vy+1,vm+1) + &
-          (1-dy)*dm*sspgrid%logfkrpa(1:nl_fit,vy,vm+1) + & 
-          dy*(1-dm)*sspgrid%logfkrpa(1:nl_fit,vy+1,vm) + & 
-          (1-dy)*(1-dm)*sspgrid%logfkrpa(1:nl_fit,vy,vm)
-      spec(1:nl_fit)  = (1-fy)*spec(1:nl_fit) + fy*10**yspec(1:nl_fit)
   ENDIF
   
  
@@ -189,42 +223,6 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      CALL ADD_RESPONSE(spec,pos%bah,0.3,dr,vr,dm2,vm2,sspgrid%solar,sspgrid%bap,sspgrid%bam)
      !vary [Eu/H]
      CALL ADD_RESPONSE(spec,pos%euh,0.3,dr,vr,dm2,vm2,sspgrid%solar,sspgrid%eup)
-
-     !vary IMF
-     IF (mwimf.EQ.0.AND..NOT.PRESENT(mw)) THEN
-
-        vv1 = MAX(MIN(locate(sspgrid%imfx1,pos%imf1),nimf-1),1)
-        dx1 = (pos%imf1-sspgrid%imfx1(vv1))/(sspgrid%imfx1(vv1+1)-sspgrid%imfx1(vv1))
-        dx1 = MAX(MIN(dx1,1.0),0.0)
-        IF (fit_oneimf.EQ.0) THEN
-           vv2 = MAX(MIN(locate(sspgrid%imfx2,pos%imf2),nimf-1),1)
-           dx2 = (pos%imf2-sspgrid%imfx2(vv2))/(sspgrid%imfx2(vv2+1)-sspgrid%imfx2(vv2))
-           dx2 = MAX(MIN(dx2,1.0),0.0)
-        ELSE
-           vv2 = vv1
-           dx2 = dx1
-        ENDIF
-
-        !force use of the 13 Gyr IMF response functions
-        vt = nage-1
-        dt = 1.0
-
-        tmp1(1:nl_fit) = (1-dx1)*(1-dx2)*sspgrid%imf(1:nl_fit,vv1,vv2,vt,nzmet-1)+&
-             dx1*(1-dx2)*sspgrid%imf(1:nl_fit,vv1+1,vv2,vt,nzmet-1)+&
-             (1-dx1)*dx2*sspgrid%imf(1:nl_fit,vv1,vv2+1,vt,nzmet-1)+&
-             dx1*dx2*sspgrid%imf(1:nl_fit,vv1+1,vv2+1,vt,nzmet-1)
-        tmp1(1:nl_fit)  = tmp1(1:nl_fit)/sspgrid%imf(1:nl_fit,imfr1,imfr2,vt,nzmet-1)
-
-        tmp2(1:nl_fit) = (1-dx1)*(1-dx2)*sspgrid%imf(1:nl_fit,vv1,vv2,vt+1,nzmet-1)+&
-             dx1*(1-dx2)*sspgrid%imf(1:nl_fit,vv1+1,vv2,vt+1,nzmet-1)+&
-             (1-dx1)*dx2*sspgrid%imf(1:nl_fit,vv1,vv2+1,vt+1,nzmet-1)+&
-             dx1*dx2*sspgrid%imf(1:nl_fit,vv1+1,vv2+1,vt+1,nzmet-1)
-        tmp2(1:nl_fit)  = tmp2(1:nl_fit)/sspgrid%imf(1:nl_fit,imfr1,imfr2,vt+1,nzmet-1)
-
-        tmp(1:nl_fit)  = (1-dt)*tmp1(1:nl_fit) + dt*tmp2(1:nl_fit)
-        spec(1:nl_fit) = spec(1:nl_fit) * tmp(1:nl_fit)
-
-     ENDIF
 
      !add emission lines
      IF (maskem.EQ.0) THEN

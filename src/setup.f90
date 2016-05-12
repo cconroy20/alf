@@ -138,26 +138,7 @@ SUBROUTINE SETUP()
 
 
   !read in empirical spectra as a function of age and metallicity
-  DO j=1,nzmet
-     OPEN(21,FILE=TRIM(SPECFIT_HOME)//'/infiles/CvD.v3_krpaIMF_Z'//charz(j)//&
-          '.ssp.s100',STATUS='OLD',iostat=stat,ACTION='READ')
-     IF (stat.NE.0) THEN
-        WRITE(*,*) 'SETUP ERROR: empirical models not found'
-        STOP
-     ENDIF
-     DO i=1,nstart-1
-        READ(21,*) 
-     ENDDO
-     DO i=1,nl
-        !order of the logfkrpa array is lam,age,zmet
-        READ(21,*) d1,sspgrid%logfkrpa(i,1,j),sspgrid%logfkrpa(i,2,j),&
-             sspgrid%logfkrpa(i,3,j),sspgrid%logfkrpa(i,4,j),sspgrid%logfkrpa(i,5,j),&
-             sspgrid%logfkrpa(i,6,j),sspgrid%logfkrpa(i,7,j)
-     ENDDO
-     CLOSE(21)
-  ENDDO
 
-  sspgrid%logfkrpa   = LOG10(sspgrid%logfkrpa+tiny_number)
   sspgrid%logagegrid = LOG10((/1.0,3.0,5.0,7.0,9.0,11.0,13.5/))
   sspgrid%logzgrid   = (/-1.5,-1.0,-0.5,0.0,0.25/)
 
@@ -179,7 +160,7 @@ SUBROUTINE SETUP()
            ii=1
            DO j=1,nimf
               DO k=1,nimf
-                 sspgrid%imf(i,j,k,t,z) = tmp(ii)
+                 sspgrid%logssp(i,j,k,t,z) = tmp(ii)
                  ii=ii+1
               ENDDO
            ENDDO
@@ -187,6 +168,8 @@ SUBROUTINE SETUP()
         CLOSE(22)
      ENDDO
   ENDDO
+
+  sspgrid%logssp = LOG10(sspgrid%logssp+tiny_number)
 
   !values of IMF parameters at the 16 grid points
   DO i=1,nimf
@@ -260,7 +243,7 @@ SUBROUTINE SETUP()
   vv = locate(sspgrid%lam(1:nl),l1um)
   DO i=1,nhot
      sspgrid%hotspec(:,i) = sspgrid%hotspec(:,i)/sspgrid%hotspec(vv,i)*&
-          10**sspgrid%logfkrpa(vv,nage,nzmet-1)
+          10**sspgrid%logssp(vv,imfr1,imfr2,nage,nzmet-1)
   ENDDO
   !hot star Teff in kK
   sspgrid%teffarrhot = (/8.0,10.,20.,30./)
@@ -373,23 +356,17 @@ SUBROUTINE SETUP()
 
      CALL VELBROAD(lam,sspgrid%m7g,sig0,lamlo,lamhi,smooth)
 
+     sspgrid%logssp = 10**sspgrid%logssp
      DO z=1,nzmet
         DO t=1,nage
            DO j=1,nimf
               DO k=1,nimf
-                 CALL VELBROAD(lam,sspgrid%imf(:,j,k,t,z),sig0,lamlo,lamhi,smooth)
+                 CALL VELBROAD(lam,sspgrid%logssp(:,j,k,t,z),sig0,lamlo,lamhi,smooth)
               ENDDO
            ENDDO
         ENDDO
      ENDDO
-
-     sspgrid%logfkrpa = 10**sspgrid%logfkrpa
-     DO j=1,nzmet
-        DO i=1,nage
-           CALL VELBROAD(lam,sspgrid%logfkrpa(:,i,j),sig0,lamlo,lamhi,smooth)
-        ENDDO
-     ENDDO
-     sspgrid%logfkrpa = LOG10(sspgrid%logfkrpa+tiny_number)
+     sspgrid%logssp = LOG10(sspgrid%logssp+tiny_number)
 
   ENDIF
 
