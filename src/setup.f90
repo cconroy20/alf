@@ -33,6 +33,8 @@ SUBROUTINE SETUP()
      imfstr = 'varymcut_varyx'
   ENDIF
 
+  sspgrid%logssp = tiny_number
+  
   !if the data has not been read in, then we need to manually
   !define the lower and upper limits for the instrumental resolution
   !broadening.  Currently this is only triggered if write_a_model is 
