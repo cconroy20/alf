@@ -147,8 +147,8 @@ SUBROUTINE SETUP()
   DO z=1,nzmet
      DO t=1,nage
         !read in two parameter IMF models
-        OPEN(22,FILE=TRIM(SPECFIT_HOME)//'/infiles/CvD.v3_'//chart(t)//'_Z'//&
-             charz(z)//'.ssp.'//'imf_'//TRIM(imfstr)//'.s100',STATUS='OLD',&
+        OPEN(22,FILE=TRIM(SPECFIT_HOME)//'/infiles/VCJ_v1_'//chart(t)//'_Z'//&
+             charz(z)//'.ssp.imf_'//TRIM(imfstr)//'.s100',STATUS='OLD',&
              iostat=stat,ACTION='READ')
         IF (stat.NE.0) THEN
            WRITE(*,*) 'SETUP ERROR: IMF models not found'
@@ -162,7 +162,8 @@ SUBROUTINE SETUP()
            ii=1
            DO j=1,nimf
               DO k=1,nimf
-                 sspgrid%logssp(i,j,k,t,z) = tmp(ii)
+                 !below is a temporary unit conversion fix
+                 sspgrid%logssp(i,j,k,t,z) = tmp(ii) / d1**2 * 1E24/2.
                  ii=ii+1
               ENDDO
            ENDDO
@@ -189,17 +190,6 @@ SUBROUTINE SETUP()
      imfr1 = locate(sspgrid%imfx1,t23+1E-3)
      imfr2 = locate(sspgrid%imfx2,m07+1E-3)
   ENDIF
-
-  !read in M7III star, normalized to a 13 Gyr SSP at 1um
-  OPEN(23,FILE=TRIM(SPECFIT_HOME)//'/infiles/M7III.spec.s100',&
-       STATUS='OLD',iostat=stat,ACTION='READ')
-  DO i=1,nstart-1
-     READ(23,*) 
-  ENDDO
-  DO i=1,nl
-     READ(23,*) d1,sspgrid%m7g(i)
-  ENDDO
-  CLOSE(23)
 
   !read in hot stars 
   OPEN(24,FILE=TRIM(SPECFIT_HOME)//'/infiles/ap00t08000g4.00at12.spec.s100',&
@@ -250,6 +240,21 @@ SUBROUTINE SETUP()
   !hot star Teff in kK
   sspgrid%teffarrhot = (/8.0,10.,20.,30./)
 
+  !read in M7III star, normalized to a 13 Gyr SSP at 1um
+  OPEN(23,FILE=TRIM(SPECFIT_HOME)//'/infiles/M7III.spec.s100',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  DO i=1,nstart-1
+     READ(23,*) 
+  ENDDO
+  DO i=1,nl
+     READ(23,*) d1,sspgrid%m7g(i)
+  ENDDO
+  CLOSE(23)
+  !normalization provided here as opposed to in external IDL routine on 5/13/16
+  sspgrid%m7g = sspgrid%m7g/sspgrid%m7g(vv)*&
+       10**sspgrid%logssp(vv,imfr1,imfr2,nage,nzmet-1)
+
+
   !define central wavelengths of emission lines (in vacuum)
   !these wavelengths come from NIST
   emlines(1)  = 4102.89  ! Hd
@@ -264,17 +269,19 @@ SUBROUTINE SETUP()
   emlines(10) = 6718.29  ! [SII]
   emlines(11) = 6732.67  ! [SII]
 
-  !read in template error function (computed from SDSS stacks)
-  !NB: this hasn't been used in years!
-  OPEN(28,FILE=TRIM(SPECFIT_HOME)//'/infiles/temperrfcn.s350',&
-       STATUS='OLD',iostat=stat,ACTION='READ')
-  DO i=1,nstart-1
-     READ(28,*) 
-  ENDDO
-  DO i=1,nl
-     READ(28,*) d1,temperrfcn(i)
-  ENDDO
-  CLOSE(28)
+  IF (apply_temperrfcn.EQ.1) THEN
+     !read in template error function (computed from SDSS stacks)
+     !NB: this hasn't been used in years!
+     OPEN(28,FILE=TRIM(SPECFIT_HOME)//'/infiles/temperrfcn.s350',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
+     DO i=1,nstart-1
+        READ(28,*) 
+     ENDDO
+     DO i=1,nl
+        READ(28,*) d1,temperrfcn(i)
+     ENDDO
+     CLOSE(28)
+  ENDIF
 
   !read in the atm transmission function
   OPEN(29,FILE=TRIM(SPECFIT_HOME)//'/infiles/atm_trans.dat',&

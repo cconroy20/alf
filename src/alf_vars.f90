@@ -73,8 +73,8 @@ MODULE ALF_VARS
 
   !nstart and nend allow us to use only a subset of 
   !the full wavelength array
-  INTEGER, PARAMETER :: nstart = 1200  ! 0.38 um
-  INTEGER, PARAMETER :: nend   = 8600  !1.1um; 14125  ! 2.4 um
+  INTEGER, PARAMETER :: nstart = 300   ! 0.38 um
+  INTEGER, PARAMETER :: nend   = 6000  ! 1.14 um
   !number of spectral elements in SSPs
   INTEGER, PARAMETER :: nl = nend-nstart+1
   !number actually used over the range to be fit

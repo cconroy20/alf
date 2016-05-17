@@ -16,9 +16,6 @@ PROGRAM ALF
   !    will not be accurate in the limit of modest-large redshift b/c
   !    this is implemented in the model restframe at code setup time
 
-  !To Do: 
-  !1. add SFH and MDF options
-
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
@@ -33,9 +30,9 @@ PROGRAM ALF
   !sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=10000  !1E4 seems to be good enough
+  INTEGER, PARAMETER :: nburn=1000  !1E4 seems to be good enough
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=1024 !1024
+  INTEGER, PARAMETER :: nwalkers=512 !1024
 
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
@@ -125,6 +122,7 @@ PROGRAM ALF
      WRITE(*,'("   fit_type  =",I2)') fit_type
      WRITE(*,'("      mwimf  =",I2)') mwimf
      WRITE(*,'("  age-dep Rf =",I2)') use_age_dep_resp_fcns
+     WRITE(*,'("    Z-dep Rf =",I2)') use_z_dep_resp_fcns
      WRITE(*,'("  Nwalkers   = ",I5)') nwalkers
      WRITE(*,'("  Nburn      = ",I6)') nburn
      WRITE(*,'("  Nchain     = ",I5)') nmcmc
@@ -247,8 +245,8 @@ PROGRAM ALF
         opos%logfy=-5.0
         opos%logm7g=-5.0
         opos%loghot=-5.0
-        opos%imf1=1.3
-        opos%imf2=2.3
+        opos%imf1=2.15
+        opos%imf2=3.23
         opos%zh=0.0
         opos%teff=0.0
         msto = MIN(MAX(10**(msto_fit0+msto_fit1*opos%logage),0.8),3.)  
@@ -471,6 +469,7 @@ PROGRAM ALF
      WRITE(14,'("#   fit_poly  =",I2)') fit_poly
      WRITE(14,'("#      mwimf  =",I2)') mwimf
      WRITE(14,'("#  age-dep Rf =",I2)') use_age_dep_resp_fcns
+     WRITE(14,'("#    Z-dep Rf =",I2)') use_z_dep_resp_fcns
      WRITE(14,'("#  Nwalkers   = ",I5)') nwalkers
      WRITE(14,'("#  Nburn      = ",I5)') nburn
      WRITE(14,'("#  Nchain     = ",I5)') nmcmc

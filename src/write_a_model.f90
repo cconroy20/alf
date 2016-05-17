@@ -26,11 +26,11 @@ PROGRAM WRITE_A_MODEL
   !compute an array of gaussian deviates
   CALL GASDEV(gdev)
 
-  file = 'model_snl2.spec'
+  file = 'model_bh.spec'
   s2n    = 1E4
-  lmin   = 3700.
-  lmax   = 11000.
-  emnorm = -5.0
+  lmin   = 3800.
+  lmax   = 10000.
+  emnorm = -2.0
 
   pos%sigma   = 252.6
   pos%logage  = 1.196
@@ -55,8 +55,8 @@ PROGRAM WRITE_A_MODEL
   pos%bah     = 0.0
   pos%euh     = 0.0
   pos%teff    = -53.0
-  pos%imf1    = 2.48
-  pos%imf2    = 1.43
+  pos%imf1    = 2.8
+  pos%imf2    = 3.3
   pos%logfy   = -2.29
   pos%fy_logage = -0.15
   pos%logtrans  = -3.9
@@ -81,8 +81,8 @@ PROGRAM WRITE_A_MODEL
   !data(1:datmax)%ires = ires
 
   !use the LRIS instrumental dispersion
-  infile = 'snl2_lris'
-  CALL READ_DATA(infile)
+  !infile = 'snl2_lris'
+  !CALL READ_DATA(infile)
 
   !read in the SSPs and bandpass filters
   CALL SETUP()
