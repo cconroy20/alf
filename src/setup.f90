@@ -50,6 +50,10 @@ SUBROUTINE SETUP()
   !read in filter transmission curves
   OPEN(15,FILE=TRIM(SPECFIT_HOME)//'/infiles/filters.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN
+     WRITE(*,*) 'SETUP ERROR: filter curves not found'
+     STOP
+  ENDIF
   DO i=1,nstart-1
      READ(15,*) 
   ENDDO
@@ -91,15 +95,18 @@ SUBROUTINE SETUP()
            READ(20,*) 
         ENDDO
         DO i=1,nl
-           READ(20,*) sspgrid%lam(i),sspgrid%solar(i,j,k),sspgrid%nap(i,j,k),&
-                sspgrid%nam(i,j,k),sspgrid%cap(i,j,k),sspgrid%cam(i,j,k),sspgrid%fep(i,j,k),&
+           READ(20,*) sspgrid%lam(i),sspgrid%solar(i,j,k),&
+                sspgrid%nap(i,j,k),sspgrid%nam(i,j,k),&
+                sspgrid%cap(i,j,k),sspgrid%cam(i,j,k),sspgrid%fep(i,j,k),&
                 sspgrid%fem(i,j,k),sspgrid%cp(i,j,k),sspgrid%cm(i,j,k),d1,&
-                sspgrid%np(i,j,k),sspgrid%nm(i,j,k),sspgrid%ap(i,j,k),sspgrid%tip(i,j,k),&
-                sspgrid%tim(i,j,k),sspgrid%mgp(i,j,k),sspgrid%mgm(i,j,k),sspgrid%sip(i,j,k),&
-                sspgrid%sim(i,j,k),sspgrid%teffp(i,j,k),sspgrid%teffm(i,j,k),sspgrid%crp(i,j,k),&
-                sspgrid%mnp(i,j,k),sspgrid%bap(i,j,k),sspgrid%bam(i,j,k),sspgrid%nip(i,j,k),&
-                sspgrid%cop(i,j,k),sspgrid%eup(i,j,k),sspgrid%srp(i,j,k),sspgrid%kp(i,j,k),&
-                sspgrid%vp(i,j,k),sspgrid%cup(i,j,k),sspgrid%nap6(i,j,k),sspgrid%nap9(i,j,k)
+                sspgrid%np(i,j,k),sspgrid%nm(i,j,k),sspgrid%ap(i,j,k),&
+                sspgrid%tip(i,j,k),sspgrid%tim(i,j,k),sspgrid%mgp(i,j,k),&
+                sspgrid%mgm(i,j,k),sspgrid%sip(i,j,k),sspgrid%sim(i,j,k),&
+                sspgrid%teffp(i,j,k),sspgrid%teffm(i,j,k),sspgrid%crp(i,j,k),&
+                sspgrid%mnp(i,j,k),sspgrid%bap(i,j,k),sspgrid%bam(i,j,k),&
+                sspgrid%nip(i,j,k),sspgrid%cop(i,j,k),sspgrid%eup(i,j,k),&
+                sspgrid%srp(i,j,k),sspgrid%kp(i,j,k),sspgrid%vp(i,j,k),&
+                sspgrid%cup(i,j,k),sspgrid%nap6(i,j,k),sspgrid%nap9(i,j,k)
         ENDDO
         CLOSE(20)
 
@@ -114,27 +121,28 @@ SUBROUTINE SETUP()
   !the wavelengths by n pixels
   IF (fake_response.EQ.1) THEN
 
-     WRITE(*,*) 'ERROR: this option is not currently supported'
-     STOP
+     WRITE(*,*) 'WARNING: this option has not been tested in a long time!!'
 
-     !DO i=1,nage_rfcn
+     DO i=1,nage_rfcn
+        DO k=1,nzmet
 
-        !dumi = sspgrid%crp(:,i) / sspgrid%solar(:,i)
-        !sspgrid%crp(:,i) = 1.0
-        !sspgrid%crp(shift:nl-1,i) = dumi(1:nl-shift)
-        !sspgrid%crp(:,i) = sspgrid%crp(:,i) * sspgrid%solar(:,i)
+           dumi = sspgrid%crp(:,i,k) / sspgrid%solar(:,i,k)
+           sspgrid%crp(:,i,k) = 1.0
+           sspgrid%crp(shift:nl-1,i,k) = dumi(1:nl-shift)
+           sspgrid%crp(:,i,k) = sspgrid%crp(:,i,k) * sspgrid%solar(:,i,k)
      
-        !dumi = sspgrid%mnp(:,i) / sspgrid%solar(:,i)
-        !sspgrid%mnp = 1.0
-        !sspgrid%mnp(shift:nl-1,i) = dumi(1:nl-shift)
-        !sspgrid%mnp(:,i) = sspgrid%mnp(:,i) * sspgrid%solar(:,i)
-  
-        !dumi = sspgrid%cop(:,i) / sspgrid%solar(:,i)
-        !sspgrid%cop = 1.0
-        !sspgrid%cop(shift:nl-1,i) = dumi(1:nl-shift)
-        !sspgrid%cop(:,i) = sspgrid%cop(:,i) * sspgrid%solar(:,i)
- 
-     !ENDDO
+           dumi = sspgrid%mnp(:,i,k) / sspgrid%solar(:,i,k)
+           sspgrid%mnp = 1.0
+           sspgrid%mnp(shift:nl-1,i,k) = dumi(1:nl-shift)
+           sspgrid%mnp(:,i,k) = sspgrid%mnp(:,i,k) * sspgrid%solar(:,i,k)
+           
+           dumi = sspgrid%cop(:,i,k) / sspgrid%solar(:,i,k)
+           sspgrid%cop = 1.0
+           sspgrid%cop(shift:nl-1,i,k) = dumi(1:nl-shift)
+           sspgrid%cop(:,i,k) = sspgrid%cop(:,i,k) * sspgrid%solar(:,i,k)
+           
+        ENDDO
+     ENDDO
 
   ENDIF
 
@@ -162,8 +170,7 @@ SUBROUTINE SETUP()
            ii=1
            DO j=1,nimf
               DO k=1,nimf
-                 !below is a temporary unit conversion fix
-                 sspgrid%logssp(i,j,k,t,z) = tmp(ii) / d1**2 * 1E24/2.
+                 sspgrid%logssp(i,j,k,t,z) = tmp(ii)
                  ii=ii+1
               ENDDO
            ENDDO
@@ -270,10 +277,17 @@ SUBROUTINE SETUP()
   emlines(11) = 6732.67  ! [SII]
 
   IF (apply_temperrfcn.EQ.1) THEN
+
      !read in template error function (computed from SDSS stacks)
      !NB: this hasn't been used in years!
+     WRITE(*,*) 'WARNING: this option has not been tested in a long time!!'
+
      OPEN(28,FILE=TRIM(SPECFIT_HOME)//'/infiles/temperrfcn.s350',&
           STATUS='OLD',iostat=stat,ACTION='READ')
+     IF (stat.NE.0) THEN
+        WRITE(*,*) 'SETUP ERROR: template error function not found'
+        STOP
+     ENDIF
      DO i=1,nstart-1
         READ(28,*) 
      ENDDO
@@ -281,11 +295,16 @@ SUBROUTINE SETUP()
         READ(28,*) d1,temperrfcn(i)
      ENDDO
      CLOSE(28)
+
   ENDIF
 
   !read in the atm transmission function
   OPEN(29,FILE=TRIM(SPECFIT_HOME)//'/infiles/atm_trans.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN
+     WRITE(*,*) 'SETUP ERROR: atm trans function not found'
+     STOP
+  ENDIF
   DO i=1,ntrans
      READ(29,*) ltrans(i),ftrans(i)
   ENDDO

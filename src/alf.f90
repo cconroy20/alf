@@ -1,9 +1,9 @@
 PROGRAM ALF
 
   !  Master program to fit the absorption line spectrum
-  !  of an old (>~1 Gyr) stellar population
+  !  of a quiescent (>~1 Gyr) stellar population
 
-  ! Some things to keep in mind:
+  ! Some important points to keep in mind:
   ! 1. The prior bounds on the parameters are specified in set_pinit_priors. 
   !    Always make sure that the output parameters are not hitting a prior.
   ! 2. Make sure that the chain is converged in all relevant parameters
@@ -15,9 +15,14 @@ PROGRAM ALF
   ! 4. Wavelength-dependent instrumental broadening is included but
   !    will not be accurate in the limit of modest-large redshift b/c
   !    this is implemented in the model restframe at code setup time
+  ! 5. The code can fit for the atmospheric transmission function but
+  !    this will only work if the input data are in the original 
+  !    observed frame; i.e., not de-redshifted.
+  ! 6. I've generally found that Nwalkers=1024 and Nburn=1E4 seems
+  !    to generically yield well-converged solutions
 
-  !---------------------------------------------------------------!
-  !---------------------------------------------------------------!
+  !---------------------------------------------------------------------!
+  !---------------------------------------------------------------------!
 
   USE alf_vars; USE alf_utils; USE mpi
   USE nr, ONLY : locate,powell
@@ -30,15 +35,17 @@ PROGRAM ALF
   !sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=1000  !1E4 seems to be good enough
+  INTEGER, PARAMETER :: nburn=10000  !1E4 seems to be good enough
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=512 !1024
+  INTEGER, PARAMETER :: nwalkers=1024 !1024
 
   !start w/ powell minimization?
   INTEGER, PARAMETER :: dopowell=1
   !Powell iteration tolerance
   REAL(DP), PARAMETER :: ftol=0.1
+  !if set, will print to screen timing of likelihood calls
   INTEGER, PARAMETER :: test_time=0
+
   INTEGER  :: i,j,k,totacc=0,iter=30,npos
   REAL(DP) :: velz,msto,minchi2=huge_number,fret,wdth,bret=huge_number
   REAL(DP), DIMENSION(nl)   :: mspec=0.0,mspecmw=0.0,lam=0.0
@@ -52,7 +59,8 @@ PROGRAM ALF
   REAL(SP), DIMENSION(2) :: dumt
   CHARACTER(50) :: file='',tag=''
   TYPE(PARAMS)  :: opos,prlo,prhi,bpos
-  !the next three definitions are for emcee
+
+  !variables for emcee
   REAL(DP), DIMENSION(npar,nwalkers) :: pos_emcee_in,pos_emcee_out
   REAL(DP), DIMENSION(nwalkers)      :: lp_emcee_in,lp_emcee_out,lp_mpi
   INTEGER,  DIMENSION(nwalkers)      :: accept_emcee
@@ -78,7 +86,7 @@ PROGRAM ALF
   !flag to fit either a double-power law IMF or power-law + cutoff
   fit_2ximf  = 1
 
-  !set low upper prior limits to kill these parameters
+  !set low upper prior limits to kill off these parameters
   !prhi%logm7g   = -5.0
   !prhi%loghot   = -5.0
   !prhi%logtrans = -5.0
@@ -123,9 +131,9 @@ PROGRAM ALF
      WRITE(*,'("      mwimf  =",I2)') mwimf
      WRITE(*,'("  age-dep Rf =",I2)') use_age_dep_resp_fcns
      WRITE(*,'("    Z-dep Rf =",I2)') use_z_dep_resp_fcns
-     WRITE(*,'("  Nwalkers   = ",I5)') nwalkers
+     WRITE(*,'("  Nwalkers   = ",I6)') nwalkers
      WRITE(*,'("  Nburn      = ",I6)') nburn
-     WRITE(*,'("  Nchain     = ",I5)') nmcmc
+     WRITE(*,'("  Nchain     = ",I6)') nmcmc
      WRITE(*,'("  filename   = ",A)') TRIM(file)//TRIM(tag)
      WRITE(*,'(" ************************************")') 
      CALL DATE_AND_TIME(TIME=time)
@@ -470,10 +478,10 @@ PROGRAM ALF
      WRITE(14,'("#      mwimf  =",I2)') mwimf
      WRITE(14,'("#  age-dep Rf =",I2)') use_age_dep_resp_fcns
      WRITE(14,'("#    Z-dep Rf =",I2)') use_z_dep_resp_fcns
-     WRITE(14,'("#  Nwalkers   = ",I5)') nwalkers
-     WRITE(14,'("#  Nburn      = ",I5)') nburn
-     WRITE(14,'("#  Nchain     = ",I5)') nmcmc
-     WRITE(14,'("#  Ncores     = ",I5)') ntasks
+     WRITE(14,'("#  Nwalkers   = ",I6)') nwalkers
+     WRITE(14,'("#  Nburn      = ",I6)') nburn
+     WRITE(14,'("#  Nchain     = ",I6)') nmcmc
+     WRITE(14,'("#  Ncores     = ",I6)') ntasks
      WRITE(14,'("#  Facc: ",F5.2)') REAL(totacc)/REAL(nmcmc*nwalkers)
      WRITE(14,'(ES12.5,1x,F11.4,99(F9.4,1x))') bpos%chi2,runtot(2,:)/runtot(1,:)
      CLOSE(14)

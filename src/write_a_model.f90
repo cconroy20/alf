@@ -21,16 +21,20 @@ PROGRAM WRITE_A_MODEL
   !instrumental resolution (<10 -> no broadening)
   ires = 1.
 
+  fit_2ximf  = 0
+
   !initialize the random number generator
   CALL INIT_RANDOM_SEED()
   !compute an array of gaussian deviates
   CALL GASDEV(gdev)
 
-  file = 'model_bh.spec'
+  file = 'model_x3.3_2.spec'
   s2n    = 1E4
   lmin   = 3800.
   lmax   = 10000.
   emnorm = -2.0
+  pos%imf1    = 3.3
+  pos%imf2    = 0.07
 
   pos%sigma   = 252.6
   pos%logage  = 1.196
@@ -55,8 +59,6 @@ PROGRAM WRITE_A_MODEL
   pos%bah     = 0.0
   pos%euh     = 0.0
   pos%teff    = -53.0
-  pos%imf1    = 2.8
-  pos%imf2    = 3.3
   pos%logfy   = -2.29
   pos%fy_logage = -0.15
   pos%logtrans  = -3.9
