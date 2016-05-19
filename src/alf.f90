@@ -32,7 +32,7 @@ PROGRAM ALF
 
   !number of chain steps to print to file
   INTEGER, PARAMETER :: nmcmc=100
-  !sampling of the walkers for printing
+  !inverse sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
   INTEGER, PARAMETER :: nburn=10000  !1E4 seems to be good enough

@@ -125,7 +125,6 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      vm2 = vm
      dm2 = dm
   ENDIF
-  
  
   !Only sigma, velz, logage, and [Z/H] are fit when either
   !fitting in Powell mode or "super simple" mode
@@ -273,7 +272,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
 
      !apply an atmosphereric transmission function
      IF (fit_trans.EQ.1) THEN
-        !atm trans applied in the observed frame
+        !applied in the observed frame
         tmp_ltrans = sspgrid%lam / (1+pos%velz/clight*1E5)
         tmp_ftrans = linterp(tmp_ltrans,sspgrid%atm_trans,sspgrid%lam)
         spec = spec * (1+(tmp_ftrans-1)*10**pos%logtrans)
