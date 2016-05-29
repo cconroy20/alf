@@ -40,11 +40,11 @@ PROGRAM ALF
   INTEGER, PARAMETER :: nwalkers=1024 !1024
 
   !start w/ powell minimization?
-  INTEGER, PARAMETER :: dopowell=1
+  INTEGER, PARAMETER  :: dopowell=0
   !Powell iteration tolerance
   REAL(DP), PARAMETER :: ftol=0.1
   !if set, will print to screen timing of likelihood calls
-  INTEGER, PARAMETER :: test_time=0
+  INTEGER, PARAMETER  :: test_time=0
 
   INTEGER  :: i,j,k,totacc=0,iter=30,npos
   REAL(DP) :: velz,msto,minchi2=huge_number,fret,wdth,bret=huge_number
@@ -85,6 +85,10 @@ PROGRAM ALF
   fit_oneimf = 0
   !flag to fit either a double-power law IMF or power-law + cutoff
   fit_2ximf  = 1
+
+  !limit the range of [Z/H] to be very small
+  prlo%zh   = -0.01
+  prhi%zh   =  0.01
 
   !set low upper prior limits to kill off these parameters
   !prhi%logm7g   = -5.0
@@ -397,7 +401,7 @@ PROGRAM ALF
            CALL STR2ARR(2,opos,pos_emcee_in(:,j)) !arr->str
            
            !kill the emission lines for computing M/L
-           !since unconstrained lines can really mess up R,I bands
+           !since unconstrained lines can mess up R,I bands
            opos%logemline_h    = -8.0
            opos%logemline_oiii = -8.0
            opos%logemline_nii  = -8.0
@@ -406,7 +410,7 @@ PROGRAM ALF
 
            !compute the main sequence turn-off mass
            !NB: Need to update this for other metallicities
-           msto = MIN(MAX(10**(msto_fit0+msto_fit1*opos%logage),0.8),3.)           
+           msto = MIN(MAX(10**(msto_fit0+msto_fit1*opos%logage),0.8),3.)        
            CALL GETMODEL(opos,mspecmw,mw=1)     !get spectrum for MW IMF
            CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
            
@@ -427,11 +431,11 @@ PROGRAM ALF
            
            !write the chain element to file
            WRITE(12,'(ES12.5,1x,F11.4,99(F9.4,1x))') &
-                -2.0*lp_emcee_in(j),pos_emcee_in(:, j),m2l,m2lmw
+                -2.0*lp_emcee_in(j),pos_emcee_in(:,j),m2l,m2lmw
            
            !keep the model with the lowest chi2
            IF (-2.0*lp_emcee_in(j).LT.minchi2) THEN
-              bposarr = pos_emcee_in(:, j)
+              bposarr = pos_emcee_in(:,j)
               minchi2 = -2.0*lp_emcee_in(j)
            ENDIF
            
@@ -441,12 +445,12 @@ PROGRAM ALF
         
      ENDDO
      
-     !save the best position to the structure
-     CALL STR2ARR(2,bpos,bposarr)
-     bpos%chi2 = minchi2
-     
      CLOSE(12)
-     
+
+     !save the best position to the structure
+     CALL STR2ARR(2,bpos,bposarr)  !arr->str
+     bpos%chi2 = minchi2
+          
      CALL DATE_AND_TIME(TIME=time)
      CALL DTIME(dumt,time2)
      WRITE(*,*) 'End Time   '//time(1:2)//':'//time(3:4)

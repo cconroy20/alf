@@ -198,5 +198,8 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prhi%logemline_nii.NE.test%logemline_nii) &
        pos%logemline_nii = myran()*(prhi%logemline_nii-prlo%logemline_nii)+prlo%logemline_nii
 
+  IF (prhi%zh.NE.test%zh.OR.prlo%zh.NE.test%zh) &
+       pos%zh = myran()*(prhi%zh-prlo%zh)+prlo%zh
+
 
 END SUBROUTINE SET_PINIT_PRIORS

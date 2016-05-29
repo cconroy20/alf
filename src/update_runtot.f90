@@ -14,13 +14,17 @@ SUBROUTINE UPDATE_RUNTOT(runtot,inarr,m2l,m2lmw)
   !------------------------------------------------------------!
 
   runtot(1,:)      = runtot(1,:)+1.
+
   runtot(2,1:npar) = runtot(2,1:npar) + inarr
   runtot(3,1:npar) = runtot(3,1:npar) + inarr**2
+
   runtot(2,npar+1:npar+nfil) = runtot(2,npar+1:npar+nfil)+m2l
   runtot(3,npar+1:npar+nfil) = runtot(3,npar+1:npar+nfil)+m2l**2
+
   runtot(2,npar+nfil+1:npar+2*nfil) = &
        runtot(2,npar+nfil+1:npar+2*nfil)+m2lmw
   runtot(3,npar+nfil+1:npar+2*nfil) = &
        runtot(3,npar+nfil+1:npar+2*nfil)+m2lmw**2
   
+
 END SUBROUTINE UPDATE_RUNTOT
