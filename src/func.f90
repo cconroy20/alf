@@ -63,7 +63,7 @@ FUNCTION FUNC(nposarr,spec,funit)
 
      !redshift the model and interpolate to data wavelength array
      oneplusz = (1+npos%velz/clight*1E5)
-     zmspec = 0.0
+     zmspec   = 0.0
      zmspec(1:datmax) = LINTERP(sspgrid%lam(1:nl_fit)*oneplusz,&
           mspec(1:nl_fit),data(1:datmax)%lam)
 
