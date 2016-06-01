@@ -81,28 +81,21 @@ FUNCTION FUNC(nposarr,spec,funit)
         i2 = MIN(MAX(locate(data(1:datmax)%lam,tl2),2),datmax)
 
         !fit a polynomial to the ratio of model and data
-        IF (fit_poly.EQ.1) THEN
-           CALL CONTNORMSPEC(data(1:datmax)%lam,&
-                data(1:datmax)%flx/zmspec(1:datmax),&
-                data(1:datmax)%err/zmspec(1:datmax),tl1,tl2,&
-                mflx(1:datmax),coeff=tcoeff)
-           poly = 0.0
-           npow = MIN(NINT((tl2-tl1)/poly_dlam),npolymax)
-           DO j=1,npow+1 
-              poly = poly + tcoeff(j)*(data%lam-ml)**(j-1)
-           ENDDO
-           mflx  = zmspec * poly
-           tchi2 = SUM((data(i1:i2)%flx-mflx(i1:i2))**2/data(i1:i2)%err**2)
-        ELSE
-       !    CALL CONTNORMSPEC(sspgrid%lam,idata%flx,idata%err,tl1,tl2,dflx)
-       !    CALL CONTNORMSPEC(sspgrid%lam,mspec,idata%wgt*SQRT(mspec),&
-       !         tl1,tl2,mflx)
-       !    tchi2 = SUM(idata(i1:i2)%flx**2/idata(i1:i2)%err**2*&
-       !         (dflx(i1:i2)-mflx(i1:i2))**2)
-           WRITE(*,*) 'oops, this part of the code is not maintained!'
-           STOP
-        ENDIF
-        
+        CALL CONTNORMSPEC(data(1:datmax)%lam,&
+             data(1:datmax)%flx/zmspec(1:datmax),&
+             data(1:datmax)%err/zmspec(1:datmax),tl1,tl2,&
+             mflx(1:datmax),coeff=tcoeff)
+        poly = 0.0
+        npow = MIN(NINT((tl2-tl1)/poly_dlam),npolymax)
+        DO j=1,npow+1 
+           poly = poly + tcoeff(j)*(data%lam-ml)**(j-1)
+        ENDDO
+        mflx  = zmspec * poly
+        !compute chi^2
+        tchi2 = SUM( (data(i1:i2)%flx-mflx(i1:i2))**2 / &
+             (data(i1:i2)%err**2*npos%jitter**2)+&
+             LOG(2*mypi*data(i1:i2)%err**2*npos%jitter**2) )
+      
         !error checking
         IF (isnan(tchi2)) THEN
            WRITE(*,'(" FUNC ERROR: chi2 returned a NaN")') 

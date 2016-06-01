@@ -17,7 +17,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
 
   !setup the first position
   pos%logage    = myran()*0.4+0.6
-  pos%zh        = myran()*0.5-0.5
+  pos%zh        = myran()*1.0-1.0
   pos%feh       = myran()*0.4-0.2
   pos%ah        = myran()*0.4-0.2
   pos%nhe       = myran()*0.4-0.2
@@ -41,25 +41,26 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   pos%teff      = myran()*80-40
   pos%imf1      = myran()*0.6-0.3 + 1.3
   IF (fit_2ximf.EQ.1) THEN
-     pos%imf2      = myran()*0.6-0.3 + 2.3
+     pos%imf2        = myran()*0.6-0.3 + 2.3
   ELSE
-     pos%imf2      = myran()*0.1 + 0.1
+     pos%imf2        = myran()*0.1 + 0.1
   ENDIF
-  pos%logfy     = myran()*1-4
-  pos%fy_logage = myran()*0.3
-  pos%logm7g    = myran()*1-4
-  pos%hotteff   = myran()*5+15
-  pos%loghot    = myran()*1-4
-  pos%chi2      = huge_number
-  pos%sigma     = myran()*100+100
-  pos%sigma2    = myran()*100+100
-  pos%velz2     = myran()*10-5
-  pos%logtrans  = myran()*3-4.
+  pos%logfy          = myran()*1-4
+  pos%fy_logage      = myran()*0.3
+  pos%logm7g         = myran()*1-4
+  pos%hotteff        = myran()*5+15
+  pos%loghot         = myran()*1-4
+  pos%chi2           = huge_number
+  pos%sigma          = myran()*100+100
+  pos%sigma2         = myran()*100+100
+  pos%velz2          = myran()*10-5
+  pos%logtrans       = myran()*3-4.
   pos%logemline_h    = myran()*1-4
   pos%logemline_oiii = myran()*1-4
   pos%logemline_ni   = myran()*1-4
   pos%logemline_nii  = myran()*1-4
   pos%logemline_sii  = myran()*1-4
+  pos%jitter         = myran()*0.5+0.75
 
   IF (PRESENT(velz)) THEN
      pos%velz  = velz + (myran()*10-5)
@@ -105,9 +106,9 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prlo%teff.EQ.test%teff) prlo%teff       = -75.0
   IF (prlo%imf1.EQ.test%imf1) prlo%imf1       = 0.5
   IF (fit_2ximf.EQ.1) THEN
-     IF (prlo%imf2.EQ.test%imf2) prlo%imf2       = 0.5
+     IF (prlo%imf2.EQ.test%imf2) prlo%imf2    = 0.5
   ELSE
-     IF (prlo%imf2.EQ.test%imf2) prlo%imf2       = 0.08
+     IF (prlo%imf2.EQ.test%imf2) prlo%imf2    = 0.08
   ENDIF
   IF (prlo%logfy.EQ.test%logfy) prlo%logfy    = -6.0
   IF (prlo%fy_logage.EQ.test%fy_logage) prlo%fy_logage = LOG10(0.5)
@@ -124,6 +125,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prlo%logemline_sii.EQ.test%logemline_sii) prlo%logemline_sii    = -6.0
   IF (prlo%logemline_ni.EQ.test%logemline_ni) prlo%logemline_ni       = -6.0
   IF (prlo%logemline_nii.EQ.test%logemline_nii) prlo%logemline_nii    = -6.0
+  IF (prlo%jitter.EQ.test%jitter) prlo%jitter    = 0.1
 
  
   !priors (high)
@@ -173,6 +175,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prhi%logemline_sii.EQ.test%logemline_sii) prhi%logemline_sii    = 1.0
   IF (prhi%logemline_ni.EQ.test%logemline_ni) prhi%logemline_ni       = 1.0
   IF (prhi%logemline_nii.EQ.test%logemline_nii) prhi%logemline_nii    = 1.0
+  IF (prhi%jitter.EQ.test%jitter) prhi%jitter    = 10.0
 
 
   !reset the initial parameters if the priors have been altered

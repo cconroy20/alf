@@ -18,7 +18,7 @@ PROGRAM ALF
   ! 5. The code can fit for the atmospheric transmission function but
   !    this will only work if the input data are in the original 
   !    observed frame; i.e., not de-redshifted.
-  ! 6. I've generally found that Nwalkers=1024 and Nburn=1E4 seems
+  ! 6. I've generally found that Nwalkers=1024 and Nburn=~10,000 seems
   !    to generically yield well-converged solutions
 
   !---------------------------------------------------------------------!
@@ -35,9 +35,9 @@ PROGRAM ALF
   !inverse sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=10000  !1E4 seems to be good enough
+  INTEGER, PARAMETER :: nburn=50000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=1024 !1024
+  INTEGER, PARAMETER :: nwalkers=1024
 
   !start w/ powell minimization?
   INTEGER, PARAMETER  :: dopowell=0
@@ -87,8 +87,8 @@ PROGRAM ALF
   fit_2ximf  = 1
 
   !limit the range of [Z/H] to be very small
-  prlo%zh   = -0.01
-  prhi%zh   =  0.01
+  !prlo%zh   = -0.01
+  !prhi%zh   =  0.01
 
   !set low upper prior limits to kill off these parameters
   !prhi%logm7g   = -5.0
