@@ -25,10 +25,10 @@ FUNCTION FUNC(nposarr,spec,funit)
   func = 0.0
   tpow = 0
 
-  IF (SIZE(nposarr).NE.npar.AND.SIZE(nposarr).NE.npowell) THEN
-     WRITE(*,*) 'FUNC ERROR: size(nposarr) NE npar or npowell'
-     STOP
-  ENDIF
+  !IF (SIZE(nposarr).NE.npar.AND.SIZE(nposarr).NE.npowell) THEN
+  !   WRITE(*,*) 'FUNC ERROR: size(nposarr) NE npar or npowell'
+  !   STOP
+  !ENDIF
 
   !this is for Powell minimization
   IF (SIZE(nposarr).LT.npar) THEN
@@ -93,7 +93,7 @@ FUNCTION FUNC(nposarr,spec,funit)
         mflx  = zmspec * poly
         !compute chi^2
         tchi2 = SUM( (data(i1:i2)%flx-mflx(i1:i2))**2 / &
-             (data(i1:i2)%err**2*npos%jitter**2)+&
+             (data(i1:i2)%err**2*npos%jitter**2) + &
              LOG(2*mypi*data(i1:i2)%err**2*npos%jitter**2) )
       
         !error checking

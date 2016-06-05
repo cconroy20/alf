@@ -38,6 +38,8 @@ PROGRAM ALF
   INTEGER, PARAMETER :: nburn=50000
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=1024
+  !save the chain outputs to file
+  INTEGER, PARAMETER :: print_mcmc=0
 
   !start w/ powell minimization?
   INTEGER, PARAMETER  :: dopowell=0
@@ -324,9 +326,11 @@ PROGRAM ALF
      WRITE(*,*) ' Running emcee...'
      CALL FLUSH()
 
-     !open output file
-     OPEN(12,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
-          TRIM(file)//TRIM(tag)//'.mcmc',STATUS='REPLACE')
+     IF (print_mcmc.EQ.1) THEN
+        !open output file
+        OPEN(12,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
+             TRIM(file)//TRIM(tag)//'.mcmc',STATUS='REPLACE')
+     ENDIF
      
      !initialize the walkers
      DO j=1,nwalkers
@@ -429,9 +433,11 @@ PROGRAM ALF
               pos_emcee_in(npowell+1:,j) = 0.0 
            ENDIF
            
-           !write the chain element to file
-           WRITE(12,'(ES12.5,1x,F11.4,99(F9.4,1x))') &
-                -2.0*lp_emcee_in(j),pos_emcee_in(:,j),m2l,m2lmw
+           IF (print_mcmc.EQ.1) THEN
+              !write the chain element to file
+              WRITE(12,'(ES12.5,1x,F11.4,99(F9.4,1x))') &
+                   -2.0*lp_emcee_in(j),pos_emcee_in(:,j),m2l,m2lmw
+           ENDIF
            
            !keep the model with the lowest chi2
            IF (-2.0*lp_emcee_in(j).LT.minchi2) THEN
@@ -445,7 +451,7 @@ PROGRAM ALF
         
      ENDDO
      
-     CLOSE(12)
+     IF (print_mcmc.EQ.1) CLOSE(12)
 
      !save the best position to the structure
      CALL STR2ARR(2,bpos,bposarr)  !arr->str
