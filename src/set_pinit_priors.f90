@@ -204,5 +204,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prhi%zh.NE.test%zh.OR.prlo%zh.NE.test%zh) &
        pos%zh = myran()*(prhi%zh-prlo%zh)+prlo%zh
 
+ IF (prhi%teff.NE.test%teff.OR.prlo%teff.NE.test%teff) &
+       pos%teff = myran()*(prhi%teff-prlo%teff)+prlo%teff
 
 END SUBROUTINE SET_PINIT_PRIORS

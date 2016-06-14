@@ -31,11 +31,11 @@ PROGRAM ALF
   IMPLICIT NONE
 
   !number of chain steps to print to file
-  INTEGER, PARAMETER :: nmcmc=100
+  INTEGER, PARAMETER :: nmcmc=10
   !inverse sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=50000
+  INTEGER, PARAMETER :: nburn=40000
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=1024
   !save the chain outputs to file

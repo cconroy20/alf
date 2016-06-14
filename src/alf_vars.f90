@@ -45,6 +45,9 @@ MODULE ALF_VARS
   !flag to fit either a double-power law IMF or power-law + cutoff
   INTEGER :: fit_2ximf=1
 
+  !IMF used to compute the element response functions
+  CHARACTER(4), PARAMETER :: atlas_imf='krpa'  !'salp'
+
   !--------------------------------------------------------------!
   !  the options below have not been tested/used in a long time  !
   !  and so are effectively deprecated                           !

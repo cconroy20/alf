@@ -69,19 +69,19 @@ SUBROUTINE SETUP()
 
         IF (j.EQ.1) THEN
            OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t01_Z'//&
-                charz(k)//'.abund.krpa.s100',STATUS='OLD',iostat=stat,ACTION='READ')
+                charz(k)//'.abund.'//atlas_imf//'.s100',STATUS='OLD',iostat=stat,ACTION='READ')
         ELSE IF (j.EQ.2) THEN
            OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t03_Z'//&
-                charz(k)//'.abund.krpa.s100',STATUS='OLD',iostat=stat,ACTION='READ')
+                charz(k)//'.abund.'//atlas_imf//'.s100',STATUS='OLD',iostat=stat,ACTION='READ')
         ELSE IF (j.EQ.3) THEN
            OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t05_Z'//&
-                charz(k)//'.abund.krpa.s100',STATUS='OLD',iostat=stat,ACTION='READ')
+                charz(k)//'.abund.'//atlas_imf//'.s100',STATUS='OLD',iostat=stat,ACTION='READ')
         ELSE IF (j.EQ.4) THEN
            OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t09_Z'//&
-                charz(k)//'.abund.krpa.s100',STATUS='OLD',iostat=stat,ACTION='READ')
+                charz(k)//'.abund.'//atlas_imf//'.s100',STATUS='OLD',iostat=stat,ACTION='READ')
         ELSE IF (j.EQ.5) THEN
            OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t13_Z'//&
-                charz(k)//'.abund.krpa.s100',STATUS='OLD',iostat=stat,ACTION='READ')
+                charz(k)//'.abund.'//atlas_imf//'.s100',STATUS='OLD',iostat=stat,ACTION='READ')
         ENDIF
 
         IF (stat.NE.0) THEN

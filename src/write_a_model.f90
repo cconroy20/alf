@@ -21,53 +21,53 @@ PROGRAM WRITE_A_MODEL
   !instrumental resolution (<10 -> no broadening)
   ires = 1.
 
-  fit_2ximf  = 0
+  fit_2ximf  = 1
 
   !initialize the random number generator
   CALL INIT_RANDOM_SEED()
   !compute an array of gaussian deviates
   CALL GASDEV(gdev)
 
-  file = 'model_x3.3_2.spec'
+  file = 'model_Salp_dteff-75_logm7g-1.0.spec'
   s2n    = 1E4
   lmin   = 3800.
   lmax   = 10000.
   emnorm = -2.0
-  pos%imf1    = 3.3
-  pos%imf2    = 0.07
+  pos%imf1    = 2.3
+  pos%imf2    = 2.3
 
-  pos%sigma   = 252.6
-  pos%logage  = 1.196
-  pos%feh     = -0.05
-  pos%ah      = 0.45
+  pos%sigma   = 300
+  pos%logage  = 1.18
+  pos%feh     = 0.0
+  pos%ah      = 0.3
   pos%nhe     = 0.0
   pos%ch      = 0.30
-  pos%nh      = 0.25
+  pos%nh      = 0.3
   pos%nah     = 0.6
-  pos%mgh     = 0.26
-  pos%sih     = 0.35
+  pos%mgh     = 0.3
+  pos%sih     = 0.3
   pos%kh      = 0.0
   pos%cah     = 0.05
-  pos%tih     = 0.15
-  pos%vh      = 0.25
-  pos%crh     = 0.05
-  pos%mnh     = 0.05
+  pos%tih     = 0.3
+  pos%vh      = 0.0
+  pos%crh     = 0.00
+  pos%mnh     = 0.00
   pos%coh     = 0.30
   pos%nih     = 0.00
   pos%cuh     = 0.0
   pos%srh     = 0.0
   pos%bah     = 0.0
   pos%euh     = 0.0
-  pos%teff    = -53.0
-  pos%logfy   = -2.29
-  pos%fy_logage = -0.15
-  pos%logtrans  = -3.9
+  pos%teff    = -75.
+  pos%logfy   = -5.0
+  pos%fy_logage = -5.0
+  pos%logtrans  = -5.0
   pos%sigma2  = 300.
   pos%velz    = 5000.
   pos%velz2   = 0.0
-  pos%logm7g  = -5.0
+  pos%logm7g  = -1.0
   pos%hotteff = 20.0
-  pos%loghot  = -4.0
+  pos%loghot  = -5.0
   pos%logemline_h=emnorm
   pos%logemline_oiii=emnorm
   pos%logemline_sii=emnorm
