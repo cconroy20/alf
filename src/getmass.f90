@@ -15,6 +15,11 @@ FUNCTION GETMASS(mlo,mto,imf1,imf2,imf3)
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
+  IF (mlo.GT.m2) THEN
+     WRITE(*,*) 'GETMASS ERROR: mlo>m2'
+     STOP
+  ENDIF
+
   getmass  = 0.d0
 
   !normalize the weights so that 1 Msun formed at t=0
@@ -60,7 +65,6 @@ FUNCTION GETMASS(mlo,mto,imf1,imf2,imf3)
      getmass = getmass + &
           0.077*m2**(-imf1+imf2)*(nslim**(-imf3+2)-mto**(-imf3+2))/(-imf3+2)/imfnorm
   ENDIF
-
 
   RETURN
 

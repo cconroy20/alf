@@ -8,11 +8,12 @@ SUBROUTINE SETUP()
   REAL(DP) :: d1,l1um=1E4,t13=1.3,t23=2.3,m07=0.07,sig0=99.,lamlo,lamhi
   REAL(DP), DIMENSION(nimf*nimf) :: tmp
   REAL(DP), DIMENSION(nl) :: dumi,smooth=0.0,lam
-  INTEGER :: stat,i,vv,j,k,t,z,ii,shift=100
+  INTEGER :: stat,i,vv,j,k,t,z,ii,shift=100,m
   INTEGER, PARAMETER :: ntrans=22800
   REAL(DP), DIMENSION(ntrans) :: ltrans,ftrans,strans
   CHARACTER(4), DIMENSION(nzmet) :: charz
-  CHARACTER(5), DIMENSION(nage) :: chart
+  CHARACTER(4), DIMENSION(nmcut) :: charm
+  CHARACTER(5), DIMENSION(nage)  :: chart
   CHARACTER(20) :: imfstr
 
   !---------------------------------------------------------------!
@@ -25,11 +26,12 @@ SUBROUTINE SETUP()
   ENDIF
 
   charz = (/'m1.5','m1.0','m0.5','p0.0','p0.2'/)
+  charm = (/'0.08','0.10','0.15','0.20','0.25','0.30','0.35','0.40'/)
   chart = (/'t01.0','t03.0','t05.0','t07.0','t09.0','t11.0','t13.5'/)
 
-  IF (fit_2ximf.EQ.1) THEN
+  IF (imf_type.EQ.0.OR.imf_type.EQ.1.OR.imf_type.EQ.3) THEN
      imfstr = 'varydoublex'
-  ELSE
+  ELSE IF (imf_type.EQ.2) THEN
      imfstr = 'varymcut_varyx'
   ENDIF
 
@@ -179,23 +181,57 @@ SUBROUTINE SETUP()
      ENDDO
   ENDDO
 
-  sspgrid%logssp = LOG10(sspgrid%logssp+tiny_number)
+  !read in 3 parameter IMF models
+  IF (imf_type.EQ.3) THEN 
+     z=4
+     DO m=1,nmcut
+        DO t=1,nage
+           OPEN(22,FILE=TRIM(SPECFIT_HOME)//'/infiles/VCJ_v1_mcut'//&
+                charm(m)//'_'//chart(t)//'_Z'//charz(z)//&
+                '.ssp.imf_'//TRIM(imfstr)//'.s100',STATUS='OLD',&
+                iostat=stat,ACTION='READ')
+           IF (stat.NE.0) THEN
+              WRITE(*,*) 'SETUP ERROR: IMF models not found'
+              STOP
+           ENDIF
+           DO i=1,nstart-1
+              READ(22,*) 
+           ENDDO
+           DO i=1,nl
+              READ(22,*) d1,tmp
+              ii=1
+              DO j=1,nimf
+                 DO k=1,nimf
+                    sspgrid%logsspm(i,j,k,t,m) = tmp(ii)
+                    ii=ii+1
+                 ENDDO
+              ENDDO
+           ENDDO
+           CLOSE(22)
+        ENDDO
+     ENDDO
+  ENDIF
+
 
   !values of IMF parameters at the 16 grid points
   DO i=1,nimf
      sspgrid%imfx1(i) = 0.5+REAL(i-1)/5.d0 
   ENDDO
-  IF (fit_2ximf.EQ.1) THEN
+  IF (imf_type.EQ.0.OR.imf_type.EQ.1.OR.imf_type.EQ.3) THEN
      DO i=1,nimf
         sspgrid%imfx2(i) = 0.5+REAL(i-1)/5.d0 
      ENDDO
      imfr1 = locate(sspgrid%imfx1,t13+1E-3)
      imfr2 = locate(sspgrid%imfx2,t23+1E-3)
-  ELSE
+  ELSE IF (imf_type.EQ.2) THEN
      sspgrid%imfx2 = (/0.07,0.10,0.15,0.2,0.25,0.3,0.35,0.4,&
           0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8/)
      imfr1 = locate(sspgrid%imfx1,t23+1E-3)
      imfr2 = locate(sspgrid%imfx2,m07+1E-3)
+  ENDIF
+  IF (imf_type.EQ.3) THEN
+     sspgrid%imfx3 = (/0.08,0.10,0.15,0.2,0.25,0.3,0.35,0.4/)
+     imfr3 = locate(sspgrid%imfx3,m07+1E-3)
   ENDIF
 
   !read in hot stars 
@@ -242,7 +278,7 @@ SUBROUTINE SETUP()
   vv = locate(sspgrid%lam(1:nl),l1um)
   DO i=1,nhot
      sspgrid%hotspec(:,i) = sspgrid%hotspec(:,i)/sspgrid%hotspec(vv,i)*&
-          10**sspgrid%logssp(vv,imfr1,imfr2,nage,nzmet-1)
+          sspgrid%logssp(vv,imfr1,imfr2,nage,nzmet-1)
   ENDDO
   !hot star Teff in kK
   sspgrid%teffarrhot = (/8.0,10.,20.,30./)
@@ -259,7 +295,7 @@ SUBROUTINE SETUP()
   CLOSE(23)
   !normalization provided here as opposed to in external IDL routine on 5/13/16
   sspgrid%m7g = sspgrid%m7g/sspgrid%m7g(vv)*&
-       10**sspgrid%logssp(vv,imfr1,imfr2,nage,nzmet-1)
+       sspgrid%logssp(vv,imfr1,imfr2,nage,nzmet-1)
 
 
   !define central wavelengths of emission lines (in vacuum)
@@ -384,17 +420,29 @@ SUBROUTINE SETUP()
 
      CALL VELBROAD(lam,sspgrid%m7g,sig0,lamlo,lamhi,smooth)
 
-     sspgrid%logssp = 10**sspgrid%logssp
      DO z=1,nzmet
         DO t=1,nage
            DO j=1,nimf
               DO k=1,nimf
-                 CALL VELBROAD(lam,sspgrid%logssp(:,j,k,t,z),sig0,lamlo,lamhi,smooth)
+                 CALL VELBROAD(lam,sspgrid%logssp(:,k,j,t,z),sig0,lamlo,lamhi,smooth)
               ENDDO
            ENDDO
         ENDDO
      ENDDO
      sspgrid%logssp = LOG10(sspgrid%logssp+tiny_number)
+
+     IF (imf_type.EQ.3) THEN
+        DO m=1,nmcut
+           DO t=1,nage
+              DO j=1,nimf
+                 DO k=1,nimf
+                    CALL VELBROAD(lam,sspgrid%logsspm(:,k,j,t,m),sig0,lamlo,lamhi,smooth)
+                 ENDDO
+              ENDDO
+           ENDDO
+        ENDDO
+        sspgrid%logsspm = LOG10(sspgrid%logsspm+tiny_number)
+     ENDIF
 
   ENDIF
 

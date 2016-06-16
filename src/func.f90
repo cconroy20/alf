@@ -115,7 +115,8 @@ FUNCTION FUNC(nposarr,spec,funit)
         IF (PRESENT(funit)) THEN
            !write final results to screen and file
            WRITE(*,'(2x,F5.2,"um-",F5.2,"um:"," rms:",F5.1,"%, ","Chi2/dof:",F5.1)') &
-                tl1/1E4,tl2/1E4,SQRT( SUM( (data(i1:i2)%flx/mflx(i1:i2)-1)**2 )/&
+                tl1/1E4/oneplusz,tl2/1E4/oneplusz,&
+                SQRT( SUM( (data(i1:i2)%flx/mflx(i1:i2)-1)**2 )/&
                 (i2-i1+1) )*100,tchi2/(i2-i1)
            DO j=i1,i2
               WRITE(funit,'(F9.2,4ES12.4)') data(j)%lam,mflx(j),&

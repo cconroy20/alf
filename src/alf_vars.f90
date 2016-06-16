@@ -17,8 +17,8 @@ MODULE ALF_VARS
   !very beginning of alf.f90
 
   !0: fit the full model (IMF, all abundances, nuisance params, etc)
-  !1: only fit velz, sigma, SSP age, Fe,C,N,O,Mg,Si,Ca,Ti,Na
-  !2: only fit velz, sigma, SSP age, Fe
+  !1: only fit velz, sigma, SSP age, Z, Fe,C,N,O,Mg,Si,Ca,Ti,Na
+  !2: only fit velz, sigma, SSP age, Z
   INTEGER :: fit_type=0
 
   !turn on the use of age-dependent response functions
@@ -39,11 +39,12 @@ MODULE ALF_VARS
   !this is automatically assumed if fit_type=1,2
   INTEGER :: mwimf=0
 
-  !flag to fit a single IMF slope
-  INTEGER :: fit_oneimf=0
-
   !flag to fit either a double-power law IMF or power-law + cutoff
-  INTEGER :: fit_2ximf=1
+  !0 = single power-law
+  !1 = double power-law
+  !2 = power-law + cutoff
+  !3 = double power-law + cutoff
+  INTEGER :: imf_type=1
 
   !IMF used to compute the element response functions
   CHARACTER(4), PARAMETER :: atlas_imf='krpa'  !'salp'
@@ -89,7 +90,7 @@ MODULE ALF_VARS
   !total number of emission lines
   INTEGER, PARAMETER :: neml = 11
   !number of parameters
-  INTEGER, PARAMETER :: npar = 39+1
+  INTEGER, PARAMETER :: npar = 41
   !number of ages in the empirical SSP grid
   INTEGER, PARAMETER :: nage = 7
   !number of metallicities in the empirical SSP grid
@@ -100,7 +101,7 @@ MODULE ALF_VARS
   !number of ages in the response functions
   INTEGER, PARAMETER :: nage_rfcn = 5
   !number of IMF values in the SSP grid
-  INTEGER, PARAMETER :: nimf = 16
+  INTEGER, PARAMETER :: nimf  = 16, nmcut = 8
   !max degree of polynomial used for continuum fitting
   INTEGER, PARAMETER :: npolymax = 20
   !wavelength interval used to determine polynomial degree
@@ -123,8 +124,10 @@ MODULE ALF_VARS
   !power-law slopes for a Kroupa IMF
   REAL(DP), PARAMETER :: krpa_imf1=1.3,krpa_imf2=2.3,krpa_imf3=2.3
   !linear fit to log(age) vs. log(MS TO mass)
-  REAL(DP), PARAMETER :: msto_fit0=0.290835,msto_fit1=-0.301566
-  
+  REAL(DP), PARAMETER :: msto_t0=0.33250847,msto_t1=-0.29560944
+  REAL(DP), PARAMETER :: msto_z0=0.95402521,msto_z1=0.21944863,&
+       msto_z2=0.070565820
+
   !----------Setup a common block of arrays and vars-------------!
 
   !length of input data
@@ -133,8 +136,8 @@ MODULE ALF_VARS
   INTEGER :: lam7=1
   !flag used to tell the code if we are fitting in powell mode or not
   INTEGER :: powell_fitting=0
-  !indices where x=1.3,x=2.3 in the IMF array
-  INTEGER :: imfr1=1,imfr2=1
+  !indices for the fiducial IMF (set in setup.f90)
+  INTEGER :: imfr1=1,imfr2=1,imfr3=1
 
   !common array for filters
   REAL(DP), DIMENSION(nl,nfil) :: filters=0.0
@@ -186,7 +189,7 @@ MODULE ALF_VARS
           logfy=-4.0,sigma2=0.0,velz2=0.0,logm7g=-4.0,hotteff=20.0,&
           loghot=-4.0,fy_logage=0.3,logtrans=-4.0,logemline_h=-4.0,&
           logemline_oiii=-4.0,logemline_sii=-4.0,logemline_ni=-4.0,&
-          logemline_nii=-4.0,jitter=1.0
+          logemline_nii=-4.0,jitter=1.0,imf3=2.0
      REAL(DP) :: chi2=huge_number
   END TYPE PARAMS
   
@@ -200,7 +203,9 @@ MODULE ALF_VARS
      REAL(DP), DIMENSION(nage)          :: logagegrid
      REAL(DP), DIMENSION(nzmet)         :: logzgrid
      REAL(DP), DIMENSION(nl,nimf,nimf,nage,nzmet)  :: logssp
+     REAL(DP), DIMENSION(nl,nimf,nimf,nage,nmcut)  :: logsspm
      REAL(DP), DIMENSION(nimf)          :: imfx1,imfx2
+     REAL(DP), DIMENSION(nmcut)         :: imfx3
      REAL(DP), DIMENSION(nl,nhot)       :: hotspec
      REAL(DP), DIMENSION(nl)            :: atm_trans
      REAL(DP), DIMENSION(nhot)          :: teffarrhot

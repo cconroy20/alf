@@ -67,6 +67,7 @@ SUBROUTINE STR2ARR(switch,str,arr)
      arr(38) = str%logemline_ni
      arr(39) = str%logemline_nii
      arr(40) = str%jitter
+     arr(41) = str%imf3
 
   ELSE
 
@@ -117,6 +118,7 @@ SUBROUTINE STR2ARR(switch,str,arr)
      str%logemline_ni   = arr(38)
      str%logemline_nii  = arr(39)
      str%jitter = arr(40)
+     str%imf3   = arr(41)
 
   ENDIF
 

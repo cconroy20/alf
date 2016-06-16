@@ -28,7 +28,7 @@ PROGRAM WRITE_A_MODEL
   !compute an array of gaussian deviates
   CALL GASDEV(gdev)
 
-  file = 'model_Salp_dteff-75_logm7g-1.0.spec'
+  file = 'model_SNL0_noFeH.spec'
   s2n    = 1E4
   lmin   = 3800.
   lmax   = 10000.
@@ -37,10 +37,10 @@ PROGRAM WRITE_A_MODEL
   pos%imf2    = 2.3
 
   pos%sigma   = 300
-  pos%logage  = 1.18
-  pos%feh     = 0.0
-  pos%ah      = 0.3
-  pos%nhe     = 0.0
+  pos%logage  = 0.876
+  pos%zh      = 0.0
+  pos%feh     = -0.021
+  pos%ah      = 0.40
   pos%ch      = 0.30
   pos%nh      = 0.3
   pos%nah     = 0.6

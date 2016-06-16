@@ -31,11 +31,11 @@ PROGRAM ALF
   IMPLICIT NONE
 
   !number of chain steps to print to file
-  INTEGER, PARAMETER :: nmcmc=10
+  INTEGER, PARAMETER :: nmcmc=100
   !inverse sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=40000
+  INTEGER, PARAMETER :: nburn=20000
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=1024
   !save the chain outputs to file
@@ -60,7 +60,7 @@ PROGRAM ALF
   REAL(SP)      :: time2
   REAL(SP), DIMENSION(2) :: dumt
   CHARACTER(50) :: file='',tag=''
-  TYPE(PARAMS)  :: opos,prlo,prhi,bpos
+  TYPE(PARAMS)  :: opos,prlo,prhi,bpos,tpos
 
   !variables for emcee
   REAL(DP), DIMENSION(npar,nwalkers) :: pos_emcee_in,pos_emcee_out
@@ -83,14 +83,13 @@ PROGRAM ALF
   !dont fit transmission function in cases where the input
   !spectrum has already been de-redshifted to ~0.0
   fit_trans  = 1
-  !fit two-part power-law IMF if fit_oneimf=0
-  fit_oneimf = 0
-  !flag to fit either a double-power law IMF or power-law + cutoff
-  fit_2ximf  = 1
+  !type of IMF to fit
+  !0=single power-law, 1=double power-law, 2=power-law+cutoff, 3=2pl+ct
+  imf_type  = 1
 
   !limit the range of [Z/H] to be very small
-  !prlo%zh   = -0.01
-  !prhi%zh   =  0.01
+  prlo%zh   = -0.01
+  prhi%zh   =  0.01
 
   !set low upper prior limits to kill off these parameters
   !prhi%logm7g   = -5.0
@@ -134,6 +133,7 @@ PROGRAM ALF
      WRITE(*,'(" ************************************")') 
      WRITE(*,'("   dopowell  =",I2)') dopowell
      WRITE(*,'("   fit_type  =",I2)') fit_type
+     WRITE(*,'("   imf_type  =",I2)') imf_type
      WRITE(*,'("      mwimf  =",I2)') mwimf
      WRITE(*,'("  age-dep Rf =",I2)') use_age_dep_resp_fcns
      WRITE(*,'("    Z-dep Rf =",I2)') use_z_dep_resp_fcns
@@ -249,29 +249,34 @@ PROGRAM ALF
      !why is this being done here again?
      CALL INIT_RANDOM_SEED()
 
-     IF (1.EQ.0) THEN
-        opos%logemline_h    = -8.0
-        opos%logemline_oiii = -8.0
-        opos%logemline_nii  = -8.0
-        opos%logemline_sii  = -8.0
-        opos%logemline_ni   = -8.0
-        opos%logage=1.13
-        opos%logfy=-5.0
-        opos%logm7g=-5.0
-        opos%loghot=-5.0
-        opos%imf1=2.15
-        opos%imf2=3.23
-        opos%zh=0.0
-        opos%teff=0.0
-        msto = MIN(MAX(10**(msto_fit0+msto_fit1*opos%logage),0.8),3.)  
-        CALL GETMODEL(opos,mspecmw,mw=1)     !get spectrum for MW IMF
-        CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
-        !CALL GETM2L(msto,lam,10**sspgrid%logfkrpa(:,nage,nzmet-1),opos,m2lmw,mw=1)
+     !for testing
+     IF (1.EQ.1) THEN
+        tpos%logemline_h    = -8.0
+        tpos%logemline_oiii = -8.0
+        tpos%logemline_nii  = -8.0
+        tpos%logemline_sii  = -8.0
+        tpos%logemline_ni   = -8.0
+        tpos%logage = 1.0
+        tpos%logfy  = -5.0
+        tpos%logm7g = -5.0
+        tpos%loghot = -5.0
+        tpos%imf1 = 2.54
+        tpos%imf2 = 3.40
+        tpos%imf3 = 0.235
+        tpos%zh   = 0.0
+        tpos%teff = 0.0
+        msto = 10**(msto_t0+msto_t1*opos%logage) * &
+             ( msto_z0 + msto_z1*opos%zh + msto_z2*opos%zh**2 )
+        msto = MAX(MIN(msto,3.0),0.75)
+        write(*,*) msto
+        CALL GETMODEL(tpos,mspecmw,mw=1)     !get spectrum for MW IMF
+        CALL GETM2L(msto,lam,mspecmw,tpos,m2lmw,mw=1) !compute M/L_MW
+        !CALL GETM2L(msto,lam,10**sspgrid%logfkrpa(:,nage,nzmet-1),tpos,m2lmw,mw=1)
         write(*,'(2F7.2)') m2lmw(1:2)
-        CALL GETMODEL(opos,mspec)
-        CALL GETM2L(msto,lam,mspec,opos,m2l) ! compute M/L
+        CALL GETMODEL(tpos,mspec)
+        CALL GETM2L(msto,lam,mspec,tpos,m2l) ! compute M/L
         write(*,'(2F7.2)') m2l(1:2)
-        stop
+        STOP
      ENDIF
 
 
@@ -414,7 +419,9 @@ PROGRAM ALF
 
            !compute the main sequence turn-off mass
            !NB: Need to update this for other metallicities
-           msto = MIN(MAX(10**(msto_fit0+msto_fit1*opos%logage),0.8),3.)        
+           msto = 10**(msto_t0+msto_t1*opos%logage) * &
+                ( msto_z0 + msto_z1*opos%zh + msto_z2*opos%zh**2 )
+           msto = MAX(MIN(msto,3.0),0.75)
            CALL GETMODEL(opos,mspecmw,mw=1)     !get spectrum for MW IMF
            CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
            
@@ -483,6 +490,7 @@ PROGRAM ALF
      WRITE(14,'("#  Elapsed Time: ",F6.2," hr")') time2/3600.
      WRITE(14,'("#   dopowell  =",I2)') dopowell
      WRITE(14,'("#   fit_type  =",I2)') fit_type
+     WRITE(14,'("#   imf_type  =",I2)') imf_type
      WRITE(14,'("#   fit_trans =",I2)') fit_trans
      WRITE(14,'("#   fit_poly  =",I2)') fit_poly
      WRITE(14,'("#      mwimf  =",I2)') mwimf
