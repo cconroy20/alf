@@ -35,7 +35,7 @@ PROGRAM ALF
   !inverse sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=20000
+  INTEGER, PARAMETER :: nburn=10000
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=1024
   !save the chain outputs to file
@@ -250,7 +250,7 @@ PROGRAM ALF
      CALL INIT_RANDOM_SEED()
 
      !for testing
-     IF (1.EQ.1) THEN
+     IF (1.EQ.0) THEN
         tpos%logemline_h    = -8.0
         tpos%logemline_oiii = -8.0
         tpos%logemline_nii  = -8.0
