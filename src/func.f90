@@ -92,19 +92,25 @@ FUNCTION FUNC(nposarr,spec,funit)
         ENDDO
         mflx  = zmspec * poly
         !compute chi^2
-        tchi2 = SUM( (data(i1:i2)%flx-mflx(i1:i2))**2 / &
-             (data(i1:i2)%err**2*npos%jitter**2) + &
-             LOG(2*mypi*data(i1:i2)%err**2*npos%jitter**2) )
+        IF (fit_type.EQ.0) THEN
+           !include jitter term
+           tchi2 = SUM( (data(i1:i2)%flx-mflx(i1:i2))**2 / &
+                (data(i1:i2)%err**2*npos%jitter**2) + &
+                LOG(2*mypi*data(i1:i2)%err**2*npos%jitter**2) )
+        ELSE
+           !no jitter in simple mode
+           tchi2 = SUM( (data(i1:i2)%flx-mflx(i1:i2))**2 / data(i1:i2)%err**2 )
+        ENDIF
       
         !error checking
         IF (isnan(tchi2)) THEN
            WRITE(*,'(" FUNC ERROR: chi2 returned a NaN")') 
            WRITE(*,'(" error occured at wavelength interval: ",I1)') i
-           WRITE(*,'("data:",2000F14.2)') data(i1:i2)%flx
-           WRITE(*,*)
-           WRITE(*,'("model:",2000F14.2)') mspec(i1:i2)*1E3
-           WRITE(*,*)
-           WRITE(*,'("errors:",2000F14.2)') data(i1:i2)%err
+           WRITE(*,*) 'lam  data   err   model   chi^2'
+           DO j=i1,i2
+              WRITE(*,'(F7.1,5ES12.3)') data(j)%lam,data(j)%flx,data(j)%err,mflx(j),&
+                   (data(j)%flx-mflx(j))**2 / (data(j)%err**2*npos%jitter**2)
+           ENDDO
            WRITE(*,*)
            WRITE(*,'("params:",100F14.2)') tposarr
            STOP

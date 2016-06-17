@@ -191,7 +191,7 @@ SUBROUTINE SETUP()
                 '.ssp.imf_'//TRIM(imfstr)//'.s100',STATUS='OLD',&
                 iostat=stat,ACTION='READ')
            IF (stat.NE.0) THEN
-              WRITE(*,*) 'SETUP ERROR: IMF models not found'
+              WRITE(*,*) 'SETUP ERROR: IMF 3-part models not found'
               STOP
            ENDIF
            DO i=1,nstart-1

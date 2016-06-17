@@ -35,11 +35,11 @@ PROGRAM ALF
   !inverse sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=10000
+  INTEGER, PARAMETER :: nburn=1000
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=1024
   !save the chain outputs to file
-  INTEGER, PARAMETER :: print_mcmc=0
+  INTEGER, PARAMETER :: print_mcmc=1
 
   !start w/ powell minimization?
   INTEGER, PARAMETER  :: dopowell=0
@@ -79,17 +79,17 @@ PROGRAM ALF
 
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
-  fit_type   = 0
+  fit_type   = 1
   !dont fit transmission function in cases where the input
   !spectrum has already been de-redshifted to ~0.0
-  fit_trans  = 1
+  fit_trans  = 0
   !type of IMF to fit
   !0=single power-law, 1=double power-law, 2=power-law+cutoff, 3=2pl+ct
   imf_type  = 1
 
   !limit the range of [Z/H] to be very small
-  prlo%zh   = -0.01
-  prhi%zh   =  0.01
+  !prlo%zh   = -0.01
+  !prhi%zh   =  0.01
 
   !set low upper prior limits to kill off these parameters
   !prhi%logm7g   = -5.0
@@ -170,7 +170,8 @@ PROGRAM ALF
   !array in contnormspec, so turn these into large numbers
   data%wgt = MIN(1/(data%wgt+tiny_number),huge_number)
   !fold the masked regions into the errors
-  data%err = data%err * data%wgt
+  data%err = MIN(data%err * data%wgt, huge_number)
+
 
   !set initial params, step sizes, and prior ranges
   CALL SET_PINIT_PRIORS(opos,prlo,prhi)
@@ -434,7 +435,7 @@ PROGRAM ALF
            
            IF (fit_type.EQ.1) THEN
               !these parameters aren't actually being updated
-              pos_emcee_in(nparsimp+1:,j) = 0.0 
+              pos_emcee_in(nparsimp+1:,j) = 0.0
            ELSE IF (fit_type.EQ.2) THEN
               !these parameters aren't actually being updated
               pos_emcee_in(npowell+1:,j) = 0.0 
