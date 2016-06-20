@@ -21,8 +21,6 @@ PROGRAM WRITE_A_MODEL
   !instrumental resolution (<10 -> no broadening)
   ires = 1.
 
-  fit_2ximf  = 1
-
   !initialize the random number generator
   CALL INIT_RANDOM_SEED()
   !compute an array of gaussian deviates
