@@ -3,58 +3,88 @@ FUNCTION GETVELZ()
   !function to estimate the recession velocity
   !this routine is used to get a first-guess at the velocity
   !so that the subsequent Powell minimization (in alf)
-  !coverges faster.  uses only the first wavelength chunk
+  !coverges faster.  uses only the first wavelength segment
+
+  !z_max=0.18. 
 
   USE alf_vars; USE nr, ONLY : locate
-  USE alf_utils, ONLY : linterp,contnormspec
+  USE alf_utils, ONLY : linterp,contnormspec,velbroad
   IMPLICIT NONE
 
   REAL(DP) :: getvelz, chi2,lo,hi
-  INTEGER, PARAMETER :: nv=2000
-  INTEGER :: i,i1,i2
+  !delta_chi2 tolerance to accept a non-zero redshift
+  !this used to be set to 0.5 (changed 6/27/16)
+  REAL(DP), PARAMETER :: delchi2_tol=0.5 !0.1
+  INTEGER, PARAMETER :: nv=5000
+  INTEGER :: i,i1,i2,j,ni,ng,k
   REAL(DP), DIMENSION(nl) :: mflx,dflx
   REAL(DP), DIMENSION(nv) :: tvz,tchi2,tvza
   TYPE(TDATA), DIMENSION(nl) :: iidata
 
   !------------------------------------------------------!
  
-  chi2 = huge_number
+  chi2    = huge_number
   getvelz = 0.0
+  tchi2   = 0.0
+
+  !use ni=2 wavelength segments unless only 1 segment exists
+  IF (nlint.GE.2) THEN
+     ni = 2
+  ELSE
+     ni = 1
+  ENDIF
 
   DO i=1,nv
 
      tvz(i) = REAL(i)*11-1E3
 
      !de-redshift the data and interpolate to model wave array
+     !NB: this is the old way of doing things, compare with func.f90
      data%lam0 = data%lam / (1+tvz(i)/clight*1E5)
      iidata(1:nl_fit)%flx = linterp(data(1:datmax)%lam0,&
           data(1:datmax)%flx,sspgrid%lam(1:nl_fit))
      iidata(1:nl_fit)%err = linterp(data(1:datmax)%lam0,&
           data(1:datmax)%err,sspgrid%lam(1:nl_fit))
-     iidata(1:nl_fit)%wgt = linterp(data(1:datmax)%lam0,&
-          data(1:datmax)%wgt,sspgrid%lam(1:nl_fit))
      
-     lo = MAX(l1(1),data(1)%lam0)+50
-     hi = MIN(l2(1),data(datmax)%lam0)-50
-     IF (lo.GE.hi) THEN
-        WRITE(*,*) 'GETVELZ ERROR:, lo>hi'
-        STOP
-     ENDIF
+     !only use the first ni wavelength segments
+     DO j=1,ni
 
-     CALL CONTNORMSPEC(sspgrid%lam,iidata%flx,iidata%err,lo,hi,dflx)
-     !use a 5 Gyr Zsol SSP
-     CALL CONTNORMSPEC(sspgrid%lam,10**sspgrid%logssp(:,imfr1,imfr2,3,nzmet-1),&
-          iidata%wgt*SQRT(10**sspgrid%logssp(:,imfr1,imfr2,3,nzmet-1)),lo,hi,mflx)
+        lo = MAX(l1(j),data(1)%lam0)+50
+        hi = MIN(l2(j),data(datmax)%lam0)-50
+        !dont use the near-IR in redshift fitting
+        IF (lo.GT.9500.) CYCLE
+        IF (lo.GE.hi) THEN
+           WRITE(*,*) 'GETVELZ ERROR:, lo>hi'
+           STOP
+        ENDIF
 
-     i1 = MIN(MAX(locate(sspgrid%lam,lo),1),nl_fit-1)
-     i2 = MIN(MAX(locate(sspgrid%lam,hi),2),nl_fit)
-     tchi2(i) = SUM(iidata(i1:i2)%flx**2/iidata(i1:i2)%err**2*&
-          (dflx(i1:i2)-mflx(i1:i2))**2) / (i2-i1)
+        !NB: this is the old way of doing things, compare with func.f90
+        CALL CONTNORMSPEC(sspgrid%lam,iidata%flx,iidata%err,lo,hi,dflx)
+        !use a 5 Gyr Zsol SSP
+        CALL CONTNORMSPEC(sspgrid%lam,10**sspgrid%logssp(:,imfr1,imfr2,3,nzmet-1),&
+             SQRT(10**sspgrid%logssp(:,imfr1,imfr2,3,nzmet-1)),lo,hi,mflx)
 
-     IF (tchi2(i).LT.chi2) THEN
-        chi2    = tchi2(i)
-        getvelz = tvz(i)
-     ENDIF
+      !  CALL VELBROAD(sspgrid%lam,mflx,300.d0,lo,hi)
+
+        i1 = MIN(MAX(locate(sspgrid%lam,lo),1),nl_fit-1)
+        i2 = MIN(MAX(locate(sspgrid%lam,hi),2),nl_fit)
+
+      !  ng = 0
+      !  DO k=i1,i2
+      !     IF (iidata(k)%err.LT.(huge_number/2.)) ng=ng+1
+      !  ENDDO
+
+      !  tchi2(i) = SUM(iidata(i1:i2)%flx**2/iidata(i1:i2)%err**2*&
+      !       (dflx(i1:i2)-mflx(i1:i2))**2) / ng
+        tchi2(i) = SUM(iidata(i1:i2)%flx**2/iidata(i1:i2)%err**2*&
+             (dflx(i1:i2)-mflx(i1:i2))**2) / (i2-i1)
+
+        IF (tchi2(i).LT.chi2) THEN
+           chi2    = tchi2(i)
+           getvelz = tvz(i)
+        ENDIF
+
+     ENDDO
 
   ENDDO
 
@@ -65,11 +95,16 @@ FUNCTION GETVELZ()
   tchi2 = tchi2 - MINVAL(tchi2)
   tvza  = getvelz
   DO i=1,nv
-     IF (tchi2(i).LT.0.5) tvza(i)=tvz(i)
+     IF (tchi2(i).LT.delchi2_tol) tvza(i)=tvz(i)
   ENDDO
   IF ((MAXVAL(tvza)-MINVAL(tvza)).GT.1E3) THEN
      WRITE(*,'("   Failed to find a redshift solution, setting velz=0.0")')
      WRITE(*,'("    delta(velz|chi2<0.5) = ",F8.2)') MAXVAL(tvza)-MINVAL(tvza)
+
+     DO i=1,nv
+        write(99,*) tvz(i),tchi2(i)
+     ENDDO
+
      getvelz = 0.0
   ENDIF
 

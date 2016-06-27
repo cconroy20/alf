@@ -88,6 +88,7 @@ SUBROUTINE READ_DATA(file)
         STOP
      ENDIF
 
+     !NB: err<0.0 set to large number
      IF (data(i)%err.LE.tiny_number) data(i)%err = huge_number
  
   ENDDO

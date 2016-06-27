@@ -153,10 +153,11 @@ SUBROUTINE SETUP()
 
   sspgrid%logagegrid = LOG10((/1.0,3.0,5.0,7.0,9.0,11.0,13.5/))
   sspgrid%logzgrid   = (/-1.5,-1.0,-0.5,0.0,0.25/)
+  sspgrid%logzgrid2   = (/-0.5,0.0,0.25/)
 
+  !read in two parameter IMF models
   DO z=1,nzmet
      DO t=1,nage
-        !read in two parameter IMF models
         OPEN(22,FILE=TRIM(SPECFIT_HOME)//'/infiles/VCJ_v1_'//chart(t)//'_Z'//&
              charz(z)//'.ssp.imf_'//TRIM(imfstr)//'.s100',STATUS='OLD',&
              iostat=stat,ACTION='READ')
@@ -172,7 +173,9 @@ SUBROUTINE SETUP()
            ii=1
            DO j=1,nimf
               DO k=1,nimf
-                 sspgrid%logssp(i,j,k,t,z) = tmp(ii)
+                 IF (k.GT.nimfoff.AND.j.GT.nimfoff) THEN
+                    sspgrid%logssp(i,j,k,t,z) = tmp(ii)
+                 ENDIF
                  ii=ii+1
               ENDDO
            ENDDO
@@ -183,49 +186,51 @@ SUBROUTINE SETUP()
 
   !read in 3 parameter IMF models
   IF (imf_type.EQ.3) THEN 
-     z=4
-     DO m=1,nmcut
-        DO t=1,nage
-           OPEN(22,FILE=TRIM(SPECFIT_HOME)//'/infiles/VCJ_v1_mcut'//&
-                charm(m)//'_'//chart(t)//'_Z'//charz(z)//&
-                '.ssp.imf_'//TRIM(imfstr)//'.s100',STATUS='OLD',&
-                iostat=stat,ACTION='READ')
-           IF (stat.NE.0) THEN
-              WRITE(*,*) 'SETUP ERROR: IMF 3-part models not found'
-              STOP
-           ENDIF
-           DO i=1,nstart-1
-              READ(22,*) 
-           ENDDO
-           DO i=1,nl
-              READ(22,*) d1,tmp
-              ii=1
-              DO j=1,nimf
-                 DO k=1,nimf
-                    sspgrid%logsspm(i,j,k,t,m) = tmp(ii)
-                    ii=ii+1
+     DO z=1,nzmet3
+        DO m=1,nmcut
+           DO t=1,nage
+              OPEN(22,FILE=TRIM(SPECFIT_HOME)//'/infiles/VCJ_v1_mcut'//&
+                   charm(m)//'_'//chart(t)//'_Z'//charz(z+2)//&
+                   '.ssp.imf_'//TRIM(imfstr)//'.s100',STATUS='OLD',&
+                   iostat=stat,ACTION='READ')
+              IF (stat.NE.0) THEN
+                 WRITE(*,*) 'SETUP ERROR: IMF 3-part models not found'
+                 STOP
+              ENDIF
+              DO i=1,nstart-1
+                 READ(22,*) 
+              ENDDO
+              DO i=1,nl
+                 READ(22,*) d1,tmp
+                 ii=1
+                 DO j=1,16
+                    DO k=1,16
+                       IF (k.GT.nimfoff.AND.j.GT.nimfoff) THEN
+                          sspgrid%logsspm(i,j-nimfoff,k-nimfoff,t,m,z) = tmp(ii)
+                       ENDIF
+                       ii=ii+1
+                    ENDDO
                  ENDDO
               ENDDO
+              CLOSE(22)
            ENDDO
-           CLOSE(22)
         ENDDO
      ENDDO
   ENDIF
 
-
-  !values of IMF parameters at the 16 grid points
+  !values of IMF parameters at the grid points
   DO i=1,nimf
-     sspgrid%imfx1(i) = 0.5+REAL(i-1)/5.d0 
+     sspgrid%imfx1(i) = 0.5+REAL(i-1+nimfoff)/5.d0 
   ENDDO
   IF (imf_type.EQ.0.OR.imf_type.EQ.1.OR.imf_type.EQ.3) THEN
-     DO i=1,nimf
-        sspgrid%imfx2(i) = 0.5+REAL(i-1)/5.d0 
-     ENDDO
+     sspgrid%imfx2(i) = 0.5+REAL(i-1+nimfoff)/5.d0 
      imfr1 = locate(sspgrid%imfx1,t13+1E-3)
      imfr2 = locate(sspgrid%imfx2,t23+1E-3)
   ELSE IF (imf_type.EQ.2) THEN
-     sspgrid%imfx2 = (/0.07,0.10,0.15,0.2,0.25,0.3,0.35,0.4,&
-          0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8/)
+     !sspgrid%imfx2 = (/0.07,0.10,0.15,0.2,0.25,0.3,0.35,0.4,&
+     !     0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8/)
+     write(*,*) 'error, need to reset nimf=16 for this option'
+     STOP
      imfr1 = locate(sspgrid%imfx1,t23+1E-3)
      imfr2 = locate(sspgrid%imfx2,m07+1E-3)
   ENDIF
@@ -432,11 +437,14 @@ SUBROUTINE SETUP()
      sspgrid%logssp = LOG10(sspgrid%logssp+tiny_number)
 
      IF (imf_type.EQ.3) THEN
-        DO m=1,nmcut
-           DO t=1,nage
-              DO j=1,nimf
-                 DO k=1,nimf
-                    CALL VELBROAD(lam,sspgrid%logsspm(:,k,j,t,m),sig0,lamlo,lamhi,smooth)
+        DO z=1,nzmet3
+           DO m=1,nmcut
+              DO t=1,nage
+                 DO j=1,nimf
+                    DO k=1,nimf
+                       CALL VELBROAD(lam,sspgrid%logsspm(:,k,j,t,m,z),&
+                            sig0,lamlo,lamhi,smooth)
+                    ENDDO
                  ENDDO
               ENDDO
            ENDDO

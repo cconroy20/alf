@@ -36,7 +36,7 @@ PROGRAM ALF
   !inverse sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=10000
+  INTEGER, PARAMETER :: nburn=40000
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=1024
   !save the chain outputs to file
@@ -80,7 +80,7 @@ PROGRAM ALF
 
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
-  fit_type  = 1
+  fit_type  = 0
   !dont fit transmission function in cases where the input
   !spectrum has already been de-redshifted to ~0.0
   fit_trans = 0
@@ -170,7 +170,7 @@ PROGRAM ALF
   !array in contnormspec, so turn these into large numbers
   data%wgt = MIN(1/(data%wgt+tiny_number),huge_number)
   !fold the masked regions into the errors
-  data%err = MIN(data%err * data%wgt, huge_number)
+  data%err = MIN(data%err*data%wgt, huge_number)
 
 
   !set initial params, step sizes, and prior ranges
@@ -242,7 +242,8 @@ PROGRAM ALF
         velz = getvelz()
      ENDIF
      opos%velz = velz
-     WRITE(*,'("    best velocity: ",F7.1)') velz
+     WRITE(*,'("    cz= ",F7.1," (z=",F6.3,")")') &
+          velz, velz/3E5
 
      CALL STR2ARR(1,opos,oposarr)   !str->arr
 
