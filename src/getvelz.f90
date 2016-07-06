@@ -3,9 +3,7 @@ FUNCTION GETVELZ()
   !function to estimate the recession velocity
   !this routine is used to get a first-guess at the velocity
   !so that the subsequent Powell minimization (in alf)
-  !coverges faster.  uses only the first wavelength segment
-
-  !z_max=0.18. 
+  !coverges faster.  Uses  the first two wavelength segments
 
   USE alf_vars; USE nr, ONLY : locate
   USE alf_utils, ONLY : linterp,contnormspec,velbroad
@@ -13,9 +11,10 @@ FUNCTION GETVELZ()
 
   REAL(DP) :: getvelz, chi2,lo,hi
   !delta_chi2 tolerance to accept a non-zero redshift
-  !this used to be set to 0.5 (changed 6/27/16)
-  REAL(DP), PARAMETER :: delchi2_tol=0.5 !0.1
-  INTEGER, PARAMETER :: nv=5000
+  REAL(DP), PARAMETER :: max_dvelz   = 5E3
+  REAL(DP), PARAMETER :: delchi2_tol = 0.5   !0.5, 0.2
+  REAL(DP), PARAMETER :: max_zred    = 0.18  !0.18, 0.03
+  INTEGER, PARAMETER  :: nv=5000
   INTEGER :: i,i1,i2,j,ni,ng,k
   REAL(DP), DIMENSION(nl) :: mflx,dflx
   REAL(DP), DIMENSION(nv) :: tvz,tchi2,tvza
@@ -36,7 +35,7 @@ FUNCTION GETVELZ()
 
   DO i=1,nv
 
-     tvz(i) = REAL(i)*11-1E3
+     tvz(i) = REAL(i)/REAL(nv)*(max_zred*3E5+1E3)-1E3
 
      !de-redshift the data and interpolate to model wave array
      !NB: this is the old way of doing things, compare with func.f90
@@ -69,15 +68,16 @@ FUNCTION GETVELZ()
         i1 = MIN(MAX(locate(sspgrid%lam,lo),1),nl_fit-1)
         i2 = MIN(MAX(locate(sspgrid%lam,hi),2),nl_fit)
 
-      !  ng = 0
-      !  DO k=i1,i2
-      !     IF (iidata(k)%err.LT.(huge_number/2.)) ng=ng+1
-      !  ENDDO
+        !only count pixels with non-zero weights
+        ng = 0
+        DO k=i1,i2
+           IF (iidata(k)%err.LT.(huge_number/2.)) ng=ng+1
+        ENDDO
 
-      !  tchi2(i) = SUM(iidata(i1:i2)%flx**2/iidata(i1:i2)%err**2*&
-      !       (dflx(i1:i2)-mflx(i1:i2))**2) / ng
         tchi2(i) = SUM(iidata(i1:i2)%flx**2/iidata(i1:i2)%err**2*&
-             (dflx(i1:i2)-mflx(i1:i2))**2) / (i2-i1)
+             (dflx(i1:i2)-mflx(i1:i2))**2) / ng
+    !    tchi2(i) = SUM(iidata(i1:i2)%flx**2/iidata(i1:i2)%err**2*&
+    !         (dflx(i1:i2)-mflx(i1:i2))**2) / (i2-i1)
 
         IF (tchi2(i).LT.chi2) THEN
            chi2    = tchi2(i)
@@ -89,15 +89,15 @@ FUNCTION GETVELZ()
   ENDDO
 
   !test to see if the solution is good
-  !we take all points with delta(chi2/dof)<0.5 and
-  !ask how large is the range in velocities
-  !if the range in velz is >1E3 then we've failed
+  !we take all points with delta(chi2/dof)<delchi2_tol and
+  !ask how large is the range in velocities.
+  !If the range in velz is >max_dvelz then we've failed
   tchi2 = tchi2 - MINVAL(tchi2)
   tvza  = getvelz
   DO i=1,nv
      IF (tchi2(i).LT.delchi2_tol) tvza(i)=tvz(i)
   ENDDO
-  IF ((MAXVAL(tvza)-MINVAL(tvza)).GT.1E3) THEN
+  IF ((MAXVAL(tvza)-MINVAL(tvza)).GT.max_dvelz) THEN
      WRITE(*,'("   Failed to find a redshift solution, setting velz=0.0")')
      WRITE(*,'("    delta(velz|chi2<0.5) = ",F8.2)') MAXVAL(tvza)-MINVAL(tvza)
 

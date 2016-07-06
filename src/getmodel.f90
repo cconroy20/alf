@@ -14,7 +14,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   REAL(DP), DIMENSION(nl) :: tmp,tmpr,yspec,tmp1,tmp2,tmp3,tmp4
   INTEGER  :: vt,vy,vv1,vv2,vv3,i,vr,vm,vh,vm2
   REAL(DP) :: dt,fy,dx1,dx2,dx3,lsig,ve,dr,dm,dm2,dh,dy
-  REAL(DP), DIMENSION(nl)   :: tmp_ltrans, tmp_ftrans
+  REAL(DP), DIMENSION(nl)   :: tmp_ltrans,tmp_ftrans_h2o,tmp_ftrans_o2
   REAL(DP), DIMENSION(neml) :: emnormall=1.0
   
   !---------------------------------------------------------------!
@@ -327,20 +327,23 @@ SUBROUTINE GETMODEL(pos,spec,mw)
         ENDDO
      ENDIF
 
-     !apply an atmosphereric transmission function
-     IF (fit_trans.EQ.1) THEN
-        !applied in the observed frame
-        tmp_ltrans = sspgrid%lam / (1+pos%velz/clight*1E5)
-        tmp_ftrans = linterp(tmp_ltrans,sspgrid%atm_trans,sspgrid%lam)
-        spec = spec * (1+(tmp_ftrans-1)*10**pos%logtrans)
-     ENDIF
-
   ENDIF
 
   !velocity broaden the model
   IF (pos%sigma.GT.5.0) THEN
-       CALL VELBROAD(sspgrid%lam,spec,pos%sigma,l1(1),l2(nlint))
-    ENDIF
+     CALL VELBROAD(sspgrid%lam,spec,pos%sigma,l1(1),l2(nlint))
+  ENDIF
+
+  !apply an atmospheric transmission function only in full mode
+  !note that this is done *after* velocity broadening
+  IF (fit_type.EQ.0.AND.powell_fitting.EQ.0.AND.fit_trans.EQ.1) THEN
+     !applied in the observed frame
+     tmp_ltrans = sspgrid%lam / (1+pos%velz/clight*1E5)
+     tmp_ftrans_h2o = linterp(tmp_ltrans,sspgrid%atm_trans_h2o,sspgrid%lam)
+     tmp_ftrans_o2  = linterp(tmp_ltrans,sspgrid%atm_trans_o2,sspgrid%lam)
+     spec = spec * (1+(tmp_ftrans_h2o-1)*10**pos%logtrans)
+     spec = spec * (1+(tmp_ftrans_o2-1)*10**pos%logtrans)
+  ENDIF
 
   !apply a template error function
   IF (apply_temperrfcn.EQ.1) THEN

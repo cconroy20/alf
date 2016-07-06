@@ -10,7 +10,7 @@ SUBROUTINE SETUP()
   REAL(DP), DIMENSION(nl) :: dumi,smooth=0.0,lam
   INTEGER :: stat,i,vv,j,k,t,z,ii,shift=100,m
   INTEGER, PARAMETER :: ntrans=22800
-  REAL(DP), DIMENSION(ntrans) :: ltrans,ftrans,strans
+  REAL(DP), DIMENSION(ntrans) :: ltrans,ftrans_h2o,ftrans_o2,strans
   CHARACTER(4), DIMENSION(nzmet) :: charz
   CHARACTER(4), DIMENSION(nmcut) :: charm
   CHARACTER(5), DIMENSION(nage)  :: chart
@@ -347,7 +347,7 @@ SUBROUTINE SETUP()
      STOP
   ENDIF
   DO i=1,ntrans
-     READ(29,*) ltrans(i),ftrans(i)
+     READ(29,*) ltrans(i),ftrans_h2o(i),ftrans_o2(i)
   ENDDO
   CLOSE(29)
 
@@ -360,18 +360,23 @@ SUBROUTINE SETUP()
      !only done here b/c the transmission function is tabulated at high res
      strans = 100.0 
   ENDIF
-  CALL VELBROAD(ltrans,ftrans,sig0,lamlo,lamhi,strans)
+  strans = SQRT(strans**2+smooth_trans**2)
+  CALL VELBROAD(ltrans,ftrans_h2o,sig0,lamlo,lamhi,strans)
+  CALL VELBROAD(ltrans,ftrans_o2,sig0,lamlo,lamhi,strans)
   
   !interpolate onto the main wavelength grid.  Force transmission
   !to be 1.0 outside of the bounds of the tabulated function
-  sspgrid%atm_trans=1.0
-  sspgrid%atm_trans = linterp(ltrans,ftrans,lam)
+  sspgrid%atm_trans_h2o = 1.0
+  sspgrid%atm_trans_o2  = 1.0
+  sspgrid%atm_trans_h2o = linterp(ltrans,ftrans_h2o,lam)
+  sspgrid%atm_trans_o2  = linterp(ltrans,ftrans_o2,lam)
   DO i=1,nl
-     IF (lam(i).LT.ltrans(1).OR.lam(i).GT.ltrans(ntrans)) &
-        sspgrid%atm_trans(i) = 1.0
+     IF (lam(i).LT.ltrans(1).OR.lam(i).GT.ltrans(ntrans)) THEN
+        sspgrid%atm_trans_h2o(i) = 1.0
+        sspgrid%atm_trans_o2(i)  = 1.0
+     ENDIF
   ENDDO
 
- 
   !smooth the models to the input instrumental resolution
   IF (MAXVAL(data(1:datmax)%ires).GT.10.0) THEN
 

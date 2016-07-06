@@ -65,7 +65,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   pos%jitter         = myran()*0.5+0.75
 
   IF (PRESENT(velz)) THEN
-     IF (abs(pos%velz).LE.tiny_number) THEN
+     IF (ABS(pos%velz).LE.tiny_number) THEN
         pos%velz  = myran()*1E4-1E3
      ELSE
         pos%velz  = velz + (myran()*10-5)

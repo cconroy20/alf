@@ -36,11 +36,11 @@ PROGRAM ALF
   !inverse sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=40000
+  INTEGER, PARAMETER :: nburn=5000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=1024
+  INTEGER, PARAMETER :: nwalkers=512 !512 !1024
   !save the chain outputs to file
-  INTEGER, PARAMETER :: print_mcmc=0
+  INTEGER, PARAMETER :: print_mcmc=1
 
   !start w/ powell minimization?
   INTEGER, PARAMETER  :: dopowell=0
@@ -88,6 +88,9 @@ PROGRAM ALF
   !0=single power-law, 1=double power-law, 2=power-law+cutoff, 3=2pl+ct
   imf_type  = 1
 
+  !extra smoothing to the transmission spectrum
+  !smooth_trans = 100.0
+  
   !limit the range of [Z/H] to be very small
   !prlo%zh   = -0.01
   !prhi%zh   =  0.01
@@ -103,6 +106,8 @@ PROGRAM ALF
   !prhi%logemline_ni   = -5.0
 
   IF (fit_type.EQ.1.OR.fit_type.EQ.2) mwimf=1
+
+  !---------------------------------------------------------------!
 
   ! Initialize MPI, and get the total number of processes and
   ! your process number

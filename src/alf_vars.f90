@@ -69,6 +69,10 @@ MODULE ALF_VARS
   !rather than the proper convolution in log_lambda space
   !don't turn this on - the "correct" version is just as fast
   INTEGER :: velbroad_simple=0
+  !extra smoothing (km/s) of the transmission spectrum
+  !if the input spectrum has been smoothed by an amount more than
+  !the instrumental resolution, set the parameter below to that value
+  REAL(DP) :: smooth_trans=0.0
 
   !--------------------------------------------------------------!
   !    the parameters below should not be modified unless you    !
@@ -208,7 +212,7 @@ MODULE ALF_VARS
      REAL(DP), DIMENSION(nimf)          :: imfx1,imfx2
      REAL(DP), DIMENSION(nmcut)         :: imfx3
      REAL(DP), DIMENSION(nl,nhot)       :: hotspec
-     REAL(DP), DIMENSION(nl)            :: atm_trans
+     REAL(DP), DIMENSION(nl)            :: atm_trans_h2o,atm_trans_o2
      REAL(DP), DIMENSION(nhot)          :: teffarrhot
   END TYPE SSP
 
