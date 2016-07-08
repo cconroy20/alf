@@ -197,7 +197,7 @@ MODULE ALF_VARS
      REAL(DP) :: chi2=huge_number
   END TYPE PARAMS
   
-  !structure for the model SSPs
+  !structure for the models
   TYPE SSP
      REAL(DP), DIMENSION(nl) :: lam,m7g
      REAL(DP), DIMENSION(nl,nage_rfcn,nzmet) :: solar,nap,nam,cap,cam,&
@@ -206,13 +206,13 @@ MODULE ALF_VARS
      REAL(DP), DIMENSION(nage_rfcn)     :: logagegrid_rfcn
      REAL(DP), DIMENSION(nage)          :: logagegrid
      REAL(DP), DIMENSION(nzmet)         :: logzgrid
-     REAL(DP), DIMENSION(nzmet3)         :: logzgrid2     
+     REAL(DP), DIMENSION(nzmet3)        :: logzgrid2     
      REAL(DP), DIMENSION(nl,nimf,nimf,nage,nzmet)  :: logssp
      REAL(DP), DIMENSION(nl,nimf,nimf,nage,nmcut,nzmet3)  :: logsspm
      REAL(DP), DIMENSION(nimf)          :: imfx1,imfx2
      REAL(DP), DIMENSION(nmcut)         :: imfx3
      REAL(DP), DIMENSION(nl,nhot)       :: hotspec
-     REAL(DP), DIMENSION(nl)            :: atm_trans_h2o,atm_trans_o2
+     REAL(DP), DIMENSION(nl)            :: atm_trans_h2o,atm_trans_o2,sky_lines
      REAL(DP), DIMENSION(nhot)          :: teffarrhot
   END TYPE SSP
 

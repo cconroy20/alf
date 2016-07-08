@@ -36,9 +36,9 @@ PROGRAM ALF
   !inverse sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=5000
+  INTEGER, PARAMETER :: nburn=50000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=512 !512 !1024
+  INTEGER, PARAMETER :: nwalkers=1024
   !save the chain outputs to file
   INTEGER, PARAMETER :: print_mcmc=1
 
@@ -83,13 +83,15 @@ PROGRAM ALF
   fit_type  = 0
   !dont fit transmission function in cases where the input
   !spectrum has already been de-redshifted to ~0.0
-  fit_trans = 0
+  fit_trans = 1
   !type of IMF to fit
   !0=single power-law, 1=double power-law, 2=power-law+cutoff, 3=2pl+ct
   imf_type  = 1
 
   !extra smoothing to the transmission spectrum
-  !smooth_trans = 100.0
+  !if the input data has been smoothed by a gaussian
+  !in velocity space, set the parameter below to that extra smoothing
+  smooth_trans = 0.0
   
   !limit the range of [Z/H] to be very small
   !prlo%zh   = -0.01
@@ -139,12 +141,14 @@ PROGRAM ALF
      WRITE(*,'("   dopowell  =",I2)') dopowell
      WRITE(*,'("   fit_type  =",I2)') fit_type
      WRITE(*,'("   imf_type  =",I2)') imf_type
+     WRITE(*,'("   fit_trans =",I2)') fit_trans
      WRITE(*,'("      mwimf  =",I2)') mwimf
      WRITE(*,'("  age-dep Rf =",I2)') use_age_dep_resp_fcns
      WRITE(*,'("    Z-dep Rf =",I2)') use_z_dep_resp_fcns
      WRITE(*,'("  Nwalkers   = ",I6)') nwalkers
      WRITE(*,'("  Nburn      = ",I6)') nburn
      WRITE(*,'("  Nchain     = ",I6)') nmcmc
+     WRITE(*,'("  Ncores     = ",I6)') ntasks
      WRITE(*,'("  filename   = ",A)') TRIM(file)//TRIM(tag)
      WRITE(*,'(" ************************************")') 
      CALL DATE_AND_TIME(TIME=time)

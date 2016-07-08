@@ -23,13 +23,6 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
    
   nn = SIZE(lambda)
 
-  !fancy footwork to allow for arrays of arbitrary length
-  IF (nn.EQ.nl) THEN 
-     n2 = nl_fit
-  ELSE
-     n2 = nl
-  ENDIF
-
   IF (sigma.LE.tiny_number) RETURN
 
   IF (sigma.GE.1E4) THEN
@@ -38,7 +31,8 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
      STOP
   ENDIF
 
-  !compute smoothing the fast (and slightly less accurate) way
+  !compute smoothing the slightly less accurate way
+  !but the only way in the case of wave-dep smoothing
   IF (velbroad_simple.EQ.1.OR.PRESENT(ires)) THEN
 
      tspec(1:nn) = spec(1:nn)
@@ -53,6 +47,7 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
         
         IF (PRESENT(ires)) THEN
            sigmal = ires(i)
+           IF (sigmal.LE.tiny_number) CYCLE
         ELSE
            sigmal = sigma
         ENDIF
@@ -75,8 +70,14 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
      ENDDO
 
   !compute smoothing the correct way
-  !actually, this way is faster than the one above!
   ELSE
+
+     !fancy footwork to allow for input spectra of either length
+     IF (nn.EQ.nl) THEN 
+        n2 = nl_fit
+     ELSE
+        n2 = nl
+     ENDIF
 
      fwhm   = sigma*2.35482/clight*1E5/dlstep
      psig   = fwhm/2.d0/SQRT(-2.d0*LOG(0.5d0)) ! equivalent sigma for kernel
@@ -94,15 +95,12 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
         ENDDO
         psf(1:2*grange+1) = psf(1:2*grange+1) / SUM(psf(1:2*grange+1))
       
-  
         DO i=grange+1,n2-grange
            nspec(i) = SUM( psf(1:2*grange+1)*tspec(i-grange:i+grange) )
         ENDDO
      
         !interpolate back to the main array
-        spec(1:n2) = &
-             linterp(EXP(lnlam(1:n2)),nspec(1:n2),lambda(1:n2))
-  
+        spec(1:n2) = linterp(EXP(lnlam(1:n2)),nspec(1:n2),lambda(1:n2))
  
      ENDIF
 

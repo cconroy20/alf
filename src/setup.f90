@@ -9,11 +9,13 @@ SUBROUTINE SETUP()
   REAL(DP), DIMENSION(nimf*nimf) :: tmp
   REAL(DP), DIMENSION(nl) :: dumi,smooth=0.0,lam
   INTEGER :: stat,i,vv,j,k,t,z,ii,shift=100,m
-  INTEGER, PARAMETER :: ntrans=22800
+  INTEGER, PARAMETER :: ntrans=22800, nskylines=39324
   REAL(DP), DIMENSION(ntrans) :: ltrans,ftrans_h2o,ftrans_o2,strans
+  REAL(DP), DIMENSION(nskylines) :: lsky,fsky
   CHARACTER(4), DIMENSION(nzmet) :: charz
   CHARACTER(4), DIMENSION(nmcut) :: charm
   CHARACTER(5), DIMENSION(nage)  :: chart
+  CHARACTER(3), DIMENSION(nage_rfcn) :: chart2
   CHARACTER(20) :: imfstr
 
   !---------------------------------------------------------------!
@@ -25,9 +27,10 @@ SUBROUTINE SETUP()
      STOP
   ENDIF
 
-  charz = (/'m1.5','m1.0','m0.5','p0.0','p0.2'/)
-  charm = (/'0.08','0.10','0.15','0.20','0.25','0.30','0.35','0.40'/)
-  chart = (/'t01.0','t03.0','t05.0','t07.0','t09.0','t11.0','t13.5'/)
+  charz  = (/'m1.5','m1.0','m0.5','p0.0','p0.2'/)
+  charm  = (/'0.08','0.10','0.15','0.20','0.25','0.30','0.35','0.40'/)
+  chart  = (/'t01.0','t03.0','t05.0','t07.0','t09.0','t11.0','t13.5'/)
+  chart2 = (/'t01','t03','t05','t09','t13'/)
 
   IF (imf_type.EQ.0.OR.imf_type.EQ.1.OR.imf_type.EQ.3) THEN
      imfstr = 'varydoublex'
@@ -35,8 +38,9 @@ SUBROUTINE SETUP()
      imfstr = 'varymcut_varyx'
   ENDIF
 
-  sspgrid%logssp = tiny_number
-  
+  sspgrid%logssp  = tiny_number
+  sspgrid%logsspm = tiny_number
+
   !if the data has not been read in, then we need to manually
   !define the lower and upper limits for the instrumental resolution
   !broadening.  Currently this is only triggered if write_a_model is 
@@ -64,28 +68,18 @@ SUBROUTINE SETUP()
   ENDDO
   CLOSE(15)
 
-  !read in the ATLAS SSPs
+
+  !-------------------------------------------------------------------------!
+  !-----------------read in the theoretical response functions--------------!
+  !-------------------------------------------------------------------------!
+
   DO k=1,nzmet
 
      DO j=1,nage_rfcn
 
-        IF (j.EQ.1) THEN
-           OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t01_Z'//&
-                charz(k)//'.abund.'//atlas_imf//'.s100',STATUS='OLD',iostat=stat,ACTION='READ')
-        ELSE IF (j.EQ.2) THEN
-           OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t03_Z'//&
-                charz(k)//'.abund.'//atlas_imf//'.s100',STATUS='OLD',iostat=stat,ACTION='READ')
-        ELSE IF (j.EQ.3) THEN
-           OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t05_Z'//&
-                charz(k)//'.abund.'//atlas_imf//'.s100',STATUS='OLD',iostat=stat,ACTION='READ')
-        ELSE IF (j.EQ.4) THEN
-           OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t09_Z'//&
-                charz(k)//'.abund.'//atlas_imf//'.s100',STATUS='OLD',iostat=stat,ACTION='READ')
-        ELSE IF (j.EQ.5) THEN
-           OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_t13_Z'//&
-                charz(k)//'.abund.'//atlas_imf//'.s100',STATUS='OLD',iostat=stat,ACTION='READ')
-        ENDIF
-
+        OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_'//&
+             chart2(j)//'_Z'//charz(k)//'.abund.'//atlas_imf//'.s100',&
+             STATUS='OLD',iostat=stat,ACTION='READ')
         IF (stat.NE.0) THEN
            WRITE(*,*) 'SETUP ERROR: ATLAS models not found'
            STOP
@@ -148,12 +142,13 @@ SUBROUTINE SETUP()
 
   ENDIF
 
-
-  !read in empirical spectra as a function of age and metallicity
+  !-------------------------------------------------------------------------!
+  !-----read in empirical spectra as a function of age and metallicity------!
+  !-------------------------------------------------------------------------!
 
   sspgrid%logagegrid = LOG10((/1.0,3.0,5.0,7.0,9.0,11.0,13.5/))
   sspgrid%logzgrid   = (/-1.5,-1.0,-0.5,0.0,0.25/)
-  sspgrid%logzgrid2   = (/-0.5,0.0,0.25/)
+  sspgrid%logzgrid2  = (/-0.5,0.0,0.25/)
 
   !read in two parameter IMF models
   DO z=1,nzmet
@@ -239,6 +234,10 @@ SUBROUTINE SETUP()
      imfr3 = locate(sspgrid%imfx3,m07+1E-3)
   ENDIF
 
+  !-------------------------------------------------------------------------!
+  !------------------------set up nuisance features-------------------------!
+  !-------------------------------------------------------------------------!
+
   !read in hot stars 
   OPEN(24,FILE=TRIM(SPECFIT_HOME)//'/infiles/ap00t08000g4.00at12.spec.s100',&
        STATUS='OLD',iostat=stat,ACTION='READ')
@@ -302,6 +301,9 @@ SUBROUTINE SETUP()
   sspgrid%m7g = sspgrid%m7g/sspgrid%m7g(vv)*&
        sspgrid%logssp(vv,imfr1,imfr2,nage,nzmet-1)
 
+  !-------------------------------------------------------------------------!
+  !-------------------------------------------------------------------------!
+  !-------------------------------------------------------------------------!
 
   !define central wavelengths of emission lines (in vacuum)
   !these wavelengths come from NIST
@@ -339,7 +341,10 @@ SUBROUTINE SETUP()
 
   ENDIF
 
-  !read in the atm transmission function
+  !-------------------------------------------------------------------------!
+  !------------set up the atm transmission function & sky lines-------------!
+  !-------------------------------------------------------------------------!
+
   OPEN(29,FILE=TRIM(SPECFIT_HOME)//'/infiles/atm_trans.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
@@ -360,9 +365,14 @@ SUBROUTINE SETUP()
      !only done here b/c the transmission function is tabulated at high res
      strans = 100.0 
   ENDIF
-  strans = SQRT(strans**2+smooth_trans**2)
+  !add all the terms in quad, including a floor of 10 km/s
+  strans = SQRT(strans**2+smooth_trans**2+10.**2)
+  !use the simple version which allows for arrays of arbitrary length
+  d1 = velbroad_simple
+  velbroad_simple = 1 
   CALL VELBROAD(ltrans,ftrans_h2o,sig0,lamlo,lamhi,strans)
   CALL VELBROAD(ltrans,ftrans_o2,sig0,lamlo,lamhi,strans)
+  velbroad_simple = d1
   
   !interpolate onto the main wavelength grid.  Force transmission
   !to be 1.0 outside of the bounds of the tabulated function
@@ -377,7 +387,36 @@ SUBROUTINE SETUP()
      ENDIF
   ENDDO
 
-  !smooth the models to the input instrumental resolution
+  !sky lines
+  OPEN(29,FILE=TRIM(SPECFIT_HOME)//'/infiles/radiance_lines.dat',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN
+     WRITE(*,*) 'SETUP ERROR: sky lines file not found'
+     STOP
+  ENDIF
+  DO i=1,nskylines
+     READ(29,*) lsky(i),fsky(i)
+  ENDDO
+  CLOSE(29)
+
+  !smooth by the instrumental resolution
+  !use the simple version which allows for arrays of arbitrary length
+  d1 = velbroad_simple
+  velbroad_simple = 1 
+  CALL VELBROAD(lsky,fsky,sig0,lamlo,lamhi,strans)
+  velbroad_simple = d1
+
+  sspgrid%sky_lines = MAX(linterp(lsky,fsky,lam),tiny_number)
+  DO i=1,nl
+     IF (lam(i).LT.lsky(1).OR.lam(i).GT.lsky(nskylines)) THEN
+        sspgrid%sky_lines(i) = tiny_number
+     ENDIF
+  ENDDO
+
+  !-------------------------------------------------------------------------!
+  !---------smooth the models to the input instrumental resolution----------!
+  !-------------------------------------------------------------------------!
+
   IF (MAXVAL(data(1:datmax)%ires).GT.10.0) THEN
 
      !the interpolation here is a massive extrapolation beyond the range
@@ -439,7 +478,6 @@ SUBROUTINE SETUP()
            ENDDO
         ENDDO
      ENDDO
-     sspgrid%logssp = LOG10(sspgrid%logssp+tiny_number)
 
      IF (imf_type.EQ.3) THEN
         DO z=1,nzmet3
@@ -454,10 +492,12 @@ SUBROUTINE SETUP()
               ENDDO
            ENDDO
         ENDDO
-        sspgrid%logsspm = LOG10(sspgrid%logsspm+tiny_number)
      ENDIF
 
   ENDIF
+
+  sspgrid%logssp  = LOG10(sspgrid%logssp+tiny_number)
+  sspgrid%logsspm = LOG10(sspgrid%logsspm+tiny_number)
 
   !locate where lam=7000A
   lam7 = locate(lam,7000.d0)

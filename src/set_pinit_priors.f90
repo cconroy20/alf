@@ -56,12 +56,12 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   pos%sigma          = myran()*100+100
   pos%sigma2         = myran()*100+100
   pos%velz2          = myran()*10-5
-  pos%logtrans       = myran()*3-4.
-  pos%logemline_h    = myran()*1-4
-  pos%logemline_oiii = myran()*1-4
-  pos%logemline_ni   = myran()*1-4
-  pos%logemline_nii  = myran()*1-4
-  pos%logemline_sii  = myran()*1-4
+  pos%logtrans       = myran()*4-4.
+  pos%logemline_h    = myran()*2-4
+  pos%logemline_oiii = myran()*2-4
+  pos%logemline_ni   = myran()*2-4
+  pos%logemline_nii  = myran()*2-4
+  pos%logemline_sii  = myran()*2-4
   pos%jitter         = myran()*0.5+0.75
 
   IF (PRESENT(velz)) THEN
@@ -190,28 +190,26 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   !this should be done for every parameter to ensure that the altered parameters
   !do not fall outside of the prior range.  In practice only these params are 
   !frequently altered.
-  IF (prhi%logtrans.NE.test%logtrans) &
+  IF (prhi%logtrans.NE.test%logtrans.OR.prlo%logtrans.NE.test%logtrans) &
        pos%logtrans = myran()*(prhi%logtrans-prlo%logtrans)+prlo%logtrans
-  IF (prhi%logfy.NE.test%logfy) &
+  IF (prhi%logfy.NE.test%logfy.OR.prlo%logfy.NE.test%logfy) &
        pos%logfy = myran()*(prhi%logfy-prlo%logfy)+prlo%logfy
-  IF (prhi%loghot.NE.test%loghot) &
+  IF (prhi%loghot.NE.test%loghot.OR.prlo%loghot.NE.test%loghot) &
        pos%loghot = myran()*(prhi%loghot-prlo%loghot)+prlo%loghot
-  IF (prhi%logm7g.NE.test%logm7g) &
+  IF (prhi%logm7g.NE.test%logm7g.OR.prlo%logm7g.NE.test%logm7g) &
        pos%logm7g = myran()*(prhi%logm7g-prlo%logm7g)+prlo%logm7g
-  IF (prhi%logemline_h.NE.test%logemline_h) &
+  IF (prhi%logemline_h.NE.test%logemline_h.OR.prlo%logemline_h.NE.test%logemline_h) &
        pos%logemline_h = myran()*(prhi%logemline_h-prlo%logemline_h)+prlo%logemline_h
-  IF (prhi%logemline_oiii.NE.test%logemline_oiii) &
+  IF (prhi%logemline_oiii.NE.test%logemline_oiii.OR.prlo%logemline_oiii.NE.test%logemline_oiii) &
        pos%logemline_oiii = myran()*(prhi%logemline_oiii-prlo%logemline_oiii)+prlo%logemline_oiii
-  IF (prhi%logemline_sii.NE.test%logemline_sii) &
+  IF (prhi%logemline_sii.NE.test%logemline_sii.OR.prlo%logemline_sii.NE.test%logemline_sii) &
        pos%logemline_sii = myran()*(prhi%logemline_sii-prlo%logemline_sii)+prlo%logemline_sii
-  IF (prhi%logemline_ni.NE.test%logemline_ni) &
+  IF (prhi%logemline_ni.NE.test%logemline_ni.OR.prlo%logemline_ni.NE.test%logemline_ni) &
        pos%logemline_ni = myran()*(prhi%logemline_ni-prlo%logemline_ni)+prlo%logemline_ni
-  IF (prhi%logemline_nii.NE.test%logemline_nii) &
+  IF (prhi%logemline_nii.NE.test%logemline_nii.OR.prlo%logemline_nii.NE.test%logemline_nii) &
        pos%logemline_nii = myran()*(prhi%logemline_nii-prlo%logemline_nii)+prlo%logemline_nii
-
   IF (prhi%zh.NE.test%zh.OR.prlo%zh.NE.test%zh) &
        pos%zh = myran()*(prhi%zh-prlo%zh)+prlo%zh
-
  IF (prhi%teff.NE.test%teff.OR.prlo%teff.NE.test%teff) &
        pos%teff = myran()*(prhi%teff-prlo%teff)+prlo%teff
 

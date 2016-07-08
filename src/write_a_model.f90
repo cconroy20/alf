@@ -19,14 +19,14 @@ PROGRAM WRITE_A_MODEL
   !-----------------------------------------------------------!
 
   !instrumental resolution (<10 -> no broadening)
-  ires = 1.
+  ires = 5.
 
   !initialize the random number generator
   CALL INIT_RANDOM_SEED()
   !compute an array of gaussian deviates
   CALL GASDEV(gdev)
 
-  file = 'model_zh-0.5.spec'
+  file = 'model_trans_s10.spec'
   s2n    = 1E4
   lmin   = 3800.
   lmax   = 10000.
@@ -59,9 +59,9 @@ PROGRAM WRITE_A_MODEL
   pos%teff    = 0.0
   pos%logfy   = -5.0
   pos%fy_logage = -5.0
-  pos%logtrans  = -5.0
+  pos%logtrans  = 0.0
   pos%sigma2  = 300.
-  pos%velz    = 0000.
+  pos%velz    = 1000.
   pos%velz2   = 0.0
   pos%logm7g  = -5.0
   pos%hotteff = 20.0
@@ -74,11 +74,11 @@ PROGRAM WRITE_A_MODEL
 
   !force a constant instrumental resolution
   !needs to be done this way for setup.f90 to work
-  !datmax=10000
-  !DO i=1,datmax
-  !   data(i)%lam=i+3500
-  !ENDDO
-  !data(1:datmax)%ires = ires
+  datmax=lmax-lmin
+  DO i=1,datmax
+     data(i)%lam=i+lmin
+     data(i)%ires = ires
+  ENDDO
 
   !use the LRIS instrumental dispersion
   !infile = 'snl2_lris'

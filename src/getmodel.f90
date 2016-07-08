@@ -57,9 +57,9 @@ SUBROUTINE GETMODEL(pos,spec,mw)
 
      IF (imf_type.EQ.3) THEN
 
-        vm = MAX(MIN(locate(sspgrid%logzgrid,pos%zh),nzmet3-1),1)
-        dm = (pos%zh-sspgrid%logzgrid(vm)) / &
-             (sspgrid%logzgrid(vm+1)-sspgrid%logzgrid(vm))
+        vm = MAX(MIN(locate(sspgrid%logzgrid2,pos%zh),nzmet3-1),1)
+        dm = (pos%zh-sspgrid%logzgrid2(vm)) / &
+             (sspgrid%logzgrid2(vm+1)-sspgrid%logzgrid2(vm))
         dm = MAX(MIN(dm,1.5),-1.0) 
 
 
