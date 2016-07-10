@@ -12,8 +12,8 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   REAL(DP), DIMENSION(nl), INTENT(out) :: spec
   INTEGER, OPTIONAL :: mw
   REAL(DP), DIMENSION(nl) :: tmp,tmpr,yspec,tmp1,tmp2,tmp3,tmp4
-  INTEGER  :: vt,vy,vv1,vv2,vv3,i,vr,vm,vh,vm2
-  REAL(DP) :: dt,fy,dx1,dx2,dx3,lsig,ve,dr,dm,dm2,dh,dy
+  INTEGER  :: vt,vy,vv1,vv2,vv3,i,vr,vm,vh,vm2,vm3
+  REAL(DP) :: dt,fy,dx1,dx2,dx3,lsig,ve,dr,dm,dm2,dm3,dh,dy
   REAL(DP), DIMENSION(nl)   :: tmp_ltrans,tmp_ftrans_h2o,tmp_ftrans_o2
   REAL(DP), DIMENSION(neml) :: emnormall=1.0
   
@@ -57,50 +57,49 @@ SUBROUTINE GETMODEL(pos,spec,mw)
 
      IF (imf_type.EQ.3) THEN
 
-        vm = MAX(MIN(locate(sspgrid%logzgrid2,pos%zh),nzmet3-1),1)
-        dm = (pos%zh-sspgrid%logzgrid2(vm)) / &
-             (sspgrid%logzgrid2(vm+1)-sspgrid%logzgrid2(vm))
-        dm = MAX(MIN(dm,1.5),-1.0) 
+        vm3 = MAX(MIN(locate(sspgrid%logzgrid2,pos%zh),nzmet3-1),1)
+        dm3 = (pos%zh-sspgrid%logzgrid2(vm3)) / &
+             (sspgrid%logzgrid2(vm3+1)-sspgrid%logzgrid2(vm3))
+        dm3 = MAX(MIN(dm3,1.5),-1.0) 
 
+        tmp1 = (1-dx1)*(1-dx2)*(1-dx3)*sspgrid%logsspm(:,vv1,vv2,vt+1,vv3,vm3+1) + &
+               (dx1)*(1-dx2)*(1-dx3)*sspgrid%logsspm(:,vv1+1,vv2,vt+1,vv3,vm3+1) + &
+               (1-dx1)*(dx2)*(1-dx3)*sspgrid%logsspm(:,vv1,vv2+1,vt+1,vv3,vm3+1) + &
+               (1-dx1)*(1-dx2)*(dx3)*sspgrid%logsspm(:,vv1,vv2,vt+1,vv3+1,vm3+1) + &
+               (dx1)*(1-dx2)*(dx3)*sspgrid%logsspm(:,vv1+1,vv2,vt+1,vv3+1,vm3+1) + &
+               (1-dx1)*(dx2)*(dx3)*sspgrid%logsspm(:,vv1,vv2+1,vt+1,vv3+1,vm3+1) + &
+               (dx1)*(dx2)*(1-dx3)*sspgrid%logsspm(:,vv1+1,vv2+1,vt+1,vv3,vm3+1) + &
+                     dx1*dx2*dx3*sspgrid%logsspm(:,vv1+1,vv2+1,vt+1,vv3+1,vm3+1) 
 
-        tmp1 = (1-dx1)*(1-dx2)*(1-dx3)*sspgrid%logsspm(:,vv1,vv2,vt+1,vv3,vm+1) + &
-               (dx1)*(1-dx2)*(1-dx3)*sspgrid%logsspm(:,vv1+1,vv2,vt+1,vv3,vm+1) + &
-               (1-dx1)*(dx2)*(1-dx3)*sspgrid%logsspm(:,vv1,vv2+1,vt+1,vv3,vm+1) + &
-               (1-dx1)*(1-dx2)*(dx3)*sspgrid%logsspm(:,vv1,vv2,vt+1,vv3+1,vm+1) + &
-               (dx1)*(1-dx2)*(dx3)*sspgrid%logsspm(:,vv1+1,vv2,vt+1,vv3+1,vm+1) + &
-               (1-dx1)*(dx2)*(dx3)*sspgrid%logsspm(:,vv1,vv2+1,vt+1,vv3+1,vm+1) + &
-               (dx1)*(dx2)*(1-dx3)*sspgrid%logsspm(:,vv1+1,vv2+1,vt+1,vv3,vm+1) + &
-               dx1*dx2*dx3*sspgrid%logsspm(:,vv1+1,vv2+1,vt+1,vv3+1,vm+1) 
-
-        tmp2 = (1-dx1)*(1-dx2)*(1-dx3)*sspgrid%logsspm(:,vv1,vv2,vt,vv3,vm+1) + &
-               (dx1)*(1-dx2)*(1-dx3)*sspgrid%logsspm(:,vv1+1,vv2,vt,vv3,vm+1) + &
-               (1-dx1)*(dx2)*(1-dx3)*sspgrid%logsspm(:,vv1,vv2+1,vt,vv3,vm+1) + &
-               (1-dx1)*(1-dx2)*(dx3)*sspgrid%logsspm(:,vv1,vv2,vt,vv3+1,vm+1) + &
-               (dx1)*(1-dx2)*(dx3)*sspgrid%logsspm(:,vv1+1,vv2,vt,vv3+1,vm+1) + &
-               (1-dx1)*(dx2)*(dx3)*sspgrid%logsspm(:,vv1,vv2+1,vt,vv3+1,vm+1) + &
-               (dx1)*(dx2)*(1-dx3)*sspgrid%logsspm(:,vv1+1,vv2+1,vt,vv3,vm+1) + &
-               dx1*dx2*dx3*sspgrid%logsspm(:,vv1+1,vv2+1,vt,vv3+1,vm+1) 
+        tmp2 = (1-dx1)*(1-dx2)*(1-dx3)*sspgrid%logsspm(:,vv1,vv2,vt,vv3,vm3+1) + &
+               (dx1)*(1-dx2)*(1-dx3)*sspgrid%logsspm(:,vv1+1,vv2,vt,vv3,vm3+1) + &
+               (1-dx1)*(dx2)*(1-dx3)*sspgrid%logsspm(:,vv1,vv2+1,vt,vv3,vm3+1) + &
+               (1-dx1)*(1-dx2)*(dx3)*sspgrid%logsspm(:,vv1,vv2,vt,vv3+1,vm3+1) + &
+               (dx1)*(1-dx2)*(dx3)*sspgrid%logsspm(:,vv1+1,vv2,vt,vv3+1,vm3+1) + &
+               (1-dx1)*(dx2)*(dx3)*sspgrid%logsspm(:,vv1,vv2+1,vt,vv3+1,vm3+1) + &
+               (dx1)*(dx2)*(1-dx3)*sspgrid%logsspm(:,vv1+1,vv2+1,vt,vv3,vm3+1) + &
+                     dx1*dx2*dx3*sspgrid%logsspm(:,vv1+1,vv2+1,vt,vv3+1,vm3+1) 
         
-        tmp3 = (1-dx1)*(1-dx2)*(1-dx3)*sspgrid%logsspm(:,vv1,vv2,vt+1,vv3,vm) + &
-               (dx1)*(1-dx2)*(1-dx3)*sspgrid%logsspm(:,vv1+1,vv2,vt+1,vv3,vm) + &
-               (1-dx1)*(dx2)*(1-dx3)*sspgrid%logsspm(:,vv1,vv2+1,vt+1,vv3,vm) + &
-               (1-dx1)*(1-dx2)*(dx3)*sspgrid%logsspm(:,vv1,vv2,vt+1,vv3+1,vm) + &
-               (dx1)*(1-dx2)*(dx3)*sspgrid%logsspm(:,vv1+1,vv2,vt+1,vv3+1,vm) + &
-               (1-dx1)*(dx2)*(dx3)*sspgrid%logsspm(:,vv1,vv2+1,vt+1,vv3+1,vm) + &
-               (dx1)*(dx2)*(1-dx3)*sspgrid%logsspm(:,vv1+1,vv2+1,vt+1,vv3,vm) + &
-               dx1*dx2*dx3*sspgrid%logsspm(:,vv1+1,vv2+1,vt+1,vv3+1,vm) 
+        tmp3 = (1-dx1)*(1-dx2)*(1-dx3)*sspgrid%logsspm(:,vv1,vv2,vt+1,vv3,vm3) + &
+               (dx1)*(1-dx2)*(1-dx3)*sspgrid%logsspm(:,vv1+1,vv2,vt+1,vv3,vm3) + &
+               (1-dx1)*(dx2)*(1-dx3)*sspgrid%logsspm(:,vv1,vv2+1,vt+1,vv3,vm3) + &
+               (1-dx1)*(1-dx2)*(dx3)*sspgrid%logsspm(:,vv1,vv2,vt+1,vv3+1,vm3) + &
+               (dx1)*(1-dx2)*(dx3)*sspgrid%logsspm(:,vv1+1,vv2,vt+1,vv3+1,vm3) + &
+               (1-dx1)*(dx2)*(dx3)*sspgrid%logsspm(:,vv1,vv2+1,vt+1,vv3+1,vm3) + &
+               (dx1)*(dx2)*(1-dx3)*sspgrid%logsspm(:,vv1+1,vv2+1,vt+1,vv3,vm3) + &
+                     dx1*dx2*dx3*sspgrid%logsspm(:,vv1+1,vv2+1,vt+1,vv3+1,vm3) 
 
-        tmp4 = (1-dx1)*(1-dx2)*(1-dx3)*sspgrid%logsspm(:,vv1,vv2,vt,vv3,vm) + &
-               (dx1)*(1-dx2)*(1-dx3)*sspgrid%logsspm(:,vv1+1,vv2,vt,vv3,vm) + &
-               (1-dx1)*(dx2)*(1-dx3)*sspgrid%logsspm(:,vv1,vv2+1,vt,vv3,vm) + &
-               (1-dx1)*(1-dx2)*(dx3)*sspgrid%logsspm(:,vv1,vv2,vt,vv3+1,vm) + &
-               (dx1)*(1-dx2)*(dx3)*sspgrid%logsspm(:,vv1+1,vv2,vt,vv3+1,vm) + &
-               (1-dx1)*(dx2)*(dx3)*sspgrid%logsspm(:,vv1,vv2+1,vt,vv3+1,vm) + &
-               (dx1)*(dx2)*(1-dx3)*sspgrid%logsspm(:,vv1+1,vv2+1,vt,vv3,vm) + &
-               dx1*dx2*dx3*sspgrid%logsspm(:,vv1+1,vv2+1,vt,vv3+1,vm) 
+        tmp4 = (1-dx1)*(1-dx2)*(1-dx3)*sspgrid%logsspm(:,vv1,vv2,vt,vv3,vm3) + &
+               (dx1)*(1-dx2)*(1-dx3)*sspgrid%logsspm(:,vv1+1,vv2,vt,vv3,vm3) + &
+               (1-dx1)*(dx2)*(1-dx3)*sspgrid%logsspm(:,vv1,vv2+1,vt,vv3,vm3) + &
+               (1-dx1)*(1-dx2)*(dx3)*sspgrid%logsspm(:,vv1,vv2,vt,vv3+1,vm3) + &
+               (dx1)*(1-dx2)*(dx3)*sspgrid%logsspm(:,vv1+1,vv2,vt,vv3+1,vm3) + &
+               (1-dx1)*(dx2)*(dx3)*sspgrid%logsspm(:,vv1,vv2+1,vt,vv3+1,vm3) + &
+               (dx1)*(dx2)*(1-dx3)*sspgrid%logsspm(:,vv1+1,vv2+1,vt,vv3,vm3) + &
+                     dx1*dx2*dx3*sspgrid%logsspm(:,vv1+1,vv2+1,vt,vv3+1,vm3) 
   
-        spec = 10**( dt*dm*tmp1 + (1-dt)*dm*tmp2 + &
-             dt*(1-dm)*tmp3 + (1-dt)*(1-dm)*tmp4 )
+        spec = 10**( dt*dm3*tmp1 + (1-dt)*dm3*tmp2 + &
+             dt*(1-dm3)*tmp3 + (1-dt)*(1-dm3)*tmp4 )
 
      ELSE
 

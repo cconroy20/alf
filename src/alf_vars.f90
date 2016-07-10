@@ -46,6 +46,9 @@ MODULE ALF_VARS
   !3 = double power-law + cutoff
   INTEGER :: imf_type=1
 
+  !are the data in the original observed frame?
+  INTEGER :: observed_frame=1
+
   !IMF used to compute the element response functions
   CHARACTER(4), PARAMETER :: atlas_imf='krpa'  !'salp'
 
@@ -94,11 +97,11 @@ MODULE ALF_VARS
   !total number of emission lines
   INTEGER, PARAMETER :: neml = 11
   !number of parameters
-  INTEGER, PARAMETER :: npar = 41
+  INTEGER, PARAMETER :: npar = 42
   !number of ages in the empirical SSP grid
   INTEGER, PARAMETER :: nage = 7
   !number of metallicities in the empirical SSP grid
-  INTEGER, PARAMETER :: nzmet=5,nzmet3=3
+  INTEGER, PARAMETER :: nzmet = 5, nzmet3 = 3
   !number of parameters used when fitting in Powell model
   !or in the super-simple mode (fit_type=2)
   INTEGER, PARAMETER :: npowell = 4
@@ -164,6 +167,10 @@ MODULE ALF_VARS
   !set this environment variable in your .cshrc file
   CHARACTER(250) :: SPECFIT_HOME=''
 
+  !arrays holding the sky emission lines
+  INTEGER, PARAMETER :: nskylines=39324
+  REAL(DP), DIMENSION(nskylines) :: lsky,fsky
+
   !---------------------Physical Constants-----------------------!
   !---------------in cgs units where applicable------------------!
 
@@ -193,7 +200,7 @@ MODULE ALF_VARS
           logfy=-4.0,sigma2=0.0,velz2=0.0,logm7g=-4.0,hotteff=20.0,&
           loghot=-4.0,fy_logage=0.3,logtrans=-4.0,logemline_h=-4.0,&
           logemline_oiii=-4.0,logemline_sii=-4.0,logemline_ni=-4.0,&
-          logemline_nii=-4.0,jitter=1.0,imf3=2.0
+          logemline_nii=-4.0,jitter=1.0,imf3=2.0,logsky=-4.0
      REAL(DP) :: chi2=huge_number
   END TYPE PARAMS
   
@@ -207,18 +214,18 @@ MODULE ALF_VARS
      REAL(DP), DIMENSION(nage)          :: logagegrid
      REAL(DP), DIMENSION(nzmet)         :: logzgrid
      REAL(DP), DIMENSION(nzmet3)        :: logzgrid2     
-     REAL(DP), DIMENSION(nl,nimf,nimf,nage,nzmet)  :: logssp
+     REAL(DP), DIMENSION(nl,nimf,nimf,nage,nzmet)         :: logssp
      REAL(DP), DIMENSION(nl,nimf,nimf,nage,nmcut,nzmet3)  :: logsspm
      REAL(DP), DIMENSION(nimf)          :: imfx1,imfx2
      REAL(DP), DIMENSION(nmcut)         :: imfx3
      REAL(DP), DIMENSION(nl,nhot)       :: hotspec
-     REAL(DP), DIMENSION(nl)            :: atm_trans_h2o,atm_trans_o2,sky_lines
+     REAL(DP), DIMENSION(nl)            :: atm_trans_h2o,atm_trans_o2
      REAL(DP), DIMENSION(nhot)          :: teffarrhot
   END TYPE SSP
 
   !structure for the data
   TYPE TDATA
-     REAL(DP) :: lam=1E6,flx=0.0,err=0.0,wgt=0.0,ires=0.0,lam0=1E6
+     REAL(DP) :: lam=1E6,flx=0.0,err=0.0,wgt=0.0,ires=0.0,lam0=1E6,sky=0.0
   END TYPE TDATA
 
   !define the actual SSP grid to be shared between the routines

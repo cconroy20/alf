@@ -21,25 +21,29 @@ PROGRAM WRITE_A_MODEL
   !instrumental resolution (<10 -> no broadening)
   ires = 5.
 
+  imf_type=1
+
   !initialize the random number generator
   CALL INIT_RANDOM_SEED()
   !compute an array of gaussian deviates
   CALL GASDEV(gdev)
 
-  file = 'model_trans_s10.spec'
-  s2n    = 1E4
-  lmin   = 3800.
-  lmax   = 10000.
-  emnorm = -5.0
-  pos%imf1    = 1.3
-  pos%imf2    = 2.3
+  file = 'model_imf1.spec'
+  s2n      = 1E4
+  lmin     = 3800.
+  lmax     = 10000.
 
   pos%sigma   = 300.
-  pos%logage  = 0.7
-  pos%zh      = -0.5
+  pos%logage  = LOG10(13.5)
+  pos%zh      = 0.0
+  emnorm      = -5.0
+  pos%imf1    = 1.3
+  pos%imf2    = 2.3
+  pos%imf3    = 0.08
+
   pos%feh     = 0.0
-  pos%ah      = 0.00
-  pos%ch      = 0.00
+  pos%ah      = 0.0
+  pos%ch      = 0.0
   pos%nh      = 0.0
   pos%nah     = 0.0
   pos%mgh     = 0.0
@@ -48,10 +52,10 @@ PROGRAM WRITE_A_MODEL
   pos%cah     = 0.0
   pos%tih     = 0.0
   pos%vh      = 0.0
-  pos%crh     = 0.00
-  pos%mnh     = 0.00
-  pos%coh     = 0.00
-  pos%nih     = 0.00
+  pos%crh     = 0.0
+  pos%mnh     = 0.0
+  pos%coh     = 0.0
+  pos%nih     = 0.0
   pos%cuh     = 0.0
   pos%srh     = 0.0
   pos%bah     = 0.0
@@ -59,18 +63,20 @@ PROGRAM WRITE_A_MODEL
   pos%teff    = 0.0
   pos%logfy   = -5.0
   pos%fy_logage = -5.0
-  pos%logtrans  = 0.0
+  pos%logtrans  = -5.0
+  
   pos%sigma2  = 300.
-  pos%velz    = 1000.
+  pos%velz    = 0.0
   pos%velz2   = 0.0
   pos%logm7g  = -5.0
   pos%hotteff = 20.0
   pos%loghot  = -5.0
-  pos%logemline_h=emnorm
-  pos%logemline_oiii=emnorm
-  pos%logemline_sii=emnorm
-  pos%logemline_ni=emnorm
-  pos%logemline_nii=emnorm
+
+  pos%logemline_h    = emnorm
+  pos%logemline_oiii = emnorm
+  pos%logemline_sii  = emnorm
+  pos%logemline_ni   = emnorm
+  pos%logemline_nii  = emnorm
 
   !force a constant instrumental resolution
   !needs to be done this way for setup.f90 to work

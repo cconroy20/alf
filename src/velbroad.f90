@@ -87,8 +87,7 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
 
         tspec = 0.0
         nspec = 0.0
-        tspec(1:n2) = &
-             linterp(LOG(lambda(1:n2)),spec(1:n2),lnlam(1:n2))
+        tspec(1:n2) = linterp(LOG(lambda(1:n2)),spec(1:n2),lnlam(1:n2))
  
         DO i=1,2*grange+1
            psf(i) = 1.d0/SQRT(2.d0*mypi)/psig*EXP(-((i-grange-1)/psig)**2/2.d0)

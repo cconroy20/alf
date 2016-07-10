@@ -5,13 +5,12 @@ SUBROUTINE SETUP()
   USE alf_vars; USE nr, ONLY : locate; USE alf_utils, ONLY : linterp,velbroad
   IMPLICIT NONE
   
-  REAL(DP) :: d1,l1um=1E4,t13=1.3,t23=2.3,m07=0.07,sig0=99.,lamlo,lamhi
+  REAL(DP) :: d1,l1um=1E4,t13=1.3,t23=2.3,sig0=99.,lamlo,lamhi
   REAL(DP), DIMENSION(nimf*nimf) :: tmp
   REAL(DP), DIMENSION(nl) :: dumi,smooth=0.0,lam
   INTEGER :: stat,i,vv,j,k,t,z,ii,shift=100,m
-  INTEGER, PARAMETER :: ntrans=22800, nskylines=39324
+  INTEGER, PARAMETER :: ntrans=22800
   REAL(DP), DIMENSION(ntrans) :: ltrans,ftrans_h2o,ftrans_o2,strans
-  REAL(DP), DIMENSION(nskylines) :: lsky,fsky
   CHARACTER(4), DIMENSION(nzmet) :: charz
   CHARACTER(4), DIMENSION(nmcut) :: charm
   CHARACTER(5), DIMENSION(nage)  :: chart
@@ -166,10 +165,10 @@ SUBROUTINE SETUP()
         DO i=1,nl
            READ(22,*) d1,tmp
            ii=1
-           DO j=1,nimf
-              DO k=1,nimf
+           DO j=1,nimf+nimfoff
+              DO k=1,nimf+nimfoff
                  IF (k.GT.nimfoff.AND.j.GT.nimfoff) THEN
-                    sspgrid%logssp(i,j,k,t,z) = tmp(ii)
+                    sspgrid%logssp(i,j-nimfoff,k-nimfoff,t,z) = tmp(ii)
                  ENDIF
                  ii=ii+1
               ENDDO
@@ -198,8 +197,8 @@ SUBROUTINE SETUP()
               DO i=1,nl
                  READ(22,*) d1,tmp
                  ii=1
-                 DO j=1,16
-                    DO k=1,16
+                 DO j=1,nimf+nimfoff
+                    DO k=1,nimf+nimfoff
                        IF (k.GT.nimfoff.AND.j.GT.nimfoff) THEN
                           sspgrid%logsspm(i,j-nimfoff,k-nimfoff,t,m,z) = tmp(ii)
                        ENDIF
@@ -218,7 +217,7 @@ SUBROUTINE SETUP()
      sspgrid%imfx1(i) = 0.5+REAL(i-1+nimfoff)/5.d0 
   ENDDO
   IF (imf_type.EQ.0.OR.imf_type.EQ.1.OR.imf_type.EQ.3) THEN
-     sspgrid%imfx2(i) = 0.5+REAL(i-1+nimfoff)/5.d0 
+     sspgrid%imfx2 = sspgrid%imfx1
      imfr1 = locate(sspgrid%imfx1,t13+1E-3)
      imfr2 = locate(sspgrid%imfx2,t23+1E-3)
   ELSE IF (imf_type.EQ.2) THEN
@@ -227,11 +226,11 @@ SUBROUTINE SETUP()
      write(*,*) 'error, need to reset nimf=16 for this option'
      STOP
      imfr1 = locate(sspgrid%imfx1,t23+1E-3)
-     imfr2 = locate(sspgrid%imfx2,m07+1E-3)
+     imfr2 = locate(sspgrid%imfx2,imflo+1E-3)
   ENDIF
   IF (imf_type.EQ.3) THEN
      sspgrid%imfx3 = (/0.08,0.10,0.15,0.2,0.25,0.3,0.35,0.4/)
-     imfr3 = locate(sspgrid%imfx3,m07+1E-3)
+     imfr3 = locate(sspgrid%imfx3,imflo+1E-3)
   ENDIF
 
   !-------------------------------------------------------------------------!
@@ -405,13 +404,7 @@ SUBROUTINE SETUP()
   velbroad_simple = 1 
   CALL VELBROAD(lsky,fsky,sig0,lamlo,lamhi,strans)
   velbroad_simple = d1
-
-  sspgrid%sky_lines = MAX(linterp(lsky,fsky,lam),tiny_number)
-  DO i=1,nl
-     IF (lam(i).LT.lsky(1).OR.lam(i).GT.lsky(nskylines)) THEN
-        sspgrid%sky_lines(i) = tiny_number
-     ENDIF
-  ENDDO
+  fsky = fsky / MAXVAL(fsky)
 
   !-------------------------------------------------------------------------!
   !---------smooth the models to the input instrumental resolution----------!

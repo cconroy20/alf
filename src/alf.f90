@@ -40,7 +40,7 @@ PROGRAM ALF
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=1024
   !save the chain outputs to file
-  INTEGER, PARAMETER :: print_mcmc=1
+  INTEGER, PARAMETER :: print_mcmc=0
 
   !start w/ powell minimization?
   INTEGER, PARAMETER  :: dopowell=0
@@ -81,12 +81,21 @@ PROGRAM ALF
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
   fit_type  = 0
-  !dont fit transmission function in cases where the input
-  !spectrum has already been de-redshifted to ~0.0
-  fit_trans = 1
   !type of IMF to fit
   !0=single power-law, 1=double power-law, 2=power-law+cutoff, 3=2pl+ct
   imf_type  = 1
+  !are the data in the original observed frame?
+  observed_frame=0
+
+  !dont fit transmission function in cases where the input
+  !spectrum has already been de-redshifted to ~0.0
+  IF (observed_frame.EQ.0) THEN
+     fit_trans = 0
+     prhi%logtrans = -5.0
+     prhi%logsky   = -5.0
+  ELSE
+     fit_trans = 1
+  ENDIF
 
   !extra smoothing to the transmission spectrum
   !if the input data has been smoothed by a gaussian
@@ -164,6 +173,13 @@ PROGRAM ALF
   !read in the SSPs and bandpass filters
   CALL SETUP()
   lam = sspgrid%lam
+
+  !interpolate the sky emission model onto the observed wavelength grid
+  IF (observed_frame.EQ.1) THEN
+     data(1:datmax)%sky = MAX(linterp(lsky,fsky,data(1:datmax)%lam),0.0)
+  ELSE
+     data%sky = tiny_number
+  ENDIF
 
   !we only compute things up to 500A beyond the input fit region
   nl_fit = MIN(MAX(locate(lam,l2(nlint)+500.0),1),nl)
