@@ -38,10 +38,9 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   pos%srh       = myran()*0.4-0.2
   pos%bah       = myran()*0.4-0.2
   pos%euh       = myran()*0.4-0.2
-  pos%teff      = myran()*80-40
-  pos%imf1      = myran()*0.6-0.3 + 1.3
+  pos%teff      = myran()*80.0-40.
+  pos%imf1      = myran()*1.0-0.3 + 1.3
   IF (imf_type.EQ.0.OR.imf_type.EQ.1.OR.imf_type.EQ.3) THEN
-     !pos%imf2        = myran()*0.6-0.3 + 2.3
      pos%imf2        = myran()*1.5-0.75 + 2.0
   ELSE IF (imf_type.EQ.2) THEN
      pos%imf2        = myran()*0.1 + 0.1

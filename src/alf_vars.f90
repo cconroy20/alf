@@ -24,12 +24,12 @@ MODULE ALF_VARS
   !turn on the use of age-dependent response functions
   INTEGER :: use_age_dep_resp_fcns=1
   !if above is set to 0, fix the response functions to this age (Gyr)
-  REAL(DP), PARAMETER :: fix_age_dep_resp_fcns=10.0
+  REAL(DP) :: fix_age_dep_resp_fcns=10.0
 
   !turn on the use of Z-dependent response functions
   INTEGER :: use_z_dep_resp_fcns=1
   !if above is set to 0, fix the response functions to this [Z/H]
-  REAL(DP), PARAMETER :: fix_z_dep_resp_fcns=0.0
+  REAL(DP) :: fix_z_dep_resp_fcns=0.0
 
   !flag to include transmission spectrum in fitting
   !even if flag is set, only included in full model

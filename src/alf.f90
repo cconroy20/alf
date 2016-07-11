@@ -34,11 +34,11 @@ PROGRAM ALF
   !number of chain steps to print to file
   INTEGER, PARAMETER :: nmcmc=100
   !inverse sampling of the walkers for printing
-  INTEGER, PARAMETER :: nsample=1
+  INTEGER, PARAMETER :: nsample=16
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=50000
+  INTEGER, PARAMETER :: nburn=10000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=1024
+  INTEGER, PARAMETER :: nwalkers=512 !1024
   !save the chain outputs to file
   INTEGER, PARAMETER :: print_mcmc=0
 
@@ -85,7 +85,7 @@ PROGRAM ALF
   !0=single power-law, 1=double power-law, 2=power-law+cutoff, 3=2pl+ct
   imf_type  = 1
   !are the data in the original observed frame?
-  observed_frame=0
+  observed_frame = 0
 
   !dont fit transmission function in cases where the input
   !spectrum has already been de-redshifted to ~0.0
