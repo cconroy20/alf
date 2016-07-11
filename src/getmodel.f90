@@ -321,8 +321,9 @@ SUBROUTINE GETMODEL(pos,spec,mw)
            !NB: velz2 is a *relative* shift between continuum and lines
            ve   = emlines(i) / (1+pos%velz2/clight*1E5)
            lsig = MAX(ve*pos%sigma2/clight*1E5,1.0) !min dlam=1.0A
-           spec = spec + emnormall(i) * &
-                EXP(-(sspgrid%lam-ve)**2/lsig**2/2.0)
+           !maybe this should be spec*(1+emission lines)
+           !otherwise the em lines change when the continuum changes...
+           spec = spec + emnormall(i) * EXP(-(sspgrid%lam-ve)**2/lsig**2/2.0)
         ENDDO
      ENDIF
 

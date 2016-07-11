@@ -15,13 +15,13 @@ SUBROUTINE READ_DATA(file)
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
-  CALL GETENV('SPECFIT_HOME',SPECFIT_HOME)
-  IF (TRIM(SPECFIT_HOME).EQ.'') THEN
-     WRITE(*,*) 'ALF ERROR: SPECFIT_HOME environment variable not set!'
+  CALL GETENV('ALF_HOME',ALF_HOME)
+  IF (TRIM(ALF_HOME).EQ.'') THEN
+     WRITE(*,*) 'ALF ERROR: ALF_HOME environment variable not set!'
      STOP
   ENDIF
 
-  OPEN(10,FILE=TRIM(SPECFIT_HOME)//'/indata/'//TRIM(file)//'.dat',&
+  OPEN(10,FILE=TRIM(ALF_HOME)//'/indata/'//TRIM(file)//'.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
      WRITE(*,*) 'READ_DATA ERROR: file not found'

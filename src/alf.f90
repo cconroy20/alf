@@ -360,7 +360,7 @@ PROGRAM ALF
 
      IF (print_mcmc.EQ.1) THEN
         !open output file
-        OPEN(12,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
+        OPEN(12,FILE=TRIM(ALF_HOME)//TRIM(OUTDIR)//&
              TRIM(file)//TRIM(tag)//'.mcmc',STATUS='REPLACE')
      ENDIF
      
@@ -503,7 +503,7 @@ PROGRAM ALF
      !--------------------Write results to file----------------------!
      !---------------------------------------------------------------!
      
-     OPEN(13,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
+     OPEN(13,FILE=TRIM(ALF_HOME)//TRIM(OUTDIR)//&
           TRIM(file)//TRIM(tag)//'.bestspec',STATUS='REPLACE')
      CALL STR2ARR(1,bpos,bposarr)
      !NB: the model written to file has the lowest chi^2
@@ -512,7 +512,7 @@ PROGRAM ALF
  
      !write best-fit parameters
      !here, "best-fit" is the mean of the posterior distributions
-     OPEN(14,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
+     OPEN(14,FILE=TRIM(ALF_HOME)//TRIM(OUTDIR)//&
           TRIM(file)//TRIM(tag)//'.bestp',STATUS='REPLACE')
      WRITE(14,'("#  Elapsed Time: ",F6.2," hr")') time2/3600.
      WRITE(14,'("#   dopowell  =",I2)') dopowell
@@ -532,7 +532,7 @@ PROGRAM ALF
      CLOSE(14)
 
      !write one sigma errors on parameters
-     OPEN(15,FILE=TRIM(SPECFIT_HOME)//TRIM(OUTDIR)//&
+     OPEN(15,FILE=TRIM(ALF_HOME)//TRIM(OUTDIR)//&
           TRIM(file)//TRIM(tag)//'.errp',STATUS='REPLACE')
      WRITE(15,'(ES12.5,1x,F11.4,99(F9.4,1x))') 0.0, &
           SQRT( runtot(3,:)/runtot(1,:) - runtot(2,:)**2/runtot(1,:)**2 )

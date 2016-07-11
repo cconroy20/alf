@@ -20,9 +20,9 @@ SUBROUTINE SETUP()
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
-  CALL GETENV('SPECFIT_HOME',SPECFIT_HOME)
-  IF (TRIM(SPECFIT_HOME).EQ.'') THEN
-     WRITE(*,*) 'ALF ERROR: SPECFIT_HOME environment variable not set!'
+  CALL GETENV('ALF_HOME',ALF_HOME)
+  IF (TRIM(ALF_HOME).EQ.'') THEN
+     WRITE(*,*) 'ALF ERROR: ALF_HOME environment variable not set!'
      STOP
   ENDIF
 
@@ -53,7 +53,7 @@ SUBROUTINE SETUP()
   ENDIF
 
   !read in filter transmission curves
-  OPEN(15,FILE=TRIM(SPECFIT_HOME)//'/infiles/filters.dat',&
+  OPEN(15,FILE=TRIM(ALF_HOME)//'/infiles/filters.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SETUP ERROR: filter curves not found'
@@ -76,7 +76,7 @@ SUBROUTINE SETUP()
 
      DO j=1,nage_rfcn
 
-        OPEN(20,FILE=TRIM(SPECFIT_HOME)//'/infiles/atlas_ssp_'//&
+        OPEN(20,FILE=TRIM(ALF_HOME)//'/infiles/atlas_ssp_'//&
              chart2(j)//'_Z'//charz(k)//'.abund.'//atlas_imf//'.s100',&
              STATUS='OLD',iostat=stat,ACTION='READ')
         IF (stat.NE.0) THEN
@@ -152,7 +152,7 @@ SUBROUTINE SETUP()
   !read in two parameter IMF models
   DO z=1,nzmet
      DO t=1,nage
-        OPEN(22,FILE=TRIM(SPECFIT_HOME)//'/infiles/VCJ_v1_'//chart(t)//'_Z'//&
+        OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v1_'//chart(t)//'_Z'//&
              charz(z)//'.ssp.imf_'//TRIM(imfstr)//'.s100',STATUS='OLD',&
              iostat=stat,ACTION='READ')
         IF (stat.NE.0) THEN
@@ -183,7 +183,7 @@ SUBROUTINE SETUP()
      DO z=1,nzmet3
         DO m=1,nmcut
            DO t=1,nage
-              OPEN(22,FILE=TRIM(SPECFIT_HOME)//'/infiles/VCJ_v1_mcut'//&
+              OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v1_mcut'//&
                    charm(m)//'_'//chart(t)//'_Z'//charz(z+2)//&
                    '.ssp.imf_'//TRIM(imfstr)//'.s100',STATUS='OLD',&
                    iostat=stat,ACTION='READ')
@@ -238,7 +238,7 @@ SUBROUTINE SETUP()
   !-------------------------------------------------------------------------!
 
   !read in hot stars 
-  OPEN(24,FILE=TRIM(SPECFIT_HOME)//'/infiles/ap00t08000g4.00at12.spec.s100',&
+  OPEN(24,FILE=TRIM(ALF_HOME)//'/infiles/ap00t08000g4.00at12.spec.s100',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   DO i=1,nstart-1
      READ(24,*) 
@@ -247,7 +247,7 @@ SUBROUTINE SETUP()
      READ(24,*) d1,sspgrid%hotspec(i,1)
   ENDDO
   CLOSE(24)
-  OPEN(25,FILE=TRIM(SPECFIT_HOME)//'/infiles/ap00t10000g4.00at12.spec.s100',&
+  OPEN(25,FILE=TRIM(ALF_HOME)//'/infiles/ap00t10000g4.00at12.spec.s100',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   DO i=1,nstart-1
      READ(25,*) 
@@ -256,7 +256,7 @@ SUBROUTINE SETUP()
      READ(25,*) d1,sspgrid%hotspec(i,2)
   ENDDO
   CLOSE(25)
-  OPEN(26,FILE=TRIM(SPECFIT_HOME)//'/infiles/ap00t20000g4.00at12.spec.s100',&
+  OPEN(26,FILE=TRIM(ALF_HOME)//'/infiles/ap00t20000g4.00at12.spec.s100',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   DO i=1,nstart-1
      READ(26,*) 
@@ -265,7 +265,7 @@ SUBROUTINE SETUP()
      READ(26,*) d1,sspgrid%hotspec(i,3)
   ENDDO
   CLOSE(26)
-  OPEN(27,FILE=TRIM(SPECFIT_HOME)//'/infiles/ap00t30000g4.00at12.spec.s100',&
+  OPEN(27,FILE=TRIM(ALF_HOME)//'/infiles/ap00t30000g4.00at12.spec.s100',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   DO i=1,nstart-1
      READ(27,*) 
@@ -287,7 +287,7 @@ SUBROUTINE SETUP()
   sspgrid%teffarrhot = (/8.0,10.,20.,30./)
 
   !read in M7III star, normalized to a 13 Gyr SSP at 1um
-  OPEN(23,FILE=TRIM(SPECFIT_HOME)//'/infiles/M7III.spec.s100',&
+  OPEN(23,FILE=TRIM(ALF_HOME)//'/infiles/M7III.spec.s100',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   DO i=1,nstart-1
      READ(23,*) 
@@ -324,7 +324,7 @@ SUBROUTINE SETUP()
      !NB: this hasn't been used in years!
      WRITE(*,*) 'WARNING: this option has not been tested in a long time!!'
 
-     OPEN(28,FILE=TRIM(SPECFIT_HOME)//'/infiles/temperrfcn.s350',&
+     OPEN(28,FILE=TRIM(ALF_HOME)//'/infiles/temperrfcn.s350',&
           STATUS='OLD',iostat=stat,ACTION='READ')
      IF (stat.NE.0) THEN
         WRITE(*,*) 'SETUP ERROR: template error function not found'
@@ -344,7 +344,7 @@ SUBROUTINE SETUP()
   !------------set up the atm transmission function & sky lines-------------!
   !-------------------------------------------------------------------------!
 
-  OPEN(29,FILE=TRIM(SPECFIT_HOME)//'/infiles/atm_trans.dat',&
+  OPEN(29,FILE=TRIM(ALF_HOME)//'/infiles/atm_trans.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SETUP ERROR: atm trans function not found'
@@ -387,7 +387,7 @@ SUBROUTINE SETUP()
   ENDDO
 
   !sky lines
-  OPEN(29,FILE=TRIM(SPECFIT_HOME)//'/infiles/radiance_lines.dat',&
+  OPEN(29,FILE=TRIM(ALF_HOME)//'/infiles/radiance_lines.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SETUP ERROR: sky lines file not found'

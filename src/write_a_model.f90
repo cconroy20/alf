@@ -123,8 +123,7 @@ PROGRAM WRITE_A_MODEL
   ENDIF
   
   !write model spectrum to file
-  OPEN(12,FILE=TRIM(SPECFIT_HOME)//'models/'//&
-       TRIM(file),STATUS='REPLACE')
+  OPEN(12,FILE=TRIM(ALF_HOME)//'models'//TRIM(file),STATUS='REPLACE')
   DO i=1,nl
      IF (lam(i).GE.lmin.AND.lam(i).LE.lmax) THEN
         WRITE(12,'(F10.3,2ES12.4,2x,2F4.1)') lam(i),mspec(i),err(i),1.0,ires

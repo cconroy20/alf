@@ -52,6 +52,11 @@ MODULE ALF_VARS
   !IMF used to compute the element response functions
   CHARACTER(4), PARAMETER :: atlas_imf='krpa'  !'salp'
 
+  !extra smoothing (km/s) of the transmission spectrum
+  !if the input spectrum has been smoothed by an amount more than
+  !the instrumental resolution, set the parameter below to that value
+  REAL(DP) :: smooth_trans=0.0
+
   !--------------------------------------------------------------!
   !  the options below have not been tested/used in a long time  !
   !  and so are effectively deprecated                           !
@@ -72,10 +77,6 @@ MODULE ALF_VARS
   !rather than the proper convolution in log_lambda space
   !don't turn this on - the "correct" version is just as fast
   INTEGER :: velbroad_simple=0
-  !extra smoothing (km/s) of the transmission spectrum
-  !if the input spectrum has been smoothed by an amount more than
-  !the instrumental resolution, set the parameter below to that value
-  REAL(DP) :: smooth_trans=0.0
 
   !--------------------------------------------------------------!
   !    the parameters below should not be modified unless you    !
@@ -165,7 +166,7 @@ MODULE ALF_VARS
 
   !variable pointing to the specfit home dir
   !set this environment variable in your .cshrc file
-  CHARACTER(250) :: SPECFIT_HOME=''
+  CHARACTER(250) :: ALF_HOME=''
 
   !arrays holding the sky emission lines
   INTEGER, PARAMETER :: nskylines=39324
