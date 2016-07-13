@@ -5,15 +5,22 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   !that if the user defines a prior limit that is **different from
   !the default parameter set**, then that value overrides the defaults below
 
-  USE alf_vars; USE alf_utils, ONLY : myran
+  USE alf_vars; USE alf_utils, ONLY : myran,str2arr
   IMPLICIT NONE
 
   TYPE(PARAMS), INTENT(inout) :: pos,prlo,prhi
-  TYPE(PARAMS) :: test
+  TYPE(PARAMS) :: test,tprlo,tprhi
+  INTEGER :: i
   REAL(DP), OPTIONAL :: velz
+  REAL(DP), DIMENSION(npar) :: prloarr1=0.,prhiarr1=0.,tprloarr1=0.
+  REAL(DP), DIMENSION(npar) :: testarr1=0.,posarr1=0.,tprhiarr1=0.
+
+  !---------------------------------------------------------------!
+  !---------------------------------------------------------------!
+
+  tprlo = prlo
+  tprhi = prhi
   
-  !---------------------------------------------------------------!
-  !---------------------------------------------------------------!
 
   !setup the first position
   pos%logage    = myran()*0.4+0.6
@@ -164,12 +171,12 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prhi%teff.EQ.test%teff) prhi%teff       = 50.0
   IF (prhi%imf1.EQ.test%imf1) prhi%imf1       = 3.5
   IF (imf_type.EQ.0.OR.imf_type.EQ.1.OR.imf_type.EQ.3) THEN
-     IF (prhi%imf2.EQ.test%imf2) prhi%imf2       = 3.5
+     IF (prhi%imf2.EQ.test%imf2) prhi%imf2    = 3.5
   ELSE IF (imf_type.EQ.2) THEN
-     IF (prhi%imf2.EQ.test%imf2) prhi%imf2       = 0.5
+     IF (prhi%imf2.EQ.test%imf2) prhi%imf2    = 0.5
   ENDIF
-  IF (prhi%imf3.EQ.test%imf3) prhi%imf3       = 0.4
-  IF (prhi%logfy.EQ.test%logfy) prhi%logfy    = -0.7
+  IF (prhi%imf3.EQ.test%imf3) prhi%imf3         = 0.4
+  IF (prhi%logfy.EQ.test%logfy) prhi%logfy      = -0.7
   IF (prhi%fy_logage.EQ.test%fy_logage) prhi%fy_logage = LOG10(3.0)
   IF (prhi%logm7g.EQ.test%logm7g) prhi%logm7g   = -1.0
   IF (prhi%hotteff.EQ.test%hotteff) prhi%hotteff= 30.0
@@ -188,33 +195,33 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prhi%logsky.EQ.test%logsky) prhi%logsky    = 2.0
 
 
-  !reset the initial parameters if the priors have been altered
-  !this should be done for every parameter to ensure that the altered parameters
-  !do not fall outside of the prior range.  In practice only these params are 
-  !frequently altered.
-  IF (prhi%logtrans.NE.test%logtrans.OR.prlo%logtrans.NE.test%logtrans) &
-       pos%logtrans = myran()*(prhi%logtrans-prlo%logtrans)+prlo%logtrans
-  IF (prhi%logsky.NE.test%logsky.OR.prlo%logsky.NE.test%logsky) &
-       pos%logsky = myran()*(prhi%logsky-prlo%logsky)+prlo%logsky
-  IF (prhi%logfy.NE.test%logfy.OR.prlo%logfy.NE.test%logfy) &
-       pos%logfy = myran()*(prhi%logfy-prlo%logfy)+prlo%logfy
-  IF (prhi%loghot.NE.test%loghot.OR.prlo%loghot.NE.test%loghot) &
-       pos%loghot = myran()*(prhi%loghot-prlo%loghot)+prlo%loghot
-  IF (prhi%logm7g.NE.test%logm7g.OR.prlo%logm7g.NE.test%logm7g) &
-       pos%logm7g = myran()*(prhi%logm7g-prlo%logm7g)+prlo%logm7g
-  IF (prhi%logemline_h.NE.test%logemline_h.OR.prlo%logemline_h.NE.test%logemline_h) &
-       pos%logemline_h = myran()*(prhi%logemline_h-prlo%logemline_h)+prlo%logemline_h
-  IF (prhi%logemline_oiii.NE.test%logemline_oiii.OR.prlo%logemline_oiii.NE.test%logemline_oiii) &
-       pos%logemline_oiii = myran()*(prhi%logemline_oiii-prlo%logemline_oiii)+prlo%logemline_oiii
-  IF (prhi%logemline_sii.NE.test%logemline_sii.OR.prlo%logemline_sii.NE.test%logemline_sii) &
-       pos%logemline_sii = myran()*(prhi%logemline_sii-prlo%logemline_sii)+prlo%logemline_sii
-  IF (prhi%logemline_ni.NE.test%logemline_ni.OR.prlo%logemline_ni.NE.test%logemline_ni) &
-       pos%logemline_ni = myran()*(prhi%logemline_ni-prlo%logemline_ni)+prlo%logemline_ni
-  IF (prhi%logemline_nii.NE.test%logemline_nii.OR.prlo%logemline_nii.NE.test%logemline_nii) &
-       pos%logemline_nii = myran()*(prhi%logemline_nii-prlo%logemline_nii)+prlo%logemline_nii
-  IF (prhi%zh.NE.test%zh.OR.prlo%zh.NE.test%zh) &
-       pos%zh = myran()*(prhi%zh-prlo%zh)+prlo%zh
- IF (prhi%teff.NE.test%teff.OR.prlo%teff.NE.test%teff) &
-       pos%teff = myran()*(prhi%teff-prlo%teff)+prlo%teff
+  !--------------------------------------------------------------------------!
+  !-------reset the initial parameters if the priors have been altered-------!
+  !--------------------------------------------------------------------------!
+
+  !str->arr
+  CALL STR2ARR(1,tprlo,tprloarr1)   
+  CALL STR2ARR(1,tprhi,tprhiarr1)
+  CALL STR2ARR(1,prlo,prloarr1)   
+  CALL STR2ARR(1,prhi,prhiarr1)
+  CALL STR2ARR(1,test,testarr1)
+  CALL STR2ARR(1,pos,posarr1)
+
+  !test the priors and if the priors have been altered then 
+  !re-initialize the parameters within the prior range
+  !NB: why not simply always initialize the starting position this way?
+  DO i=3,npar
+     IF (prhiarr1(i).LE.prloarr1(i)) THEN
+        WRITE(*,*) 'SET_PINIT_PRIORS ERROR: prhi < prlo!', i
+        STOP
+     ENDIF
+     IF (tprhiarr1(i).NE.testarr1(i).OR.tprloarr1(i).NE.testarr1(i)) THEN
+        posarr1(i) = myran()*(prhiarr1(i)-prloarr1(i)) + prloarr1(i)
+     ENDIF
+  ENDDO
+
+  !arr->str
+  CALL STR2ARR(2,pos,posarr1)
+
 
 END SUBROUTINE SET_PINIT_PRIORS

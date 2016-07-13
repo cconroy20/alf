@@ -38,7 +38,7 @@ PROGRAM ALF
   !length of chain burn-in
   INTEGER, PARAMETER :: nburn=10000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=512 !1024
+  INTEGER, PARAMETER :: nwalkers=1024
   !save the chain outputs to file
   INTEGER, PARAMETER :: print_mcmc=0
 
@@ -82,31 +82,27 @@ PROGRAM ALF
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
   fit_type  = 0
   !type of IMF to fit
-  !0=single power-law, 1=double power-law, 2=power-law+cutoff, 3=2pl+ct
+  !0=1PL, 1=2PL, 2=1PL+cutoff, 3=2PL+cutoff, 4=5-pt PL
   imf_type  = 1
   !are the data in the original observed frame?
-  observed_frame = 0
+  observed_frame = 1
 
   !dont fit transmission function in cases where the input
   !spectrum has already been de-redshifted to ~0.0
   IF (observed_frame.EQ.0) THEN
      fit_trans = 0
      prhi%logtrans = -5.0
-     prhi%logsky   = -5.0
+     prhi%logsky   = -5.0 
   ELSE
      fit_trans = 1
+     !extra smoothing to the transmission spectrum
+     !if the input data has been smoothed by a gaussian
+     !in velocity space, set the parameter below to that extra smoothing
+     smooth_trans = 0.0
   ENDIF
 
-  !extra smoothing to the transmission spectrum
-  !if the input data has been smoothed by a gaussian
-  !in velocity space, set the parameter below to that extra smoothing
-  smooth_trans = 0.0
-  
-  !limit the range of [Z/H] to be very small
-  !prlo%zh   = -0.01
-  !prhi%zh   =  0.01
   !set low upper prior limits to kill off these parameters
-  !prhi%logm7g   = -5.0
+  prhi%logm7g   = -5.0
   !prhi%loghot   = -5.0
   !prhi%logtrans = -5.0
   !prhi%logfy    = -5.0
@@ -298,7 +294,6 @@ PROGRAM ALF
         write(*,*) msto
         CALL GETMODEL(tpos,mspecmw,mw=1)     !get spectrum for MW IMF
         CALL GETM2L(msto,lam,mspecmw,tpos,m2lmw,mw=1) !compute M/L_MW
-        !CALL GETM2L(msto,lam,10**sspgrid%logfkrpa(:,nage,nzmet-1),tpos,m2lmw,mw=1)
         write(*,'(2F7.2)') m2lmw(1:2)
         CALL GETMODEL(tpos,mspec)
         CALL GETM2L(msto,lam,mspec,tpos,m2l) ! compute M/L

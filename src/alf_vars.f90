@@ -201,7 +201,8 @@ MODULE ALF_VARS
           logfy=-4.0,sigma2=0.0,velz2=0.0,logm7g=-4.0,hotteff=20.0,&
           loghot=-4.0,fy_logage=0.3,logtrans=-4.0,logemline_h=-4.0,&
           logemline_oiii=-4.0,logemline_sii=-4.0,logemline_ni=-4.0,&
-          logemline_nii=-4.0,jitter=1.0,imf3=2.0,logsky=-4.0
+          logemline_nii=-4.0,jitter=1.0,imf3=2.0,logsky=-4.0,imf4=0.0,&
+          imf5=0.0
      REAL(DP) :: chi2=huge_number
   END TYPE PARAMS
   
