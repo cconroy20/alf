@@ -87,9 +87,10 @@ MODULE ALF_UTILS
   END INTERFACE
 
   INTERFACE
-     FUNCTION GETMASS(mlo,mto,imf1,imf2,imf3)
+     FUNCTION GETMASS(mlo,mto,imf1,imf2,imfup,imf3,imf4)
        USE alf_vars
-       REAL(DP), INTENT(in) :: mlo,mto,imf1,imf2,imf3
+       REAL(DP), INTENT(in) :: mlo,mto,imf1,imf2,imfup
+       REAL(DP), INTENT(in), OPTIONAL :: imf3,imf4
        REAL(DP) :: getmass
      END FUNCTION GETMASS
   END INTERFACE

@@ -13,10 +13,11 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   INTEGER, OPTIONAL :: mw
   REAL(DP), DIMENSION(nl) :: tmp,tmpr,yspec,tmp1,tmp2,tmp3,tmp4
   INTEGER  :: vt,vy,vv1,vv2,vv3,i,vr,vm,vh,vm2,vm3
-  REAL(DP) :: dt,fy,dx1,dx2,dx3,lsig,ve,dr,dm,dm2,dm3,dh,dy
+  REAL(DP) :: dt,fy,dx1,dx2,dx3,lsig,ve,dr,dm,dm2,dm3,dh,dy,tmps
   REAL(DP), DIMENSION(nl)   :: tmp_ltrans,tmp_ftrans_h2o,tmp_ftrans_o2
   REAL(DP), DIMENSION(neml) :: emnormall=1.0
-  
+  REAL(DP), DIMENSION(nimfnp) :: imfw=0.0  
+
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
@@ -101,7 +102,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
         spec = 10**( dt*dm3*tmp1 + (1-dt)*dm3*tmp2 + &
              dt*(1-dm3)*tmp3 + (1-dt)*(1-dm3)*tmp4 )
 
-     ELSE
+     ELSE IF (imf_type.EQ.0.OR.imf_type.EQ.1.OR.imf_type.EQ.2) THEN
 
         tmp1 = (1-dx1)*(1-dx2)*sspgrid%logssp(:,vv1,vv2,vt+1,vm+1)+&
              dx1*(1-dx2)*sspgrid%logssp(:,vv1+1,vv2,vt+1,vm+1)+&
@@ -125,6 +126,47 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      
         spec = 10**( dt*dm*tmp1 + (1-dt)*dm*tmp2 + &
              dt*(1-dm)*tmp3 + (1-dt)*(1-dm)*tmp4 )
+
+     ELSE IF (imf_type.EQ.4) THEN
+
+        tmps = 10**pos%imf1+10**pos%imf2+10**pos%imf3+10**pos%imf4
+        IF (tmps.GT.1.0) THEN 
+           WRITE(*,*) 'GETMODEL ERROR: sum(imf1-4)>1!'
+           STOP
+        ENDIF
+        
+        imfw(1) = 10**pos%imf1
+        imfw(2) = 10**pos%imf2 / 2.
+        imfw(3) = 10**pos%imf2 / 2.
+        imfw(4) = 10**pos%imf3 / 2.
+        imfw(5) = 10**pos%imf3 / 2.
+        imfw(6) = 10**pos%imf4 / 2.
+        imfw(7) = 10**pos%imf4 / 2.
+        imfw(8) = (1-tmps) / 2.
+        imfw(9) = (1-tmps) / 2.
+
+        tmp1 = 0.0
+        DO i=1,nimfnp
+           tmp1 = tmp1 + imfw(i)*sspgrid%sspnp(:,i,vt+1,vm+1)
+        ENDDO
+
+        tmp2 = 0.0
+        DO i=1,nimfnp
+           tmp2 = tmp2 + imfw(i)*sspgrid%sspnp(:,i,vt,vm+1)
+        ENDDO
+ 
+        tmp3 = 0.0
+        DO i=1,nimfnp
+           tmp3 = tmp3 + imfw(i)*sspgrid%sspnp(:,i,vt+1,vm)
+        ENDDO
+        
+        tmp4 = 0.0
+        DO i=1,nimfnp
+           tmp4 = tmp4 + imfw(i)*sspgrid%sspnp(:,i,vt,vm)
+        ENDDO
+        
+        spec = 10**( dt*dm*LOG10(tmp1) + (1-dt)*dm*LOG10(tmp2) + &
+             dt*(1-dm)*LOG10(tmp3) + (1-dt)*(1-dm)*LOG10(tmp4) )
 
      ENDIF
 

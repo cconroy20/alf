@@ -98,7 +98,7 @@ MODULE ALF_VARS
   !total number of emission lines
   INTEGER, PARAMETER :: neml = 11
   !number of parameters
-  INTEGER, PARAMETER :: npar = 42
+  INTEGER, PARAMETER :: npar = 43
   !number of ages in the empirical SSP grid
   INTEGER, PARAMETER :: nage = 7
   !number of metallicities in the empirical SSP grid
@@ -109,7 +109,7 @@ MODULE ALF_VARS
   !number of ages in the response functions
   INTEGER, PARAMETER :: nage_rfcn = 5
   !number of IMF values in the SSP grid
-  INTEGER, PARAMETER :: nimf  = 15, nmcut = 8, nimfoff=1
+  INTEGER, PARAMETER :: nimf  = 15, nmcut = 8, nimfoff=1, nimfnp=9
   !max degree of polynomial used for continuum fitting
   INTEGER, PARAMETER :: npolymax = 20
   !wavelength interval used to determine polynomial degree
@@ -201,8 +201,7 @@ MODULE ALF_VARS
           logfy=-4.0,sigma2=0.0,velz2=0.0,logm7g=-4.0,hotteff=20.0,&
           loghot=-4.0,fy_logage=0.3,logtrans=-4.0,logemline_h=-4.0,&
           logemline_oiii=-4.0,logemline_sii=-4.0,logemline_ni=-4.0,&
-          logemline_nii=-4.0,jitter=1.0,imf3=2.0,logsky=-4.0,imf4=0.0,&
-          imf5=0.0
+          logemline_nii=-4.0,jitter=1.0,imf3=2.0,logsky=-4.0,imf4=0.0
      REAL(DP) :: chi2=huge_number
   END TYPE PARAMS
   
@@ -216,8 +215,9 @@ MODULE ALF_VARS
      REAL(DP), DIMENSION(nage)          :: logagegrid
      REAL(DP), DIMENSION(nzmet)         :: logzgrid
      REAL(DP), DIMENSION(nzmet3)        :: logzgrid2     
-     REAL(DP), DIMENSION(nl,nimf,nimf,nage,nzmet)         :: logssp
-     REAL(DP), DIMENSION(nl,nimf,nimf,nage,nmcut,nzmet3)  :: logsspm
+     REAL(DP), DIMENSION(nl,nimf,nimf,nage,nzmet)        :: logssp
+     REAL(DP), DIMENSION(nl,nimf,nimf,nage,nmcut,nzmet3) :: logsspm
+     REAL(DP), DIMENSION(nl,nimfnp,nage,nzmet)           :: sspnp
      REAL(DP), DIMENSION(nimf)          :: imfx1,imfx2
      REAL(DP), DIMENSION(nmcut)         :: imfx3
      REAL(DP), DIMENSION(nl,nhot)       :: hotspec

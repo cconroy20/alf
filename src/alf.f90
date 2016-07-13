@@ -32,15 +32,15 @@ PROGRAM ALF
   IMPLICIT NONE
 
   !number of chain steps to print to file
-  INTEGER, PARAMETER :: nmcmc=100
+  INTEGER, PARAMETER :: nmcmc=1000
   !inverse sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=16
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=10000
+  INTEGER, PARAMETER :: nburn=50000
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=1024
   !save the chain outputs to file
-  INTEGER, PARAMETER :: print_mcmc=0
+  INTEGER, PARAMETER :: print_mcmc=1
 
   !start w/ powell minimization?
   INTEGER, PARAMETER  :: dopowell=0
@@ -83,9 +83,9 @@ PROGRAM ALF
   fit_type  = 0
   !type of IMF to fit
   !0=1PL, 1=2PL, 2=1PL+cutoff, 3=2PL+cutoff, 4=5-pt PL
-  imf_type  = 1
+  imf_type  = 4
   !are the data in the original observed frame?
-  observed_frame = 1
+  observed_frame = 0
 
   !dont fit transmission function in cases where the input
   !spectrum has already been de-redshifted to ~0.0
@@ -102,7 +102,7 @@ PROGRAM ALF
   ENDIF
 
   !set low upper prior limits to kill off these parameters
-  prhi%logm7g   = -5.0
+  !prhi%logm7g   = -5.0
   !prhi%loghot   = -5.0
   !prhi%logtrans = -5.0
   !prhi%logfy    = -5.0
@@ -387,7 +387,13 @@ PROGRAM ALF
         lp_emcee_in(j) = -0.5*func(pos_emcee_in(:, j))
    
         IF (-2.*lp_emcee_in(j).GE.huge_number/2.) THEN
-           WRITE(*,*) 'ALF ERROR: initial lnp out of bounds!'
+           WRITE(*,*) 'ALF ERROR: initial lnp out of bounds!', j
+           DO i=1,npar
+              IF (pos_emcee_in(i,j).GT.prhiarr(i).OR.&
+                   pos_emcee_in(i,j).LT.prloarr(i)) THEN
+                 write(*,*) i, pos_emcee_in(i,j), prloarr(i), prhiarr(i)
+              ENDIF
+           ENDDO
            STOP
         ENDIF
 

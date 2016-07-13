@@ -11,6 +11,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   TYPE(PARAMS), INTENT(inout) :: pos,prlo,prhi
   TYPE(PARAMS) :: test,tprlo,tprhi
   INTEGER :: i
+  REAL(DP) :: tmps
   REAL(DP), OPTIONAL :: velz
   REAL(DP), DIMENSION(npar) :: prloarr1=0.,prhiarr1=0.,tprloarr1=0.
   REAL(DP), DIMENSION(npar) :: testarr1=0.,posarr1=0.,tprhiarr1=0.
@@ -46,13 +47,6 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   pos%bah       = myran()*0.4-0.2
   pos%euh       = myran()*0.4-0.2
   pos%teff      = myran()*80.0-40.
-  pos%imf1      = myran()*1.0-0.3 + 1.3
-  IF (imf_type.EQ.0.OR.imf_type.EQ.1.OR.imf_type.EQ.3) THEN
-     pos%imf2        = myran()*1.5-0.75 + 2.0
-  ELSE IF (imf_type.EQ.2) THEN
-     pos%imf2        = myran()*0.1 + 0.1
-  ENDIF
-  pos%imf3           = myran()*0.1 + 0.1
   pos%logfy          = myran()*1-4
   pos%fy_logage      = myran()*0.3
   pos%logm7g         = myran()*1-4
@@ -70,6 +64,33 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   pos%logemline_sii  = myran()*2-4
   pos%jitter         = myran()*0.5+0.75
   pos%logsky         = myran()*2-4
+
+  IF (imf_type.LE.3) THEN
+     pos%imf1      = myran()*1.0-0.3 + 1.3
+     pos%imf3      = myran()*0.1 + 0.1
+  ELSE
+     pos%imf1      = myran()*1-1.5
+     pos%imf3      = myran()*1-1.5
+  ENDIF
+  IF (imf_type.EQ.0.OR.imf_type.EQ.1.OR.imf_type.EQ.3) THEN
+     pos%imf2        = myran()*1.5-0.75 + 2.0
+  ELSE IF (imf_type.EQ.2) THEN
+     pos%imf2        = myran()*0.1 + 0.1
+  ELSE IF (imf_type.EQ.4) THEN
+     pos%imf2      = myran()*1-1.5
+  ENDIF
+  pos%imf4         = myran()*1-1.5
+
+  IF (imf_type.EQ.4) THEN
+     !check that the sum of the first four components is not >=1
+     tmps = 10**pos%imf1+10**pos%imf2+10**pos%imf3+10**pos%imf4
+     IF (tmps.GE.1.0) THEN
+        pos%imf1 = pos%imf1 - LOG10(tmps*1.2)
+        pos%imf2 = pos%imf2 - LOG10(tmps*1.2)
+        pos%imf3 = pos%imf3 - LOG10(tmps*1.2)
+        pos%imf4 = pos%imf4 - LOG10(tmps*1.2)
+     ENDIF
+  ENDIF
 
   IF (PRESENT(velz)) THEN
      IF (ABS(pos%velz).LE.tiny_number) THEN
@@ -117,13 +138,6 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prlo%bah.EQ.test%bah) prlo%bah          = -0.6
   IF (prlo%euh.EQ.test%euh) prlo%euh          = -0.6
   IF (prlo%teff.EQ.test%teff) prlo%teff       = -50.0
-  IF (prlo%imf1.EQ.test%imf1) prlo%imf1       = 0.5
-  IF (imf_type.EQ.0.OR.imf_type.EQ.1.OR.imf_type.EQ.3) THEN
-     IF (prlo%imf2.EQ.test%imf2) prlo%imf2    = 0.5
-  ELSE IF (imf_type.EQ.2) THEN
-     IF (prlo%imf2.EQ.test%imf2) prlo%imf2    = 0.08
-  ENDIF
-  IF (prlo%imf3.EQ.test%imf3) prlo%imf3         = 0.08
   IF (prlo%logfy.EQ.test%logfy) prlo%logfy      = -6.0
   IF (prlo%fy_logage.EQ.test%fy_logage) prlo%fy_logage = LOG10(0.5)
   IF (prlo%logm7g.EQ.test%logm7g) prlo%logm7g   = -6.0
@@ -142,7 +156,23 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prlo%jitter.EQ.test%jitter) prlo%jitter    = 0.1
   IF (prlo%logsky.EQ.test%logsky) prlo%logsky    = -6.0
 
- 
+  IF (imf_type.LE.3) THEN
+     IF (prlo%imf1.EQ.test%imf1) prlo%imf1       = 0.5
+     IF (prlo%imf3.EQ.test%imf3) prlo%imf3       = 0.08
+  ELSE
+     IF (prlo%imf1.EQ.test%imf1) prlo%imf1    = -6.0
+     IF (prlo%imf3.EQ.test%imf3) prlo%imf3    = -6.0
+  ENDIF
+  IF (imf_type.EQ.0.OR.imf_type.EQ.1.OR.imf_type.EQ.3) THEN
+     IF (prlo%imf2.EQ.test%imf2) prlo%imf2    = 0.5
+  ELSE IF (imf_type.EQ.2) THEN
+     IF (prlo%imf2.EQ.test%imf2) prlo%imf2    = 0.08
+  ELSE IF (imf_type.EQ.4) THEN
+     IF (prlo%imf2.EQ.test%imf2) prlo%imf2    = -6.0
+  ENDIF
+  IF (prlo%imf4.EQ.test%imf4) prlo%imf4    = -6.0
+
+
   !priors (high)
   !if you change the prior on the age, also change the max 
   !age allowed in getmodel
@@ -169,13 +199,6 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prhi%bah.EQ.test%bah) prhi%bah          = 0.5
   IF (prhi%euh.EQ.test%euh) prhi%euh          = 0.5
   IF (prhi%teff.EQ.test%teff) prhi%teff       = 50.0
-  IF (prhi%imf1.EQ.test%imf1) prhi%imf1       = 3.5
-  IF (imf_type.EQ.0.OR.imf_type.EQ.1.OR.imf_type.EQ.3) THEN
-     IF (prhi%imf2.EQ.test%imf2) prhi%imf2    = 3.5
-  ELSE IF (imf_type.EQ.2) THEN
-     IF (prhi%imf2.EQ.test%imf2) prhi%imf2    = 0.5
-  ENDIF
-  IF (prhi%imf3.EQ.test%imf3) prhi%imf3         = 0.4
   IF (prhi%logfy.EQ.test%logfy) prhi%logfy      = -0.7
   IF (prhi%fy_logage.EQ.test%fy_logage) prhi%fy_logage = LOG10(3.0)
   IF (prhi%logm7g.EQ.test%logm7g) prhi%logm7g   = -1.0
@@ -194,6 +217,21 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prhi%jitter.EQ.test%jitter) prhi%jitter    = 10.0
   IF (prhi%logsky.EQ.test%logsky) prhi%logsky    = 2.0
 
+  IF (imf_type.LE.3) THEN
+     IF (prhi%imf1.EQ.test%imf1) prhi%imf1       = 3.5
+     IF (prhi%imf3.EQ.test%imf3) prhi%imf3       = 0.4
+  ELSE
+     IF (prhi%imf1.EQ.test%imf1) prhi%imf1 = 0.0
+     IF (prhi%imf3.EQ.test%imf3) prhi%imf3 = 0.0
+  ENDIF
+  IF (imf_type.EQ.0.OR.imf_type.EQ.1.OR.imf_type.EQ.3) THEN
+     IF (prhi%imf2.EQ.test%imf2) prhi%imf2    = 3.5
+  ELSE IF (imf_type.EQ.2) THEN
+     IF (prhi%imf2.EQ.test%imf2) prhi%imf2    = 0.5
+  ELSE IF (imf_type.EQ.4) THEN
+     IF (prhi%imf2.EQ.test%imf2) prhi%imf2    = 0.0
+  ENDIF
+  IF (prhi%imf4.EQ.test%imf4) prhi%imf4 = 0.0
 
   !--------------------------------------------------------------------------!
   !-------reset the initial parameters if the priors have been altered-------!
@@ -222,6 +260,18 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
 
   !arr->str
   CALL STR2ARR(2,pos,posarr1)
+
+ IF (imf_type.EQ.4) THEN
+     !check that the sum of the first four components is not >=1
+     tmps = 10**pos%imf1+10**pos%imf2+10**pos%imf3+10**pos%imf4
+     IF (tmps.GE.1.0) THEN
+        pos%imf1 = MAX(pos%imf1 - LOG10(tmps*1.2),prlo%imf1)
+        pos%imf2 = MAX(pos%imf2 - LOG10(tmps*1.2),prlo%imf2)
+        pos%imf3 = MAX(pos%imf3 - LOG10(tmps*1.2),prlo%imf3)
+        pos%imf4 = MAX(pos%imf4 - LOG10(tmps*1.2),prlo%imf4)
+     ENDIF
+  ENDIF
+
 
 
 END SUBROUTINE SET_PINIT_PRIORS

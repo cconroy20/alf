@@ -21,17 +21,17 @@ PROGRAM WRITE_A_MODEL
   !instrumental resolution (<10 -> no broadening)
   ires = 5.
 
-  imf_type=1
+  imf_type = 1
 
   !initialize the random number generator
   CALL INIT_RANDOM_SEED()
   !compute an array of gaussian deviates
   CALL GASDEV(gdev)
 
-  file = 'model_imf1.spec'
-  s2n      = 1E4
-  lmin     = 3800.
-  lmax     = 10000.
+  file = 'model_imf1_krpa.spec'
+  s2n  = 1E4
+  lmin = 3800.
+  lmax = 10000.
 
   pos%sigma   = 300.
   pos%logage  = LOG10(13.5)
@@ -40,6 +40,13 @@ PROGRAM WRITE_A_MODEL
   pos%imf1    = 1.3
   pos%imf2    = 2.3
   pos%imf3    = 0.08
+
+  IF (imf_type.EQ.4) THEN
+     pos%imf1 = -0.23 !-0.7
+     pos%imf2 = -0.66 !-0.7
+     pos%imf3 = -0.95 !-0.7
+     pos%imf4 = -1.29 !-0.7
+  ENDIF
 
   pos%feh     = 0.0
   pos%ah      = 0.0
@@ -123,7 +130,7 @@ PROGRAM WRITE_A_MODEL
   ENDIF
   
   !write model spectrum to file
-  OPEN(12,FILE=TRIM(ALF_HOME)//'models'//TRIM(file),STATUS='REPLACE')
+  OPEN(12,FILE=TRIM(ALF_HOME)//'models/'//TRIM(file),STATUS='REPLACE')
   DO i=1,nl
      IF (lam(i).GE.lmin.AND.lam(i).LE.lmax) THEN
         WRITE(12,'(F10.3,2ES12.4,2x,2F4.1)') lam(i),mspec(i),err(i),1.0,ires

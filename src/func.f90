@@ -12,7 +12,7 @@ FUNCTION FUNC(nposarr,spec,funit)
   REAL(DP), DIMENSION(:), INTENT(inout) :: nposarr
   REAL(DP), DIMENSION(nl), OPTIONAL :: spec
   INTEGER, INTENT(in), OPTIONAL :: funit
-  REAL(DP) :: func,pr,tchi2,ml,tl1,tl2,oneplusz
+  REAL(DP) :: func,pr,tchi2,ml,tl1,tl2,oneplusz,tmps
   REAL(DP), DIMENSION(nl)   :: mspec
   REAL(DP), DIMENSION(ndat) :: mflx,poly,zmspec
   REAL(DP), DIMENSION(npar) :: tposarr=0.0
@@ -50,6 +50,12 @@ FUNCTION FUNC(nposarr,spec,funit)
      IF (fit_type.EQ.1.AND.i.GT.nparsimp) CYCLE
      IF ( (nposarr(i).GT.prhiarr(i)).OR.(nposarr(i).LT.prloarr(i)) ) pr=0.0
   ENDDO
+
+  !constraint that the sum of the IMF weights cannot be >1
+  IF (imf_type.EQ.4.AND.fit_type.EQ.0) THEN
+     tmps = 10**npos%imf1+10**npos%imf2+10**npos%imf3+10**npos%imf4
+     IF (tmps.GT.1.0) pr = 0.0
+  ENDIF
 
   !only compute the model and chi2 if the priors are >0.0
   IF (pr.GT.tiny_number) THEN

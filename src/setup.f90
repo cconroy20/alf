@@ -31,10 +31,11 @@ SUBROUTINE SETUP()
   chart  = (/'t01.0','t03.0','t05.0','t07.0','t09.0','t11.0','t13.5'/)
   chart2 = (/'t01','t03','t05','t09','t13'/)
 
-  IF (imf_type.EQ.0.OR.imf_type.EQ.1.OR.imf_type.EQ.3) THEN
+  !this is the IMF flag for the "main" models
+  IF (imf_type.EQ.2) THEN
+     imfstr = 'varymcut_varyx'     
+  ELSE
      imfstr = 'varydoublex'
-  ELSE IF (imf_type.EQ.2) THEN
-     imfstr = 'varymcut_varyx'
   ENDIF
 
   sspgrid%logssp  = tiny_number
@@ -211,6 +212,32 @@ SUBROUTINE SETUP()
         ENDDO
      ENDDO
   ENDIF
+
+  !read in non-parametric IMF models
+  IF (imf_type.EQ.4) THEN 
+     DO z=1,nzmet
+        DO t=1,nage
+           OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v1_'//&
+                chart(t)//'_Z'//charz(z)//'.ssp.imf_nonpara_flat'//&
+                '.s100',STATUS='OLD',iostat=stat,ACTION='READ')
+           IF (stat.NE.0) THEN
+              WRITE(*,*) 'SETUP ERROR: non-para IMF models not found'
+              STOP
+           ENDIF
+           DO i=1,nstart-1
+              READ(22,*) 
+           ENDDO
+           DO i=1,nl
+              READ(22,*) d1,sspgrid%sspnp(i,1,t,z),sspgrid%sspnp(i,2,t,z),&
+                   sspgrid%sspnp(i,3,t,z),sspgrid%sspnp(i,4,t,z),&
+                   sspgrid%sspnp(i,5,t,z),sspgrid%sspnp(i,6,t,z),&
+                   sspgrid%sspnp(i,7,t,z),sspgrid%sspnp(i,8,t,z),&
+                   sspgrid%sspnp(i,9,t,z)
+           ENDDO
+        ENDDO
+     ENDDO
+  ENDIF
+
 
   !values of IMF parameters at the grid points
   DO i=1,nimf
@@ -418,6 +445,7 @@ SUBROUTINE SETUP()
      smooth = linterp(data(1:datmax)%lam,data(1:datmax)%ires,sspgrid%lam)
      smooth = MIN(MAX(smooth,0.0),MAXVAL(data(1:datmax)%ires))
 
+     !smooth the response functions
      DO k=1,nzmet
         DO j=1,nage_rfcn
            CALL VELBROAD(lam,sspgrid%solar(:,j,k),sig0,lamlo,lamhi,smooth)
@@ -462,6 +490,7 @@ SUBROUTINE SETUP()
 
      CALL VELBROAD(lam,sspgrid%m7g,sig0,lamlo,lamhi,smooth)
 
+     !smooth the standard two-part power-law IMF models
      DO z=1,nzmet
         DO t=1,nage
            DO j=1,nimf
@@ -472,6 +501,7 @@ SUBROUTINE SETUP()
         ENDDO
      ENDDO
 
+     !smooth the 3-part IMF models
      IF (imf_type.EQ.3) THEN
         DO z=1,nzmet3
            DO m=1,nmcut
@@ -482,6 +512,17 @@ SUBROUTINE SETUP()
                             sig0,lamlo,lamhi,smooth)
                     ENDDO
                  ENDDO
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDIF
+
+     !smooth the non-parametric IMF models
+     IF (imf_type.EQ.4) THEN
+        DO z=1,nzmet
+           DO t=1,nage
+              DO j=1,nimfnp
+                 CALL VELBROAD(lam,sspgrid%sspnp(:,j,t,z),sig0,lamlo,lamhi,smooth)
               ENDDO
            ENDDO
         ENDDO
