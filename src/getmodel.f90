@@ -5,7 +5,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   !to force the IMF to be of the MW (Kroupa 2001) form
 
   USE alf_vars; USE nr, ONLY : locate
-  USE alf_utils, ONLY : velbroad, add_response,linterp
+  USE alf_utils, ONLY : velbroad, add_response,linterp,getmass
   IMPLICIT NONE
 
   TYPE(PARAMS), INTENT(in) :: pos
@@ -13,7 +13,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   INTEGER, OPTIONAL :: mw
   REAL(DP), DIMENSION(nl) :: tmp,tmpr,yspec,tmp1,tmp2,tmp3,tmp4
   INTEGER  :: vt,vy,vv1,vv2,vv3,i,vr,vm,vh,vm2,vm3
-  REAL(DP) :: dt,fy,dx1,dx2,dx3,lsig,ve,dr,dm,dm2,dm3,dh,dy,tmps
+  REAL(DP) :: dt,fy,dx1,dx2,dx3,lsig,ve,dr,dm,dm2,dm3,dh,dy,tmps,inorm,mass,msto
   REAL(DP), DIMENSION(nl)   :: tmp_ltrans,tmp_ftrans_h2o,tmp_ftrans_o2
   REAL(DP), DIMENSION(neml) :: emnormall=1.0
   REAL(DP), DIMENSION(nimfnp) :: imfw=0.0  
@@ -136,15 +136,15 @@ SUBROUTINE GETMODEL(pos,spec,mw)
         ENDIF
         
         imfw(1) = 10**pos%imf1
-        imfw(2) = 10**pos%imf2 / 2.
-        imfw(3) = 10**pos%imf2 / 2.
-        imfw(4) = 10**pos%imf3 / 2.
-        imfw(5) = 10**pos%imf3 / 2.
-        imfw(6) = 10**pos%imf4 / 2.
-        imfw(7) = 10**pos%imf4 / 2.
-        imfw(8) = (1-tmps) / 2.
-        imfw(9) = (1-tmps) / 2.
-
+        imfw(2) = 10**pos%imf2
+        imfw(3) = 10**pos%imf2
+        imfw(4) = 10**pos%imf3
+        imfw(5) = 10**pos%imf3
+        imfw(6) = 10**pos%imf4
+        imfw(7) = 10**pos%imf4
+        imfw(8) = (1-tmps)
+        imfw(9) = (1-tmps)
+       
         tmp1 = 0.0
         DO i=1,nimfnp
            tmp1 = tmp1 + imfw(i)*sspgrid%sspnp(:,i,vt+1,vm+1)
@@ -167,6 +167,13 @@ SUBROUTINE GETMODEL(pos,spec,mw)
         
         spec = 10**( dt*dm*LOG10(tmp1) + (1-dt)*dm*LOG10(tmp2) + &
              dt*(1-dm)*LOG10(tmp3) + (1-dt)*(1-dm)*LOG10(tmp4) )
+
+        !get the IMF normalization
+        msto = MAX(MIN(10**(msto_t0+msto_t1*pos%logage) * &
+                (msto_z0+msto_z1*pos%zh+msto_z2*pos%zh**2),3.0),0.75)
+        mass = getmass(imflo,msto,pos%imf1,pos%imf2,krpa_imf3,pos%imf3,pos%imf4,inorm)
+ 
+        spec = spec / inorm
 
      ENDIF
 

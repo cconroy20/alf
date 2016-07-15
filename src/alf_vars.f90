@@ -57,6 +57,10 @@ MODULE ALF_VARS
   !the instrumental resolution, set the parameter below to that value
   REAL(DP) :: smooth_trans=0.0
 
+  !flag used to tell the code if we are fitting in powell mode or not
+  !this is set internally in the code 
+  INTEGER :: powell_fitting = 0
+
   !--------------------------------------------------------------!
   !  the options below have not been tested/used in a long time  !
   !  and so are effectively deprecated                           !
@@ -93,7 +97,7 @@ MODULE ALF_VARS
   INTEGER :: nl_fit=nl
   !(max) number of wavelength intervals
   INTEGER, PARAMETER :: nlint_max = 10
-  !actual number of wavelength intervals, set at run time
+  !actual number of wavelength intervals, determined at run time
   INTEGER :: nlint = 0
   !total number of emission lines
   INTEGER, PARAMETER :: neml = 11
@@ -135,6 +139,9 @@ MODULE ALF_VARS
   REAL(DP), PARAMETER :: msto_t0=0.33250847,msto_t1=-0.29560944
   REAL(DP), PARAMETER :: msto_z0=0.95402521,msto_z1=0.21944863,&
        msto_z2=0.070565820
+  INTEGER, PARAMETER :: nimfnp5=5
+  !mass boundaries for non-para IMF (starting at imflo, and ending at imfhi)
+  REAL(DP), DIMENSION(nimfnp5) :: mbin_nimf = (/0.2,0.4,0.6,0.8,1.0/)
 
   !----------Setup a common block of arrays and vars-------------!
 
@@ -142,15 +149,13 @@ MODULE ALF_VARS
   INTEGER :: datmax=0
   !index in lam array at 7000A
   INTEGER :: lam7=1
-  !flag used to tell the code if we are fitting in powell mode or not
-  INTEGER :: powell_fitting=0
   !indices for the fiducial IMF (set in setup.f90)
   INTEGER :: imfr1=1,imfr2=1,imfr3=1
 
   !common array for filters
-  REAL(DP), DIMENSION(nl,nfil) :: filters=0.0
+  REAL(DP), DIMENSION(nl,nfil)   :: filters=0.0
   !common array for wavelength intervals
-  REAL(DP), DIMENSION(nlint_max)   :: l1=0.,l2=0.
+  REAL(DP), DIMENSION(nlint_max) :: l1=0.,l2=0.
   !arrays containing the upper and lower prior limits
   REAL(DP), DIMENSION(npar) :: prloarr=0.,prhiarr=0.
 
@@ -169,7 +174,7 @@ MODULE ALF_VARS
   CHARACTER(250) :: ALF_HOME=''
 
   !arrays holding the sky emission lines
-  INTEGER, PARAMETER :: nskylines=39324
+  INTEGER, PARAMETER :: nskylines = 39324
   REAL(DP), DIMENSION(nskylines) :: lsky,fsky
 
   !---------------------Physical Constants-----------------------!

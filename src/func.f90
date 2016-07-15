@@ -151,6 +151,7 @@ FUNCTION FUNC(nposarr,spec,funit)
      func = func - 2*LOG(pr)
   ENDIF
 
+
   !for testing purposes
   IF (1.EQ.0) THEN
      IF (powell_fitting.EQ.1) THEN

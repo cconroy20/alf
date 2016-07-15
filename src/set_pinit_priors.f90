@@ -253,8 +253,12 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
         WRITE(*,*) 'SET_PINIT_PRIORS ERROR: prhi < prlo!', i
         STOP
      ENDIF
+     !reset the initial parameters randomly within the prior range
+     !if both the initial priors have changed *and* the position is outside
+     !of the new priors
      IF (tprhiarr1(i).NE.testarr1(i).OR.tprloarr1(i).NE.testarr1(i)) THEN
-        posarr1(i) = myran()*(prhiarr1(i)-prloarr1(i)) + prloarr1(i)
+        IF (posarr1(i).GE.prhiarr1(i).OR.posarr1(i).LE.prloarr1(i)) &
+             posarr1(i) = myran()*(prhiarr1(i)-prloarr1(i)) + prloarr1(i)
      ENDIF
   ENDDO
 
@@ -262,7 +266,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   CALL STR2ARR(2,pos,posarr1)
 
  IF (imf_type.EQ.4) THEN
-     !check that the sum of the first four components is not >=1
+     !check that the sum of the first four components is not >=1 (again)
      tmps = 10**pos%imf1+10**pos%imf2+10**pos%imf3+10**pos%imf4
      IF (tmps.GE.1.0) THEN
         pos%imf1 = MAX(pos%imf1 - LOG10(tmps*1.2),prlo%imf1)

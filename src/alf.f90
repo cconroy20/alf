@@ -34,7 +34,7 @@ PROGRAM ALF
   !number of chain steps to print to file
   INTEGER, PARAMETER :: nmcmc=1000
   !inverse sampling of the walkers for printing
-  INTEGER, PARAMETER :: nsample=16
+  INTEGER, PARAMETER :: nsample=32
   !length of chain burn-in
   INTEGER, PARAMETER :: nburn=50000
   !number of walkers
@@ -445,14 +445,16 @@ PROGRAM ALF
            opos%logemline_sii  = -8.0
            opos%logemline_ni   = -8.0
 
-           !compute the main sequence turn-off mass
-           !NB: Need to update this for other metallicities
-           msto = 10**(msto_t0+msto_t1*opos%logage) * &
-                ( msto_z0 + msto_z1*opos%zh + msto_z2*opos%zh**2 )
-           msto = MAX(MIN(msto,3.0),0.75)
-           CALL GETMODEL(opos,mspecmw,mw=1)     !get spectrum for MW IMF
-           CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
-           
+           !compute the main sequence turn-off mass vs. t and Z
+           msto = MAX(MIN(10**(msto_t0+msto_t1*opos%logage) * &
+                (msto_z0+msto_z1*opos%zh+msto_z2*opos%zh**2),3.0),0.75)
+         !  IF (imf_type.EQ.4) THEN
+         !     m2lmw = 1.0  !MW IMF not supported for imf_type=4
+         !  ELSE
+              CALL GETMODEL(opos,mspecmw,mw=1)     !get spectrum for MW IMF
+              CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
+         !  ENDIF
+
            IF (mwimf.EQ.0) THEN
               CALL GETMODEL(opos,mspec)
               CALL GETM2L(msto,lam,mspec,opos,m2l) ! compute M/L

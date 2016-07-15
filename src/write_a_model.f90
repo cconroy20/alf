@@ -21,14 +21,14 @@ PROGRAM WRITE_A_MODEL
   !instrumental resolution (<10 -> no broadening)
   ires = 5.
 
-  imf_type = 1
+  imf_type = 4
 
   !initialize the random number generator
   CALL INIT_RANDOM_SEED()
   !compute an array of gaussian deviates
   CALL GASDEV(gdev)
 
-  file = 'model_imf1_krpa.spec'
+  file = 'model_imf4_krpa.spec'
   s2n  = 1E4
   lmin = 3800.
   lmax = 10000.
@@ -42,10 +42,10 @@ PROGRAM WRITE_A_MODEL
   pos%imf3    = 0.08
 
   IF (imf_type.EQ.4) THEN
-     pos%imf1 = -0.23 !-0.7
-     pos%imf2 = -0.66 !-0.7
-     pos%imf3 = -0.95 !-0.7
-     pos%imf4 = -1.29 !-0.7
+     pos%imf1 = -0.320 !-0.659
+     pos%imf2 = -0.546 !-0.539
+     pos%imf3 = -0.868 !-0.626
+     pos%imf4 = -1.185 !-0.794
   ENDIF
 
   pos%feh     = 0.0
