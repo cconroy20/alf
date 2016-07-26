@@ -24,7 +24,6 @@ FUNCTION GETMASS(mlo,mto,imf1,imf2,imfup,imf3,imf4,timfnorm)
 
   getmass  = 0.d0
 
-  !IF (imf_type.LE.3) THEN
   IF (.NOT.PRESENT(imf4)) THEN
 
      !normalize the weights so that 1 Msun formed at t=0

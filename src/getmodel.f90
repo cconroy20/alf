@@ -131,7 +131,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
 
         tmps = 10**pos%imf1+10**pos%imf2+10**pos%imf3+10**pos%imf4
         IF (tmps.GT.1.0) THEN 
-           WRITE(*,*) 'GETMODEL ERROR: sum(imf1-4)>1!'
+           WRITE(*,*) 'GETMODEL ERROR: sum(imf1-4)>1!',tmps
            STOP
         ENDIF
         
@@ -142,37 +142,27 @@ SUBROUTINE GETMODEL(pos,spec,mw)
         imfw(5) = 10**pos%imf3
         imfw(6) = 10**pos%imf4
         imfw(7) = 10**pos%imf4
-        imfw(8) = (1-tmps)
-        imfw(9) = (1-tmps)
+        imfw(8) = (1.-tmps)
+        imfw(9) = (1.-tmps)
        
         tmp1 = 0.0
-        DO i=1,nimfnp
-           tmp1 = tmp1 + imfw(i)*sspgrid%sspnp(:,i,vt+1,vm+1)
-        ENDDO
-
         tmp2 = 0.0
-        DO i=1,nimfnp
-           tmp2 = tmp2 + imfw(i)*sspgrid%sspnp(:,i,vt,vm+1)
-        ENDDO
- 
         tmp3 = 0.0
-        DO i=1,nimfnp
-           tmp3 = tmp3 + imfw(i)*sspgrid%sspnp(:,i,vt+1,vm)
-        ENDDO
-        
         tmp4 = 0.0
         DO i=1,nimfnp
+           tmp1 = tmp1 + imfw(i)*sspgrid%sspnp(:,i,vt+1,vm+1)
+           tmp2 = tmp2 + imfw(i)*sspgrid%sspnp(:,i,vt,vm+1)
+           tmp3 = tmp3 + imfw(i)*sspgrid%sspnp(:,i,vt+1,vm)
            tmp4 = tmp4 + imfw(i)*sspgrid%sspnp(:,i,vt,vm)
         ENDDO
-        
+
         spec = 10**( dt*dm*LOG10(tmp1) + (1-dt)*dm*LOG10(tmp2) + &
              dt*(1-dm)*LOG10(tmp3) + (1-dt)*(1-dm)*LOG10(tmp4) )
 
-        !get the IMF normalization
+        !apply the IMF normalization
         msto = MAX(MIN(10**(msto_t0+msto_t1*pos%logage) * &
                 (msto_z0+msto_z1*pos%zh+msto_z2*pos%zh**2),3.0),0.75)
         mass = getmass(imflo,msto,pos%imf1,pos%imf2,krpa_imf3,pos%imf3,pos%imf4,inorm)
- 
         spec = spec / inorm
 
      ENDIF

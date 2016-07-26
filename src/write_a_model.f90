@@ -19,7 +19,7 @@ PROGRAM WRITE_A_MODEL
   !-----------------------------------------------------------!
 
   !instrumental resolution (<10 -> no broadening)
-  ires = 5.
+  ires = 1. !100.
 
   imf_type = 4
 
@@ -28,13 +28,13 @@ PROGRAM WRITE_A_MODEL
   !compute an array of gaussian deviates
   CALL GASDEV(gdev)
 
-  file = 'model_imf4_krpa.spec'
-  s2n  = 1E4
+  file = 'model_imf4_krpa_t10.0.dat'
+  s2n  = 400.
   lmin = 3800.
-  lmax = 10000.
+  lmax = 11000.
 
   pos%sigma   = 300.
-  pos%logage  = LOG10(13.5)
+  pos%logage  = LOG10(10.0)
   pos%zh      = 0.0
   emnorm      = -5.0
   pos%imf1    = 1.3
@@ -42,10 +42,16 @@ PROGRAM WRITE_A_MODEL
   pos%imf3    = 0.08
 
   IF (imf_type.EQ.4) THEN
-     pos%imf1 = -0.320 !-0.659
-     pos%imf2 = -0.546 !-0.539
-     pos%imf3 = -0.868 !-0.626
-     pos%imf4 = -1.185 !-0.794
+     !Kroupa
+     pos%imf1 = -0.320
+     pos%imf2 = -0.546
+     pos%imf3 = -0.868
+     pos%imf4 = -1.185
+     !Salpeter
+   !  pos%imf1 = -0.1408
+   !  pos%imf2 = -0.7273
+   !  pos%imf3 = -1.2799
+   !  pos%imf4 = -1.6273
   ENDIF
 
   pos%feh     = 0.0
@@ -133,7 +139,8 @@ PROGRAM WRITE_A_MODEL
   OPEN(12,FILE=TRIM(ALF_HOME)//'models/'//TRIM(file),STATUS='REPLACE')
   DO i=1,nl
      IF (lam(i).GE.lmin.AND.lam(i).LE.lmax) THEN
-        WRITE(12,'(F10.3,2ES12.4,2x,2F4.1)') lam(i),mspec(i),err(i),1.0,ires
+        WRITE(12,'(F10.3,2ES12.4,2x,F4.1,2x,F7.2)') &
+             lam(i),mspec(i),err(i),1.0,ires
      ENDIF
   ENDDO
   CLOSE(12)

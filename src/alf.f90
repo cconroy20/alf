@@ -34,11 +34,11 @@ PROGRAM ALF
   !number of chain steps to print to file
   INTEGER, PARAMETER :: nmcmc=1000
   !inverse sampling of the walkers for printing
-  INTEGER, PARAMETER :: nsample=32
+  INTEGER, PARAMETER :: nsample=8
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=50000
+  INTEGER, PARAMETER :: nburn=30000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=1024
+  INTEGER, PARAMETER :: nwalkers=1024 !1024
   !save the chain outputs to file
   INTEGER, PARAMETER :: print_mcmc=1
 
@@ -100,6 +100,15 @@ PROGRAM ALF
      !in velocity space, set the parameter below to that extra smoothing
      smooth_trans = 0.0
   ENDIF
+
+  prhi%imf1 = -0.320+0.1
+  prlo%imf1 = -0.320-0.1
+  prhi%imf2 = -0.546+0.1
+  prlo%imf2 = -0.546-0.1
+  prhi%imf3 = -0.868+0.1
+  prlo%imf3 = -0.868-0.1
+  prhi%imf4 = -1.185+0.1
+  prlo%imf4 = -1.185-0.1
 
   !set low upper prior limits to kill off these parameters
   !prhi%logm7g   = -5.0
@@ -193,7 +202,6 @@ PROGRAM ALF
   !fold the masked regions into the errors
   data%err = MIN(data%err*data%wgt, huge_number)
 
-
   !set initial params, step sizes, and prior ranges
   CALL SET_PINIT_PRIORS(opos,prlo,prhi)
   !convert the structures into their equivalent arrays
@@ -254,6 +262,29 @@ PROGRAM ALF
         STOP
      ENDIF
 
+     !for testing
+     IF (1.EQ.1) THEN
+        tpos%logage = 1.0
+        tpos%logfy  = -5.0
+        tpos%logm7g = -5.0
+        tpos%loghot = -5.0
+        tpos%imf1 = 1.3
+        tpos%imf2 = 2.3
+        tpos%imf3 = 0.235
+        tpos%zh   = 0.0
+        tpos%teff = 0.0
+        msto = 10**(msto_t0+msto_t1*tpos%logage) * &
+             ( msto_z0 + msto_z1*tpos%zh + msto_z2*tpos%zh**2 )
+        CALL GETMODEL(tpos,mspecmw,mw=1)     !get spectrum for MW IMF
+        CALL GETM2L(msto,lam,mspecmw,tpos,m2lmw,mw=1) !compute M/L_MW
+        write(*,'(2F7.2)') m2lmw(1:2)
+        CALL GETMODEL(tpos,mspec)
+        CALL GETM2L(msto,lam,mspec,tpos,m2l) ! compute M/L
+        write(*,'(2F7.2)') m2l(1:2)
+        STOP
+     ENDIF
+
+
      !make an initial estimate of the redshift
      !we do this to help Powell minimization
      WRITE(*,*) ' Finding redshift...'
@@ -271,36 +302,6 @@ PROGRAM ALF
      !initialize the random number generator
      !why is this being done here again?
      CALL INIT_RANDOM_SEED()
-
-     !for testing
-     IF (1.EQ.0) THEN
-        tpos%logemline_h    = -8.0
-        tpos%logemline_oiii = -8.0
-        tpos%logemline_nii  = -8.0
-        tpos%logemline_sii  = -8.0
-        tpos%logemline_ni   = -8.0
-        tpos%logage = 1.0
-        tpos%logfy  = -5.0
-        tpos%logm7g = -5.0
-        tpos%loghot = -5.0
-        tpos%imf1 = 2.54
-        tpos%imf2 = 3.40
-        tpos%imf3 = 0.235
-        tpos%zh   = 0.0
-        tpos%teff = 0.0
-        msto = 10**(msto_t0+msto_t1*opos%logage) * &
-             ( msto_z0 + msto_z1*opos%zh + msto_z2*opos%zh**2 )
-        msto = MAX(MIN(msto,3.0),0.75)
-        write(*,*) msto
-        CALL GETMODEL(tpos,mspecmw,mw=1)     !get spectrum for MW IMF
-        CALL GETM2L(msto,lam,mspecmw,tpos,m2lmw,mw=1) !compute M/L_MW
-        write(*,'(2F7.2)') m2lmw(1:2)
-        CALL GETMODEL(tpos,mspec)
-        CALL GETM2L(msto,lam,mspec,tpos,m2l) ! compute M/L
-        write(*,'(2F7.2)') m2l(1:2)
-        STOP
-     ENDIF
-
 
      !---------------------------------------------------------------!
      !---------------------Powell minimization-----------------------!
@@ -352,13 +353,10 @@ PROGRAM ALF
 
      WRITE(*,*) ' Running emcee...'
      CALL FLUSH()
-
-     IF (print_mcmc.EQ.1) THEN
-        !open output file
-        OPEN(12,FILE=TRIM(ALF_HOME)//TRIM(OUTDIR)//&
-             TRIM(file)//TRIM(tag)//'.mcmc',STATUS='REPLACE')
-     ENDIF
      
+     !CALL STR2ARR(1,prlo,prloarr)   !str->arr
+     !CALL STR2ARR(1,prhi,prhiarr)   !str->arr
+
      !initialize the walkers
      DO j=1,nwalkers
         
@@ -386,12 +384,13 @@ PROGRAM ALF
         !Compute the initial log-probability for each walker
         lp_emcee_in(j) = -0.5*func(pos_emcee_in(:, j))
    
+        !check for initialization errors
         IF (-2.*lp_emcee_in(j).GE.huge_number/2.) THEN
            WRITE(*,*) 'ALF ERROR: initial lnp out of bounds!', j
            DO i=1,npar
               IF (pos_emcee_in(i,j).GT.prhiarr(i).OR.&
                    pos_emcee_in(i,j).LT.prloarr(i)) THEN
-                 write(*,*) i, pos_emcee_in(i,j), prloarr(i), prhiarr(i)
+                 WRITE(*,*) i, pos_emcee_in(i,j), prloarr(i), prhiarr(i)
               ENDIF
            ENDDO
            STOP
@@ -422,38 +421,42 @@ PROGRAM ALF
      ENDDO
      WRITE (*,'(A)') '...100%'
      CALL FLUSH()
-     
+
      !Run a production chain
      WRITE(*,*) '   production run...'
+     
+     IF (print_mcmc.EQ.1) THEN
+        !open output file
+        OPEN(12,FILE=TRIM(ALF_HOME)//TRIM(OUTDIR)//&
+             TRIM(file)//TRIM(tag)//'.mcmc',STATUS='REPLACE')
+     ENDIF
+
      DO i=1,nmcmc
         
         CALL EMCEE_ADVANCE_MPI(npar,nwalkers,2.d0,pos_emcee_in,&
              lp_emcee_in,pos_emcee_out,lp_emcee_out,accept_emcee,ntasks-1)
         pos_emcee_in = pos_emcee_out
         lp_emcee_in  = lp_emcee_out
-        totacc = totacc + SUM(accept_emcee)
+        totacc       = totacc + SUM(accept_emcee)
         
         DO j=1,nwalkers,nsample
            
            CALL STR2ARR(2,opos,pos_emcee_in(:,j)) !arr->str
            
-           !kill the emission lines for computing M/L
-           !since unconstrained lines can mess up R,I bands
+           !turn off various parameters for computing M/L
            opos%logemline_h    = -8.0
            opos%logemline_oiii = -8.0
            opos%logemline_nii  = -8.0
            opos%logemline_sii  = -8.0
            opos%logemline_ni   = -8.0
+           opos%logtrans       = -8.0
+           opos%logsky         = -8.0
 
            !compute the main sequence turn-off mass vs. t and Z
            msto = MAX(MIN(10**(msto_t0+msto_t1*opos%logage) * &
                 (msto_z0+msto_z1*opos%zh+msto_z2*opos%zh**2),3.0),0.75)
-         !  IF (imf_type.EQ.4) THEN
-         !     m2lmw = 1.0  !MW IMF not supported for imf_type=4
-         !  ELSE
-              CALL GETMODEL(opos,mspecmw,mw=1)     !get spectrum for MW IMF
-              CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
-         !  ENDIF
+           CALL GETMODEL(opos,mspecmw,mw=1)     !get spectrum for MW IMF
+           CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
 
            IF (mwimf.EQ.0) THEN
               CALL GETMODEL(opos,mspec)

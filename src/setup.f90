@@ -243,17 +243,17 @@ SUBROUTINE SETUP()
   DO i=1,nimf
      sspgrid%imfx1(i) = 0.5+REAL(i-1+nimfoff)/5.d0 
   ENDDO
-  IF (imf_type.EQ.0.OR.imf_type.EQ.1.OR.imf_type.EQ.3) THEN
-     sspgrid%imfx2 = sspgrid%imfx1
-     imfr1 = locate(sspgrid%imfx1,t13+1E-3)
-     imfr2 = locate(sspgrid%imfx2,t23+1E-3)
-  ELSE IF (imf_type.EQ.2) THEN
+  IF (imf_type.EQ.2) THEN
      !sspgrid%imfx2 = (/0.07,0.10,0.15,0.2,0.25,0.3,0.35,0.4,&
      !     0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8/)
      write(*,*) 'error, need to reset nimf=16 for this option'
      STOP
      imfr1 = locate(sspgrid%imfx1,t23+1E-3)
      imfr2 = locate(sspgrid%imfx2,imflo+1E-3)
+  ELSE
+     sspgrid%imfx2 = sspgrid%imfx1
+     imfr1 = locate(sspgrid%imfx1,t13+1E-3)
+     imfr2 = locate(sspgrid%imfx2,t23+1E-3)
   ENDIF
   IF (imf_type.EQ.3) THEN
      sspgrid%imfx3 = (/0.08,0.10,0.15,0.2,0.25,0.3,0.35,0.4/)
