@@ -85,7 +85,7 @@ PROGRAM ALF
   !0=1PL, 1=2PL, 2=1PL+cutoff, 3=2PL+cutoff, 4=5-pt PL
   imf_type  = 4
   !are the data in the original observed frame?
-  observed_frame = 0
+  observed_frame = 1
 
   !dont fit transmission function in cases where the input
   !spectrum has already been de-redshifted to ~0.0
@@ -101,14 +101,14 @@ PROGRAM ALF
      smooth_trans = 0.0
   ENDIF
 
-  prhi%imf1 = -0.320+0.1
-  prlo%imf1 = -0.320-0.1
-  prhi%imf2 = -0.546+0.1
-  prlo%imf2 = -0.546-0.1
-  prhi%imf3 = -0.868+0.1
-  prlo%imf3 = -0.868-0.1
-  prhi%imf4 = -1.185+0.1
-  prlo%imf4 = -1.185-0.1
+  !prhi%imf1 = -0.320+0.1
+  !prlo%imf1 = -0.320-0.1
+  !prhi%imf2 = -0.546+0.1
+  !prlo%imf2 = -0.546-0.1
+  !prhi%imf3 = -0.868+0.1
+  !prlo%imf3 = -0.868-0.1
+  !prhi%imf4 = -1.185+0.1
+  !prlo%imf4 = -1.185-0.1
 
   !set low upper prior limits to kill off these parameters
   !prhi%logm7g   = -5.0

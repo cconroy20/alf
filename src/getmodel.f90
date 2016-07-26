@@ -162,7 +162,8 @@ SUBROUTINE GETMODEL(pos,spec,mw)
         !apply the IMF normalization
         msto = MAX(MIN(10**(msto_t0+msto_t1*pos%logage) * &
                 (msto_z0+msto_z1*pos%zh+msto_z2*pos%zh**2),3.0),0.75)
-        mass = getmass(imflo,msto,pos%imf1,pos%imf2,krpa_imf3,pos%imf3,pos%imf4,inorm)
+        mass = getmass(imflo,msto,pos%imf1,pos%imf2,krpa_imf3,&
+             pos%imf3,pos%imf4,inorm)
         spec = spec / inorm
 
      ENDIF
