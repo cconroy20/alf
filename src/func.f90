@@ -32,7 +32,7 @@ FUNCTION FUNC(nposarr,spec,funit)
 
   !this is for Powell minimization
   IF (SIZE(nposarr).LT.npar) THEN
-     !coppy over the default parameters first
+     !copy over the default parameters first
      CALL STR2ARR(1,npos,tposarr) !str->arr
      !only copy the first four params (velz,sigma,age,[Z/H])
      tposarr(1:npowell) = nposarr(1:npowell)
@@ -54,7 +54,7 @@ FUNCTION FUNC(nposarr,spec,funit)
   !constraint that the sum of the IMF weights cannot be >1
   IF (imf_type.EQ.4.AND.fit_type.EQ.0) THEN
      tmps = 10**npos%imf1+10**npos%imf2+10**npos%imf3+10**npos%imf4
-     IF (tmps.GT.1.0) pr = 0.0
+     IF (tmps.GT.1.0) pr=0.0
   ENDIF
 
   !only compute the model and chi2 if the priors are >0.0

@@ -89,8 +89,8 @@ MODULE ALF_VARS
 
   !nstart and nend allow us to use only a subset of 
   !the full wavelength array
-  INTEGER, PARAMETER :: nstart = 300   ! 0.38 um
-  INTEGER, PARAMETER :: nend   = 6000  ! 1.14 um
+  INTEGER, PARAMETER :: nstart = 330   ! 0.38 um
+  INTEGER, PARAMETER :: nend   = 5830  ! 1.10 um
   !number of spectral elements in SSPs
   INTEGER, PARAMETER :: nl = nend-nstart+1
   !number actually used over the range to be fit
@@ -113,7 +113,8 @@ MODULE ALF_VARS
   !number of ages in the response functions
   INTEGER, PARAMETER :: nage_rfcn = 5
   !number of IMF values in the SSP grid
-  INTEGER, PARAMETER :: nimf  = 15, nmcut = 8, nimfoff=1, nimfnp=9
+  INTEGER, PARAMETER :: nimf_full=16, nmcut=8, nimfoff=2, nimfnp=9
+  INTEGER, PARAMETER :: nimf=nimf_full-nimfoff
   !max degree of polynomial used for continuum fitting
   INTEGER, PARAMETER :: npolymax = 20
   !wavelength interval used to determine polynomial degree

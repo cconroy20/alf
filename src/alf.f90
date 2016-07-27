@@ -34,11 +34,11 @@ PROGRAM ALF
   !number of chain steps to print to file
   INTEGER, PARAMETER :: nmcmc=1000
   !inverse sampling of the walkers for printing
-  INTEGER, PARAMETER :: nsample=8
+  INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=30000
+  INTEGER, PARAMETER :: nburn=1 !30000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=1024 !1024
+  INTEGER, PARAMETER :: nwalkers=512 !1024
   !save the chain outputs to file
   INTEGER, PARAMETER :: print_mcmc=1
 
@@ -83,7 +83,7 @@ PROGRAM ALF
   fit_type  = 0
   !type of IMF to fit
   !0=1PL, 1=2PL, 2=1PL+cutoff, 3=2PL+cutoff, 4=5-pt PL
-  imf_type  = 4
+  imf_type  = 3
   !are the data in the original observed frame?
   observed_frame = 1
 
@@ -101,14 +101,14 @@ PROGRAM ALF
      smooth_trans = 0.0
   ENDIF
 
-  !prhi%imf1 = -0.320+0.1
-  !prlo%imf1 = -0.320-0.1
-  !prhi%imf2 = -0.546+0.1
-  !prlo%imf2 = -0.546-0.1
-  !prhi%imf3 = -0.868+0.1
-  !prlo%imf3 = -0.868-0.1
-  !prhi%imf4 = -1.185+0.1
-  !prlo%imf4 = -1.185-0.1
+  prhi%imf1 = -0.320+0.1/5
+  prlo%imf1 = -0.320-0.1/5
+  prhi%imf2 = -0.546+0.1/5
+  prlo%imf2 = -0.546-0.1/5
+  prhi%imf3 = -0.868+0.1/5
+  prlo%imf3 = -0.868-0.1/5
+  prhi%imf4 = -1.185+0.1/5
+  prlo%imf4 = -1.185-0.1/5
 
   !set low upper prior limits to kill off these parameters
   !prhi%logm7g   = -5.0
@@ -263,7 +263,7 @@ PROGRAM ALF
      ENDIF
 
      !for testing
-     IF (1.EQ.1) THEN
+     IF (1.EQ.0) THEN
         tpos%logage = 1.0
         tpos%logfy  = -5.0
         tpos%logm7g = -5.0

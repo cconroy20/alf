@@ -378,7 +378,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   !note that this is done *after* velocity broadening
   IF (fit_type.EQ.0.AND.powell_fitting.EQ.0.AND.fit_trans.EQ.1) THEN
      !applied in the observed frame
-     tmp_ltrans = sspgrid%lam / (1+pos%velz/clight*1E5)
+     tmp_ltrans     = sspgrid%lam / (1+pos%velz/clight*1E5)
      tmp_ftrans_h2o = linterp(tmp_ltrans,sspgrid%atm_trans_h2o,sspgrid%lam)
      tmp_ftrans_o2  = linterp(tmp_ltrans,sspgrid%atm_trans_o2,sspgrid%lam)
      spec = spec * (1+(tmp_ftrans_h2o-1)*10**pos%logtrans)

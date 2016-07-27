@@ -221,7 +221,7 @@ SUBROUTINE SETUP()
                 chart(t)//'_Z'//charz(z)//'.ssp.imf_nonpara_flat'//&
                 '.s100',STATUS='OLD',iostat=stat,ACTION='READ')
            IF (stat.NE.0) THEN
-              WRITE(*,*) 'SETUP ERROR: non-para IMF models not found'
+              WRITE(*,*) 'SETUP ERROR: non-param IMF models not found'
               STOP
            ENDIF
            DO i=1,nstart-1

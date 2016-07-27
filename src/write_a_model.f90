@@ -28,14 +28,14 @@ PROGRAM WRITE_A_MODEL
   !compute an array of gaussian deviates
   CALL GASDEV(gdev)
 
-  file = 'model_imf4_krpa_t10.0.dat'
-  s2n  = 400.
+  file = 'model_imf4_krpa_Zm0.1.dat'
+  s2n  = 1E4
   lmin = 3800.
   lmax = 11000.
 
   pos%sigma   = 300.
-  pos%logage  = LOG10(10.0)
-  pos%zh      = 0.0
+  pos%logage  = LOG10(13.5)
+  pos%zh      = -0.1
   emnorm      = -5.0
   pos%imf1    = 1.3
   pos%imf2    = 2.3
@@ -43,15 +43,20 @@ PROGRAM WRITE_A_MODEL
 
   IF (imf_type.EQ.4) THEN
      !Kroupa
-     pos%imf1 = -0.320
-     pos%imf2 = -0.546
-     pos%imf3 = -0.868
-     pos%imf4 = -1.185
+     pos%imf1 = -0.319895
+     pos%imf2 = -0.546573
+     pos%imf3 = -0.867906
+     pos%imf4 = -1.185085
      !Salpeter
-   !  pos%imf1 = -0.1408
-   !  pos%imf2 = -0.7273
-   !  pos%imf3 = -1.2799
-   !  pos%imf4 = -1.6273
+   !  pos%imf1 = -0.1407
+   !  pos%imf2 = -0.7271
+   !  pos%imf3 = -1.2797
+   !  pos%imf4 = -1.6268
+     !flat
+   !  pos%imf1 = -0.8846
+   !  pos%imf2 = -0.6628
+   !  pos%imf3 = -0.6628
+   !  pos%imf4 = -0.6628
   ENDIF
 
   pos%feh     = 0.0
