@@ -75,12 +75,20 @@ FUNCTION GETMASS(mlo,mto,imf1,imf2,imfup,imf3,imf4,timfnorm)
 
      imf5 = 1 - (10**imf1+10**imf2+10**imf3+10**imf4)
 
+   !  imfnorm = 10**imf1/2*(mbin_nimf(1)**2-mlo**2) + &
+   !       10**imf2/2*(mbin_nimf(2)**2-mbin_nimf(1)**2) + &
+   !       10**imf3/2*(mbin_nimf(3)**2-mbin_nimf(2)**2) + &
+   !       10**imf4/2*(mbin_nimf(4)**2-mbin_nimf(3)**2) + &
+   !       imf5/2*(mto**2-mbin_nimf(4)**2) + &
+   !       imf5/(-imfup+2)*((imfhi/mto)**(-imfup+2)-1.)
+
      imfnorm = 10**imf1/2*(mbin_nimf(1)**2-mlo**2) + &
           10**imf2/2*(mbin_nimf(2)**2-mbin_nimf(1)**2) + &
           10**imf3/2*(mbin_nimf(3)**2-mbin_nimf(2)**2) + &
           10**imf4/2*(mbin_nimf(4)**2-mbin_nimf(3)**2) + &
-          imf5/2*(mto**2-mbin_nimf(4)**2) + &
-          imf5/(-imfup+2)*((imfhi/mto)**(-imfup+2)-1.)
+          imf5/2*(mbin_nimf(5)**2-mbin_nimf(4)**2) + &
+          imf5/(-imfup+2)/(mbin_nimf(5)**(-imfup)) * &
+          (imfhi**(-imfup+2)-mbin_nimf(5)**(-imfup+2)) 
 
      getmass = 10**imf1/2*(mbin_nimf(1)**2-mlo**2) + &
           10**imf2/2*(mbin_nimf(2)**2-mbin_nimf(1)**2) + &
@@ -89,14 +97,16 @@ FUNCTION GETMASS(mlo,mto,imf1,imf2,imfup,imf3,imf4,timfnorm)
           imf5/2*(mto**2-mbin_nimf(4)**2) 
 
      !BH remnants
-     getmass = getmass + 0.5*imf5*((imfhi/mto)**(-imfup+2)-&
-          (bhlim/mto)**(-imfup+2))/(-imfup+2)
+     getmass = getmass + 0.5*imf5/(mbin_nimf(5)**(-imfup))*&
+          (imfhi**(-imfup+2)-bhlim**(-imfup+2))/(-imfup+2)
      !NS remnants
-     getmass = getmass + 1.4*imf5*((bhlim/mto)**(-imfup+1)-&
-          (nslim/mto)**(-imfup+1))/(-imfup+1)
+     getmass = getmass + 1.4*imf5/(mbin_nimf(5)**(-imfup))*&
+          (bhlim**(-imfup+1)-nslim**(-imfup+1))/(-imfup+1)
      !WD remnants
-     getmass = getmass + 0.48*imf5*((nslim/mto)**(-imfup+1)-1)/(-imfup+1)
-     getmass = getmass + 0.077*imf5*((nslim/mto)**(-imfup+2)-1)/(-imfup+2)
+     getmass = getmass + 0.48*imf5/(mbin_nimf(5)**(-imfup))*&
+          (nslim**(-imfup+1)-mbin_nimf(5)**(-imfup+1))/(-imfup+1)
+     getmass = getmass + 0.077*imf5/(mbin_nimf(5)**(-imfup))*&
+          (nslim**(-imfup+2)-mbin_nimf(5)**(-imfup+2))/(-imfup+2)
  
      getmass = getmass / imfnorm
 

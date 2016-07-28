@@ -83,7 +83,7 @@ PROGRAM ALF
   fit_type  = 0
   !type of IMF to fit
   !0=1PL, 1=2PL, 2=1PL+cutoff, 3=2PL+cutoff, 4=5-pt PL
-  imf_type  = 3
+  imf_type  = 4
   !are the data in the original observed frame?
   observed_frame = 1
 
@@ -101,14 +101,14 @@ PROGRAM ALF
      smooth_trans = 0.0
   ENDIF
 
-  prhi%imf1 = -0.320+0.1/5
-  prlo%imf1 = -0.320-0.1/5
-  prhi%imf2 = -0.546+0.1/5
-  prlo%imf2 = -0.546-0.1/5
-  prhi%imf3 = -0.868+0.1/5
-  prlo%imf3 = -0.868-0.1/5
-  prhi%imf4 = -1.185+0.1/5
-  prlo%imf4 = -1.185-0.1/5
+  !prhi%imf1 = -0.319895+0.01/5
+  !prlo%imf1 = -0.319895-0.01/5
+  !prhi%imf2 = -0.546573+0.01/5
+  !prlo%imf2 = -0.546573-0.01/5
+  !prhi%imf3 = -0.867906+0.01
+  !prlo%imf3 = -0.867906-0.01
+  !prhi%imf4 = -1.185085+0.01
+  !prlo%imf4 = -1.185085-0.01
 
   !set low upper prior limits to kill off these parameters
   !prhi%logm7g   = -5.0

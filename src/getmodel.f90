@@ -156,15 +156,36 @@ SUBROUTINE GETMODEL(pos,spec,mw)
            tmp4 = tmp4 + imfw(i)*sspgrid%sspnp(:,i,vt,vm)
         ENDDO
 
-        spec = 10**( dt*dm*LOG10(tmp1) + (1-dt)*dm*LOG10(tmp2) + &
-             dt*(1-dm)*LOG10(tmp3) + (1-dt)*(1-dm)*LOG10(tmp4) )
-
-        !apply the IMF normalization
-        msto = MAX(MIN(10**(msto_t0+msto_t1*pos%logage) * &
-                (msto_z0+msto_z1*pos%zh+msto_z2*pos%zh**2),3.0),0.75)
+        msto = MAX(MIN(10**(msto_t0+msto_t1*sspgrid%logagegrid(vt+1)) * &
+             (msto_z0+msto_z1*sspgrid%logzgrid(vm+1)+&
+             msto_z2*sspgrid%logzgrid(vm+1)**2),3.0),0.75)
         mass = getmass(imflo,msto,pos%imf1,pos%imf2,krpa_imf3,&
              pos%imf3,pos%imf4,inorm)
-        spec = spec / inorm
+        tmp1 = tmp1/inorm
+
+        msto = MAX(MIN(10**(msto_t0+msto_t1*sspgrid%logagegrid(vt)) * &
+             (msto_z0+msto_z1*sspgrid%logzgrid(vm+1)+&
+             msto_z2*sspgrid%logzgrid(vm+1)**2),3.0),0.75)
+        mass = getmass(imflo,msto,pos%imf1,pos%imf2,krpa_imf3,&
+             pos%imf3,pos%imf4,inorm)
+        tmp2 = tmp2/inorm
+
+        msto = MAX(MIN(10**(msto_t0+msto_t1*sspgrid%logagegrid(vt+1)) * &
+             (msto_z0+msto_z1*sspgrid%logzgrid(vm)+&
+             msto_z2*sspgrid%logzgrid(vm)**2),3.0),0.75)
+        mass = getmass(imflo,msto,pos%imf1,pos%imf2,krpa_imf3,&
+             pos%imf3,pos%imf4,inorm)
+        tmp3 = tmp3/inorm
+
+        msto = MAX(MIN(10**(msto_t0+msto_t1*sspgrid%logagegrid(vt)) * &
+             (msto_z0+msto_z1*sspgrid%logzgrid(vm)+&
+             msto_z2*sspgrid%logzgrid(vm)**2),3.0),0.75)
+        mass = getmass(imflo,msto,pos%imf1,pos%imf2,krpa_imf3,&
+             pos%imf3,pos%imf4,inorm)
+        tmp4 = tmp4/inorm
+
+        spec = 10**( dt*dm*LOG10(tmp1) + (1-dt)*dm*LOG10(tmp2) + &
+             dt*(1-dm)*LOG10(tmp3) + (1-dt)*(1-dm)*LOG10(tmp4) )
 
      ENDIF
 
