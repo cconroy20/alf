@@ -102,7 +102,7 @@ MODULE ALF_VARS
   !total number of emission lines
   INTEGER, PARAMETER :: neml = 11
   !number of parameters
-  INTEGER, PARAMETER :: npar = 43
+  INTEGER, PARAMETER :: npar = 44
   !number of ages in the empirical SSP grid
   INTEGER, PARAMETER :: nage = 7
   !number of metallicities in the empirical SSP grid

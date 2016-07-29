@@ -38,7 +38,8 @@ SUBROUTINE GETM2L(msto,lam,spec,pos,m2l,mw)
         mass = getmass(pos%imf3,msto,pos%imf1,pos%imf2,krpa_imf3)
      ELSE IF (imf_type.EQ.4) THEN
         !non-parametric IMF for 0.08-1.0 Msun; Salpeter slope at >1 Msun
-        mass = getmass(imflo,msto,pos%imf1,pos%imf2,krpa_imf3,pos%imf3,pos%imf4)
+        mass = getmass(imflo,msto,pos%imf1,pos%imf2,krpa_imf3,&
+             pos%imf3,pos%imf4,pos%imf5)
      ENDIF
   ENDIF
 

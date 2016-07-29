@@ -128,12 +128,6 @@ SUBROUTINE GETMODEL(pos,spec,mw)
              dt*(1-dm)*tmp3 + (1-dt)*(1-dm)*tmp4 )
 
      ELSE IF (imf_type.EQ.4) THEN
-
-        tmps = 10**pos%imf1+10**pos%imf2+10**pos%imf3+10**pos%imf4
-        IF (tmps.GT.1.0) THEN 
-           WRITE(*,*) 'GETMODEL ERROR: sum(imf1-4)>1!',tmps
-           STOP
-        ENDIF
         
         imfw(1) = 10**pos%imf1
         imfw(2) = 10**pos%imf2
@@ -142,8 +136,8 @@ SUBROUTINE GETMODEL(pos,spec,mw)
         imfw(5) = 10**pos%imf3
         imfw(6) = 10**pos%imf4
         imfw(7) = 10**pos%imf4
-        imfw(8) = (1.-tmps)
-        imfw(9) = (1.-tmps)
+        imfw(8) = 10**pos%imf5
+        imfw(9) = 10**pos%imf5
        
         tmp1 = 0.0
         tmp2 = 0.0
@@ -160,28 +154,28 @@ SUBROUTINE GETMODEL(pos,spec,mw)
              (msto_z0+msto_z1*sspgrid%logzgrid(vm+1)+&
              msto_z2*sspgrid%logzgrid(vm+1)**2),3.0),0.75)
         mass = getmass(imflo,msto,pos%imf1,pos%imf2,krpa_imf3,&
-             pos%imf3,pos%imf4,inorm)
+             pos%imf3,pos%imf4,pos%imf5,inorm)
         tmp1 = tmp1/inorm
 
         msto = MAX(MIN(10**(msto_t0+msto_t1*sspgrid%logagegrid(vt)) * &
              (msto_z0+msto_z1*sspgrid%logzgrid(vm+1)+&
              msto_z2*sspgrid%logzgrid(vm+1)**2),3.0),0.75)
         mass = getmass(imflo,msto,pos%imf1,pos%imf2,krpa_imf3,&
-             pos%imf3,pos%imf4,inorm)
+             pos%imf3,pos%imf4,pos%imf5,inorm)
         tmp2 = tmp2/inorm
 
         msto = MAX(MIN(10**(msto_t0+msto_t1*sspgrid%logagegrid(vt+1)) * &
              (msto_z0+msto_z1*sspgrid%logzgrid(vm)+&
              msto_z2*sspgrid%logzgrid(vm)**2),3.0),0.75)
         mass = getmass(imflo,msto,pos%imf1,pos%imf2,krpa_imf3,&
-             pos%imf3,pos%imf4,inorm)
+             pos%imf3,pos%imf4,pos%imf5,inorm)
         tmp3 = tmp3/inorm
 
         msto = MAX(MIN(10**(msto_t0+msto_t1*sspgrid%logagegrid(vt)) * &
              (msto_z0+msto_z1*sspgrid%logzgrid(vm)+&
              msto_z2*sspgrid%logzgrid(vm)**2),3.0),0.75)
         mass = getmass(imflo,msto,pos%imf1,pos%imf2,krpa_imf3,&
-             pos%imf3,pos%imf4,inorm)
+             pos%imf3,pos%imf4,pos%imf5,inorm)
         tmp4 = tmp4/inorm
 
         spec = 10**( dt*dm*LOG10(tmp1) + (1-dt)*dm*LOG10(tmp2) + &

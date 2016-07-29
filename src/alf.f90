@@ -18,9 +18,9 @@ PROGRAM ALF
   ! 5. The code can fit for the atmospheric transmission function but
   !    this will only work if the input data are in the original 
   !    observed frame; i.e., not de-redshifted.
-  ! 6. I've generally found that Nwalkers=1024 and Nburn=~10,000 seems
-  !    to generically yield well-converged solutions, but you should test
-  !    this yourself!
+  ! 6. I've found that Nwalkers=1024 and Nburn=~10,000 seems to
+  !    generically yield well-converged solutions, but you should test
+  !    this yourself by fitting mock data generated with write_a_model
 
   !---------------------------------------------------------------------!
   !---------------------------------------------------------------------!
@@ -34,11 +34,11 @@ PROGRAM ALF
   !number of chain steps to print to file
   INTEGER, PARAMETER :: nmcmc=1000
   !inverse sampling of the walkers for printing
-  INTEGER, PARAMETER :: nsample=1
+  INTEGER, PARAMETER :: nsample=8
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=1 !30000
+  INTEGER, PARAMETER :: nburn=50000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=512 !1024
+  INTEGER, PARAMETER :: nwalkers=1024
   !save the chain outputs to file
   INTEGER, PARAMETER :: print_mcmc=1
 
@@ -90,17 +90,18 @@ PROGRAM ALF
   !dont fit transmission function in cases where the input
   !spectrum has already been de-redshifted to ~0.0
   IF (observed_frame.EQ.0) THEN
-     fit_trans = 0
+     fit_trans     = 0
      prhi%logtrans = -5.0
      prhi%logsky   = -5.0 
   ELSE
      fit_trans = 1
-     !extra smoothing to the transmission spectrum
+     !extra smoothing to the transmission spectrum.
      !if the input data has been smoothed by a gaussian
      !in velocity space, set the parameter below to that extra smoothing
      smooth_trans = 0.0
   ENDIF
 
+  !set low upper prior limits to kill off these parameters
   !prhi%imf1 = -0.319895+0.01/5
   !prlo%imf1 = -0.319895-0.01/5
   !prhi%imf2 = -0.546573+0.01/5
@@ -109,8 +110,9 @@ PROGRAM ALF
   !prlo%imf3 = -0.867906-0.01
   !prhi%imf4 = -1.185085+0.01
   !prlo%imf4 = -1.185085-0.01
+  prhi%imf5 = -1.44+1E-3
+  prlo%imf5 = -1.44-1E-3
 
-  !set low upper prior limits to kill off these parameters
   !prhi%logm7g   = -5.0
   !prhi%loghot   = -5.0
   !prhi%logtrans = -5.0

@@ -1,4 +1,4 @@
-FUNCTION GETMASS(mlo,mto,imf1,imf2,imfup,imf3,imf4,timfnorm)
+FUNCTION GETMASS(mlo,mto,imf1,imf2,imfup,imf3,imf4,imf5,timfnorm)
 
   !compute mass in stars and remnants (normalized to 1 Msun at t=0)
   !assume an IMF that runs from 0.08 to 100 Msun.
@@ -8,11 +8,11 @@ FUNCTION GETMASS(mlo,mto,imf1,imf2,imfup,imf3,imf4,timfnorm)
 
   !turnoff mass
   REAL(DP), INTENT(in) :: mlo,mto,imf1,imf2,imfup
-  REAL(DP), INTENT(in), OPTIONAL :: imf3,imf4
+  REAL(DP), INTENT(in), OPTIONAL :: imf3,imf4,imf5
   REAL(DP), INTENT(inout), OPTIONAL :: timfnorm
   REAL(DP) :: imfnorm, getmass
   REAL(DP), PARAMETER :: bhlim=40.0,nslim=8.5
-  REAL(DP) :: m2=0.5,m3=1.0,imf5
+  REAL(DP) :: m2=0.5,m3=1.0
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -73,7 +73,10 @@ FUNCTION GETMASS(mlo,mto,imf1,imf2,imfup,imf3,imf4,timfnorm)
 
      !non-parametric IMF
 
-     imf5 = 1 - (10**imf1+10**imf2+10**imf3+10**imf4)
+     IF (.NOT.PRESENT(imf5)) THEN 
+        WRITE(*,*) 'GETMASS ERROR: imf5 not defined'
+        STOP
+     ENDIF
 
    !  imfnorm = 10**imf1/2*(mbin_nimf(1)**2-mlo**2) + &
    !       10**imf2/2*(mbin_nimf(2)**2-mbin_nimf(1)**2) + &
@@ -86,26 +89,26 @@ FUNCTION GETMASS(mlo,mto,imf1,imf2,imfup,imf3,imf4,timfnorm)
           10**imf2/2*(mbin_nimf(2)**2-mbin_nimf(1)**2) + &
           10**imf3/2*(mbin_nimf(3)**2-mbin_nimf(2)**2) + &
           10**imf4/2*(mbin_nimf(4)**2-mbin_nimf(3)**2) + &
-          imf5/2*(mbin_nimf(5)**2-mbin_nimf(4)**2) + &
-          imf5/(-imfup+2)/(mbin_nimf(5)**(-imfup)) * &
+          10**imf5/2*(mbin_nimf(5)**2-mbin_nimf(4)**2) + &
+          10**imf5/(-imfup+2)/(mbin_nimf(5)**(-imfup)) * &
           (imfhi**(-imfup+2)-mbin_nimf(5)**(-imfup+2)) 
 
      getmass = 10**imf1/2*(mbin_nimf(1)**2-mlo**2) + &
           10**imf2/2*(mbin_nimf(2)**2-mbin_nimf(1)**2) + &
           10**imf3/2*(mbin_nimf(3)**2-mbin_nimf(2)**2) + &
           10**imf4/2*(mbin_nimf(4)**2-mbin_nimf(3)**2) + &
-          imf5/2*(mto**2-mbin_nimf(4)**2) 
+          10**imf5/2*(mto**2-mbin_nimf(4)**2) 
 
      !BH remnants
-     getmass = getmass + 0.5*imf5/(mbin_nimf(5)**(-imfup))*&
+     getmass = getmass + 0.5*10**imf5/(mbin_nimf(5)**(-imfup))*&
           (imfhi**(-imfup+2)-bhlim**(-imfup+2))/(-imfup+2)
      !NS remnants
-     getmass = getmass + 1.4*imf5/(mbin_nimf(5)**(-imfup))*&
+     getmass = getmass + 1.4*10**imf5/(mbin_nimf(5)**(-imfup))*&
           (bhlim**(-imfup+1)-nslim**(-imfup+1))/(-imfup+1)
      !WD remnants
-     getmass = getmass + 0.48*imf5/(mbin_nimf(5)**(-imfup))*&
+     getmass = getmass + 0.48*10**imf5/(mbin_nimf(5)**(-imfup))*&
           (nslim**(-imfup+1)-mbin_nimf(5)**(-imfup+1))/(-imfup+1)
-     getmass = getmass + 0.077*imf5/(mbin_nimf(5)**(-imfup))*&
+     getmass = getmass + 0.077*10**imf5/(mbin_nimf(5)**(-imfup))*&
           (nslim**(-imfup+2)-mbin_nimf(5)**(-imfup+2))/(-imfup+2)
  
      getmass = getmass / imfnorm

@@ -80,17 +80,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
      pos%imf2      = myran()*1-1.5
   ENDIF
   pos%imf4         = myran()*1-1.5
-
-  IF (imf_type.EQ.4) THEN
-     !check that the sum of the first four components is not >=1
-     tmps = 10**pos%imf1+10**pos%imf2+10**pos%imf3+10**pos%imf4
-     IF (tmps.GE.1.0) THEN
-        pos%imf1 = pos%imf1 - LOG10(tmps*1.2)
-        pos%imf2 = pos%imf2 - LOG10(tmps*1.2)
-        pos%imf3 = pos%imf3 - LOG10(tmps*1.2)
-        pos%imf4 = pos%imf4 - LOG10(tmps*1.2)
-     ENDIF
-  ENDIF
+  pos%imf5         = myran()*1-1.5
 
   IF (PRESENT(velz)) THEN
      IF (ABS(pos%velz).LE.tiny_number) THEN
@@ -171,6 +161,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
      IF (prlo%imf2.EQ.test%imf2) prlo%imf2    = -6.0
   ENDIF
   IF (prlo%imf4.EQ.test%imf4) prlo%imf4    = -6.0
+  IF (prlo%imf5.EQ.test%imf5) prlo%imf5    = -6.0
 
 
   !priors (high)
@@ -221,17 +212,18 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
      IF (prhi%imf1.EQ.test%imf1) prhi%imf1       = 3.5
      IF (prhi%imf3.EQ.test%imf3) prhi%imf3       = 0.4
   ELSE
-     IF (prhi%imf1.EQ.test%imf1) prhi%imf1 = 0.0
-     IF (prhi%imf3.EQ.test%imf3) prhi%imf3 = 0.0
+     IF (prhi%imf1.EQ.test%imf1) prhi%imf1 = 1.0
+     IF (prhi%imf3.EQ.test%imf3) prhi%imf3 = 1.0
   ENDIF
   IF (imf_type.EQ.0.OR.imf_type.EQ.1.OR.imf_type.EQ.3) THEN
      IF (prhi%imf2.EQ.test%imf2) prhi%imf2    = 3.5
   ELSE IF (imf_type.EQ.2) THEN
      IF (prhi%imf2.EQ.test%imf2) prhi%imf2    = 0.5
   ELSE IF (imf_type.EQ.4) THEN
-     IF (prhi%imf2.EQ.test%imf2) prhi%imf2    = 0.0
+     IF (prhi%imf2.EQ.test%imf2) prhi%imf2    = 1.0
   ENDIF
-  IF (prhi%imf4.EQ.test%imf4) prhi%imf4 = 0.0
+  IF (prhi%imf4.EQ.test%imf4) prhi%imf4 = 1.0
+  IF (prhi%imf5.EQ.test%imf5) prhi%imf5 = 1.0
 
   !--------------------------------------------------------------------------!
   !-------reset the initial parameters if the priors have been altered-------!
@@ -264,18 +256,6 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
 
   !arr->str
   CALL STR2ARR(2,pos,posarr1)
-
- IF (imf_type.EQ.4) THEN
-     !check that the sum of the first four components is not >=1 (again)
-     tmps = 10**pos%imf1+10**pos%imf2+10**pos%imf3+10**pos%imf4
-     IF (tmps.GE.1.0) THEN
-        pos%imf1 = MAX(pos%imf1 - LOG10(tmps*1.2),prlo%imf1)
-        pos%imf2 = MAX(pos%imf2 - LOG10(tmps*1.2),prlo%imf2)
-        pos%imf3 = MAX(pos%imf3 - LOG10(tmps*1.2),prlo%imf3)
-        pos%imf4 = MAX(pos%imf4 - LOG10(tmps*1.2),prlo%imf4)
-     ENDIF
-  ENDIF
-
 
 
 END SUBROUTINE SET_PINIT_PRIORS
