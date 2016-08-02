@@ -102,7 +102,7 @@ MODULE ALF_VARS
   !total number of emission lines
   INTEGER, PARAMETER :: neml = 11
   !number of parameters
-  INTEGER, PARAMETER :: npar = 44
+  INTEGER, PARAMETER :: npar = 43
   !number of ages in the empirical SSP grid
   INTEGER, PARAMETER :: nage = 7
   !number of metallicities in the empirical SSP grid
@@ -136,6 +136,8 @@ MODULE ALF_VARS
   REAL(DP), PARAMETER :: imflo=0.08,imfhi=100.0
   !power-law slopes for a Kroupa IMF
   REAL(DP), PARAMETER :: krpa_imf1=1.3,krpa_imf2=2.3,krpa_imf3=2.3
+  !log(imf5) for non-parametric IMF
+  REAL(DP), PARAMETER :: imf5 = 0.0
   !linear fit to log(age) vs. log(MS TO mass)
   REAL(DP), PARAMETER :: msto_t0=0.33250847,msto_t1=-0.29560944
   REAL(DP), PARAMETER :: msto_z0=0.95402521,msto_z1=0.21944863,&
@@ -207,7 +209,7 @@ MODULE ALF_VARS
           logfy=-4.0,sigma2=0.0,velz2=0.0,logm7g=-4.0,hotteff=20.0,&
           loghot=-4.0,fy_logage=0.3,logtrans=-4.0,logemline_h=-4.0,&
           logemline_oiii=-4.0,logemline_sii=-4.0,logemline_ni=-4.0,&
-          logemline_nii=-4.0,jitter=1.0,imf3=2.0,logsky=-4.0,imf4=0.0,imf5=0.0
+          logemline_nii=-4.0,jitter=1.0,imf3=2.0,logsky=-4.0,imf4=0.0
      REAL(DP) :: chi2=huge_number
   END TYPE PARAMS
   

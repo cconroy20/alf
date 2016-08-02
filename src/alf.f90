@@ -34,9 +34,9 @@ PROGRAM ALF
   !number of chain steps to print to file
   INTEGER, PARAMETER :: nmcmc=1000
   !inverse sampling of the walkers for printing
-  INTEGER, PARAMETER :: nsample=8
+  INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=50000
+  INTEGER, PARAMETER :: nburn=30000
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=1024
   !save the chain outputs to file
@@ -101,18 +101,16 @@ PROGRAM ALF
      smooth_trans = 0.0
   ENDIF
 
-  !set low upper prior limits to kill off these parameters
-  !prhi%imf1 = -0.319895+0.01/5
-  !prlo%imf1 = -0.319895-0.01/5
-  !prhi%imf2 = -0.546573+0.01/5
-  !prlo%imf2 = -0.546573-0.01/5
-  !prhi%imf3 = -0.867906+0.01
-  !prlo%imf3 = -0.867906-0.01
-  !prhi%imf4 = -1.185085+0.01
-  !prlo%imf4 = -1.185085-0.01
-  prhi%imf5 = -1.44+1E-3
-  prlo%imf5 = -1.44-1E-3
+ ! prhi%imf1 = 1.1209+0.01
+ ! prlo%imf1 = 1.1209-0.01
+ ! prhi%imf2 = 0.8942+0.01
+ ! prlo%imf2 = 0.8942-0.01
+ ! prhi%imf3 = 0.5729+0.01
+ ! prlo%imf3 = 0.5729-0.01
+ ! prhi%imf4 = 0.2557+0.01
+ ! prlo%imf4 = 0.2557-0.01
 
+  !set low upper prior limits to kill off these parameters
   !prhi%logm7g   = -5.0
   !prhi%loghot   = -5.0
   !prhi%logtrans = -5.0
@@ -273,6 +271,10 @@ PROGRAM ALF
         tpos%imf1 = 1.3
         tpos%imf2 = 2.3
         tpos%imf3 = 0.235
+        tpos%imf1 = -0.319895+1.440772
+        tpos%imf2 = -0.546573+1.440772
+        tpos%imf3 = -0.867906+1.440772
+        tpos%imf4 = -1.185085+1.440772
         tpos%zh   = 0.0
         tpos%teff = 0.0
         msto = 10**(msto_t0+msto_t1*tpos%logage) * &
@@ -411,6 +413,18 @@ PROGRAM ALF
         IF (i.EQ.nburn/4.*1) THEN
            WRITE (*,'(A)',advance='no') ' ...25%'
            CALL FLUSH()
+           !now increase the prior range on the IMF
+         !  prhi%imf1 =  4.0
+         !  prlo%imf1 = -4.0
+         !  prhi%imf2 =  4.0
+         !  prlo%imf2 = -4.0
+         !  prhi%imf3 =  4.0
+         !  prlo%imf3 = -4.0
+         !  prhi%imf4 =  4.0
+         !  prlo%imf4 = -4.0
+         !  !convert the structures into their equivalent arrays
+         !  CALL STR2ARR(1,prlo,prloarr)   !str->arr
+         !  CALL STR2ARR(1,prhi,prhiarr)   !str->arr
         ENDIF
         IF (i.EQ.nburn/4.*2) THEN
            WRITE (*,'(A)',advance='no') '...50%'
@@ -434,7 +448,7 @@ PROGRAM ALF
      ENDIF
 
      DO i=1,nmcmc
-        
+ 
         CALL EMCEE_ADVANCE_MPI(npar,nwalkers,2.d0,pos_emcee_in,&
              lp_emcee_in,pos_emcee_out,lp_emcee_out,accept_emcee,ntasks-1)
         pos_emcee_in = pos_emcee_out

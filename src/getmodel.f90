@@ -136,8 +136,8 @@ SUBROUTINE GETMODEL(pos,spec,mw)
         imfw(5) = 10**pos%imf3
         imfw(6) = 10**pos%imf4
         imfw(7) = 10**pos%imf4
-        imfw(8) = 10**pos%imf5
-        imfw(9) = 10**pos%imf5
+        imfw(8) = 10**imf5
+        imfw(9) = 10**imf5
        
         tmp1 = 0.0
         tmp2 = 0.0
@@ -154,28 +154,28 @@ SUBROUTINE GETMODEL(pos,spec,mw)
              (msto_z0+msto_z1*sspgrid%logzgrid(vm+1)+&
              msto_z2*sspgrid%logzgrid(vm+1)**2),3.0),0.75)
         mass = getmass(imflo,msto,pos%imf1,pos%imf2,krpa_imf3,&
-             pos%imf3,pos%imf4,pos%imf5,inorm)
+             pos%imf3,pos%imf4,inorm)
         tmp1 = tmp1/inorm
 
         msto = MAX(MIN(10**(msto_t0+msto_t1*sspgrid%logagegrid(vt)) * &
              (msto_z0+msto_z1*sspgrid%logzgrid(vm+1)+&
              msto_z2*sspgrid%logzgrid(vm+1)**2),3.0),0.75)
         mass = getmass(imflo,msto,pos%imf1,pos%imf2,krpa_imf3,&
-             pos%imf3,pos%imf4,pos%imf5,inorm)
+             pos%imf3,pos%imf4,inorm)
         tmp2 = tmp2/inorm
 
         msto = MAX(MIN(10**(msto_t0+msto_t1*sspgrid%logagegrid(vt+1)) * &
              (msto_z0+msto_z1*sspgrid%logzgrid(vm)+&
              msto_z2*sspgrid%logzgrid(vm)**2),3.0),0.75)
         mass = getmass(imflo,msto,pos%imf1,pos%imf2,krpa_imf3,&
-             pos%imf3,pos%imf4,pos%imf5,inorm)
+             pos%imf3,pos%imf4,inorm)
         tmp3 = tmp3/inorm
 
         msto = MAX(MIN(10**(msto_t0+msto_t1*sspgrid%logagegrid(vt)) * &
              (msto_z0+msto_z1*sspgrid%logzgrid(vm)+&
              msto_z2*sspgrid%logzgrid(vm)**2),3.0),0.75)
         mass = getmass(imflo,msto,pos%imf1,pos%imf2,krpa_imf3,&
-             pos%imf3,pos%imf4,pos%imf5,inorm)
+             pos%imf3,pos%imf4,inorm)
         tmp4 = tmp4/inorm
 
         spec = 10**( dt*dm*LOG10(tmp1) + (1-dt)*dm*LOG10(tmp2) + &

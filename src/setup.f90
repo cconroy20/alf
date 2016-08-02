@@ -6,7 +6,7 @@ SUBROUTINE SETUP()
   IMPLICIT NONE
   
   REAL(DP) :: d1,l1um=1E4,t13=1.3,t23=2.3,sig0=99.,lamlo,lamhi
-  REAL(DP), DIMENSION(nimf*nimf) :: tmp
+  REAL(DP), DIMENSION(nimf_full*nimf_full) :: tmp
   REAL(DP), DIMENSION(nl) :: dumi,smooth=0.0,lam
   INTEGER :: stat,i,vv,j,k,t,z,ii,shift=100,m
   INTEGER, PARAMETER :: ntrans=22800
@@ -33,6 +33,8 @@ SUBROUTINE SETUP()
 
   !this is the IMF flag for the "main" models
   IF (imf_type.EQ.2) THEN
+     WRITE(*,*) 'ERROR: imf_type=2 is not currently supported'
+     STOP
      imfstr = 'varymcut_varyx'     
   ELSE
      imfstr = 'varydoublex'
@@ -153,9 +155,9 @@ SUBROUTINE SETUP()
   !read in two parameter IMF models
   DO z=1,nzmet
      DO t=1,nage
-        OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v1_'//chart(t)//'_Z'//&
-             charz(z)//'.ssp.imf_'//TRIM(imfstr)//'.s100',STATUS='OLD',&
-             iostat=stat,ACTION='READ')
+        OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v1_mcut0.08_'//&
+             chart(t)//'_Z'//charz(z)//'.ssp.imf_'//TRIM(imfstr)//'.s100',&
+             STATUS='OLD',iostat=stat,ACTION='READ')
         IF (stat.NE.0) THEN
            WRITE(*,*) 'SETUP ERROR: IMF models not found'
            STOP
@@ -246,10 +248,8 @@ SUBROUTINE SETUP()
   IF (imf_type.EQ.2) THEN
      !sspgrid%imfx2 = (/0.07,0.10,0.15,0.2,0.25,0.3,0.35,0.4,&
      !     0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8/)
-     write(*,*) 'error, need to reset nimf=16 for this option'
+     write(*,*) 'ERROR: imf_type=2 no longer supported'
      STOP
-     imfr1 = locate(sspgrid%imfx1,t23+1E-3)
-     imfr2 = locate(sspgrid%imfx2,imflo+1E-3)
   ELSE
      sspgrid%imfx2 = sspgrid%imfx1
      imfr1 = locate(sspgrid%imfx1,t13+1E-3)

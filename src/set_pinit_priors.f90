@@ -69,18 +69,17 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
      pos%imf1      = myran()*1.0-0.3 + 1.3
      pos%imf3      = myran()*0.1 + 0.1
   ELSE
-     pos%imf1      = myran()*1-1.5
-     pos%imf3      = myran()*1-1.5
+     pos%imf1      = myran()*1+0.5
+     pos%imf3      = myran()*1
   ENDIF
   IF (imf_type.EQ.0.OR.imf_type.EQ.1.OR.imf_type.EQ.3) THEN
      pos%imf2        = myran()*1.5-0.75 + 2.0
   ELSE IF (imf_type.EQ.2) THEN
      pos%imf2        = myran()*0.1 + 0.1
   ELSE IF (imf_type.EQ.4) THEN
-     pos%imf2      = myran()*1-1.5
+     pos%imf2      = myran()*0.5+0.5
   ENDIF
-  pos%imf4         = myran()*1-1.5
-  pos%imf5         = myran()*1-1.5
+  pos%imf4         = myran()*0.5
 
   IF (PRESENT(velz)) THEN
      IF (ABS(pos%velz).LE.tiny_number) THEN
@@ -150,18 +149,17 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
      IF (prlo%imf1.EQ.test%imf1) prlo%imf1       = 0.5
      IF (prlo%imf3.EQ.test%imf3) prlo%imf3       = 0.08
   ELSE
-     IF (prlo%imf1.EQ.test%imf1) prlo%imf1    = -6.0
-     IF (prlo%imf3.EQ.test%imf3) prlo%imf3    = -6.0
+     IF (prlo%imf1.EQ.test%imf1) prlo%imf1    = -3.0
+     IF (prlo%imf3.EQ.test%imf3) prlo%imf3    = -3.0
   ENDIF
   IF (imf_type.EQ.0.OR.imf_type.EQ.1.OR.imf_type.EQ.3) THEN
      IF (prlo%imf2.EQ.test%imf2) prlo%imf2    = 0.5
   ELSE IF (imf_type.EQ.2) THEN
      IF (prlo%imf2.EQ.test%imf2) prlo%imf2    = 0.08
   ELSE IF (imf_type.EQ.4) THEN
-     IF (prlo%imf2.EQ.test%imf2) prlo%imf2    = -6.0
+     IF (prlo%imf2.EQ.test%imf2) prlo%imf2    = -3.0
   ENDIF
-  IF (prlo%imf4.EQ.test%imf4) prlo%imf4    = -6.0
-  IF (prlo%imf5.EQ.test%imf5) prlo%imf5    = -6.0
+  IF (prlo%imf4.EQ.test%imf4) prlo%imf4    = -3.0
 
 
   !priors (high)
@@ -212,18 +210,17 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
      IF (prhi%imf1.EQ.test%imf1) prhi%imf1       = 3.5
      IF (prhi%imf3.EQ.test%imf3) prhi%imf3       = 0.4
   ELSE
-     IF (prhi%imf1.EQ.test%imf1) prhi%imf1 = 1.0
-     IF (prhi%imf3.EQ.test%imf3) prhi%imf3 = 1.0
+     IF (prhi%imf1.EQ.test%imf1) prhi%imf1 = 3.0
+     IF (prhi%imf3.EQ.test%imf3) prhi%imf3 = 3.0
   ENDIF
   IF (imf_type.EQ.0.OR.imf_type.EQ.1.OR.imf_type.EQ.3) THEN
      IF (prhi%imf2.EQ.test%imf2) prhi%imf2    = 3.5
   ELSE IF (imf_type.EQ.2) THEN
      IF (prhi%imf2.EQ.test%imf2) prhi%imf2    = 0.5
   ELSE IF (imf_type.EQ.4) THEN
-     IF (prhi%imf2.EQ.test%imf2) prhi%imf2    = 1.0
+     IF (prhi%imf2.EQ.test%imf2) prhi%imf2    = 3.0
   ENDIF
-  IF (prhi%imf4.EQ.test%imf4) prhi%imf4 = 1.0
-  IF (prhi%imf5.EQ.test%imf5) prhi%imf5 = 1.0
+  IF (prhi%imf4.EQ.test%imf4) prhi%imf4 = 3.0
 
   !--------------------------------------------------------------------------!
   !-------reset the initial parameters if the priors have been altered-------!
