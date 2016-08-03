@@ -219,10 +219,16 @@ SUBROUTINE SETUP()
   IF (imf_type.EQ.4) THEN 
      DO z=1,nzmet
         DO t=1,nage
-           OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v1_'//&
-                chart(t)//'_Z'//charz(z)//'.ssp.imf_nonpara_flat'//&
-                '.s100',STATUS='OLD',iostat=stat,ACTION='READ')
-           IF (stat.NE.0) THEN
+           IF (nonpimf_alpha.EQ.0) THEN
+              OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v1_'//&
+                   chart(t)//'_Z'//charz(z)//'.ssp.imf_nonpara_flat'//&
+                   '.s100',STATUS='OLD',iostat=stat,ACTION='READ')
+           ELSE IF (nonpimf_alpha.EQ.2.3) THEN
+              OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v1_'//&
+                   chart(t)//'_Z'//charz(z)//'.ssp.imf_nonpara_x2.3'//&
+                   '.s100',STATUS='OLD',iostat=stat,ACTION='READ')
+           ENDIF
+              IF (stat.NE.0) THEN
               WRITE(*,*) 'SETUP ERROR: non-param IMF models not found'
               STOP
            ENDIF

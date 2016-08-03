@@ -61,6 +61,9 @@ MODULE ALF_VARS
   !this is set internally in the code 
   INTEGER :: powell_fitting = 0
 
+  !IMF power-law slope within each bin for non-paramtric IMF
+  REAL(DP), PARAMETER :: nonpimf_alpha = 2.3 !0.0
+
   !--------------------------------------------------------------!
   !  the options below have not been tested/used in a long time  !
   !  and so are effectively deprecated                           !

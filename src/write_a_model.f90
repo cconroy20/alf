@@ -21,14 +21,14 @@ PROGRAM WRITE_A_MODEL
   !instrumental resolution (<10 -> no broadening)
   ires = 1. !100.
 
-  imf_type = 1
+  imf_type = 4
 
   !initialize the random number generator
   CALL INIT_RANDOM_SEED()
   !compute an array of gaussian deviates
   CALL GASDEV(gdev)
 
-  file = 'model_imf1_x3.0_t10.0.dat'
+  file = 'model_imf4_salp_t10.0_x2.3.dat'
   s2n  = 1E3
   lmin = 3800.
   lmax = 11000.
@@ -37,28 +37,32 @@ PROGRAM WRITE_A_MODEL
   pos%logage  = LOG10(10.0)
   pos%zh      = 0.0
   emnorm      = -5.0
-  pos%imf1    = 3.0
-  pos%imf2    = 3.0
+  pos%imf1    = 2.3
+  pos%imf2    = 2.3
   pos%imf3    = 0.08
 
   IF (imf_type.EQ.4) THEN
      !Kroupa
-     pos%imf1 = 1.1209
-     pos%imf2 = 0.8942
-     pos%imf3 = 0.5729
-     pos%imf4 = 0.2557
+    ! pos%imf1 = 1.121
+    ! pos%imf2 = 0.894
+    ! pos%imf3 = 0.573
+    ! pos%imf4 = 0.256
      !Salpeter
-   !  pos%imf1 = -0.1407
-   !  pos%imf2 = -0.7271
-   !  pos%imf3 = -1.2797
-   !  pos%imf4 = -1.6268
-   !  pos%imf5 = -1.8825
+     pos%imf1 = 1.742
+     pos%imf2 = 1.155
+     pos%imf3 = 0.603
+     pos%imf4 = 0.256
+
+     pos%imf1 = 0.0
+     pos%imf2 = 0.0
+     pos%imf3 = 0.0
+     pos%imf4 = 0.0
      !flat
-   !  pos%imf1 = -0.88461456
-   !  pos%imf2 = -0.66280881
-   !  pos%imf3 = -0.66280881
-   !  pos%imf4 = -0.66280881
-   !  pos%imf5 = -0.66280881
+   !  pos%imf1 = -0.222
+   !  pos%imf2 =  0.000
+   !  pos%imf3 =  0.000
+   !  pos%imf4 =  0.000
+   !  pos%imf5 =  0.000
   ENDIF
 
   pos%feh     = 0.0

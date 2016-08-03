@@ -91,6 +91,13 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
      pos%velz  = myran()*1E4-1E3
   ENDIF
 
+  IF (nonpimf_alpha.EQ.2.3) THEN 
+     pos%imf1 = myran()*1.0-0.5
+     pos%imf2 = myran()*1.0-0.5
+     pos%imf3 = myran()*1.0-0.5
+     pos%imf4 = myran()*1.0-0.5
+  ENDIF
+
   !these pr=test statements allow the user to pre-set
   !specific priors at the beginning of alf.f90; those
   !choices are then not overwritten below
