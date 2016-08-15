@@ -8,7 +8,7 @@ FUNCTION READ_ALF_ONE, file, old=old, nwalker=nwalker
   libmgfe = [0.4,0.4,0.4,0.4,0.29,0.20,0.13,0.08,0.0,0.0]
   libcafe = [0.32,0.3,0.28,0.26,0.20,0.12,0.06,0.02,0.0,0.0]
 
-  sdir = getenv('SPECFIT_HOME')
+  sdir = getenv('ALF_HOME')
   dir  = sdir+'/results/'
   openr,lun,dir+file,/get_lun
   ss = '#'
@@ -17,18 +17,32 @@ FUNCTION READ_ALF_ONE, file, old=old, nwalker=nwalker
   close,lun
   free_lun,lun
 
-  IF n_elements(ts) EQ 49 THEN BEGIN
+  IF n_elements(ts) EQ 51 THEN BEGIN
+     readcol,dir+file,chi2,velz,sigma,logage,zh,feh,afe,cfe,$
+             nfe,nafe,mgfe,sife,kfe,cafe,tife,vfe,crfe,mnfe,cofe,nife,$
+             cufe,srfe,bafe,eufe,teff,imf1,imf2,logfy,sigma2,$
+             velz2,logm7g,hotteff,loghot,fy_logage,logtrans,d1,d2,d3,d4,d5,$
+             jitter,imf3,logsky,imf4,imf5,m2lr,m2li,m2lk,m2lmwr,m2lmwi,m2lmwk,/sil
+  ENDIF ELSE IF n_elements(ts) EQ 50 THEN BEGIN
+     readcol,dir+file,chi2,velz,sigma,logage,zh,feh,afe,cfe,$
+             nfe,nafe,mgfe,sife,kfe,cafe,tife,vfe,crfe,mnfe,cofe,nife,$
+             cufe,srfe,bafe,eufe,teff,imf1,imf2,logfy,sigma2,$
+             velz2,logm7g,hotteff,loghot,fy_logage,logtrans,d1,d2,d3,d4,d5,$
+             jitter,imf3,logsky,imf4,m2lr,m2li,m2lk,m2lmwr,m2lmwi,m2lmwk,/sil
+  ENDIF ELSE IF n_elements(ts) EQ 49 THEN BEGIN
      readcol,dir+file,chi2,velz,sigma,logage,zh,feh,afe,cfe,$
              nfe,nafe,mgfe,sife,kfe,cafe,tife,vfe,crfe,mnfe,cofe,nife,$
              cufe,srfe,bafe,eufe,teff,imf1,imf2,logfy,sigma2,$
              velz2,logm7g,hotteff,loghot,fy_logage,logtrans,d1,d2,d3,d4,d5,$
              jitter,imf3,logsky,m2lr,m2li,m2lk,m2lmwr,m2lmwi,m2lmwk,/sil
+     imf4 = findgen(n_elements(chi2))
   ENDIF ELSE IF n_elements(ts) EQ 48 THEN BEGIN
      readcol,dir+file,chi2,velz,sigma,logage,zh,feh,afe,cfe,$
              nfe,nafe,mgfe,sife,kfe,cafe,tife,vfe,crfe,mnfe,cofe,nife,$
              cufe,srfe,bafe,eufe,teff,imf1,imf2,logfy,sigma2,$
              velz2,logm7g,hotteff,loghot,fy_logage,logtrans,d1,d2,d3,d4,d5,$
              jitter,imf3,m2lr,m2li,m2lk,m2lmwr,m2lmwi,m2lmwk,/sil
+     imf4 = findgen(n_elements(chi2))
      logsky = findgen(n_elements(chi2))
   ENDIF ELSE IF n_elements(ts) EQ 47 THEN BEGIN
      readcol,dir+file,chi2,velz,sigma,logage,zh,feh,afe,cfe,$
@@ -36,6 +50,7 @@ FUNCTION READ_ALF_ONE, file, old=old, nwalker=nwalker
              cufe,srfe,bafe,eufe,teff,imf1,imf2,logfy,sigma2,$
              velz2,logm7g,hotteff,loghot,fy_logage,logtrans,d1,d2,d3,d4,d5,$
              jitter,m2lr,m2li,m2lk,m2lmwr,m2lmwi,m2lmwk,/sil
+     imf4 = findgen(n_elements(chi2))
      imf3 = findgen(n_elements(chi2))
      logsky = findgen(n_elements(chi2))
   ENDIF ELSE IF n_elements(ts) EQ 46 THEN BEGIN
@@ -44,6 +59,7 @@ FUNCTION READ_ALF_ONE, file, old=old, nwalker=nwalker
              cufe,srfe,bafe,eufe,teff,imf1,imf2,logfy,sigma2,$
              velz2,logm7g,hotteff,loghot,fy_logage,logtrans,d1,d2,d3,d4,d5,$
              m2lr,m2li,m2lk,m2lmwr,m2lmwi,m2lmwk,/sil
+     imf4 = findgen(n_elements(chi2))
      imf3 = findgen(n_elements(chi2))
      jitter = findgen(n_elements(chi2))
      logsky = findgen(n_elements(chi2))
@@ -53,8 +69,9 @@ FUNCTION READ_ALF_ONE, file, old=old, nwalker=nwalker
              cufe,srfe,bafe,eufe,teff,imf1,imf2,logfy,sigma2,$
              velz2,logm7g,hotteff,loghot,fy_logage,logtrans,d1,d2,d3,d4,d5,$
              m2lr,m2li,m2lk,m2lmwr,m2lmwi,m2lmwk,/sil
-     imf3 = findgen(n_elements(chi2))
-     zh = findgen(n_elements(chi2))
+     imf4   = findgen(n_elements(chi2))
+     imf3   = findgen(n_elements(chi2))
+     zh     = findgen(n_elements(chi2))
      jitter = findgen(n_elements(chi2))
      logsky = findgen(n_elements(chi2))
   ENDIF ELSE BEGIN
@@ -72,16 +89,16 @@ FUNCTION READ_ALF_ONE, file, old=old, nwalker=nwalker
          mgfe:0.0,sife:0.0,cafe:0.0,tife:0.0,crfe:0.0,mnfe:0.0,bafe:0.0,$
          srfe:0.0,nife:0.0,cufe:0.0,cofe:0.0,eufe:0.0,kfe:0.0,vfe:0.0,$
          yfe:0.0,zrfe:0.0,rbfe:0.0,nhe:0.0,teff:0.0,imf1:0.0,imf2:0.0,$
-         imf3:0.0,logfy:0.0,fy_logage:0.0,sigma:0.0,sigma2:0.0,tfeh:0.0,$
-         velz:0.0,velz2:0.0,logm7g:0.0,hotteff:0.0,loghot:0.0,$
+         imf3:0.0,imf4:0.0,imf5:0.0,logfy:0.0,fy_logage:0.0,sigma:0.0,sigma2:0.0,$
+         tfeh:0.0,velz:0.0,velz2:0.0,logm7g:0.0,hotteff:0.0,loghot:0.0,$
          logtrans:0.0,chi2:0.0,mlk:0.0,mli:0.0,mlr:0.0,mlk_mw:0.0,$
          mli_mw:0.0,mlr_mw:0.0,indgb:0.0,emline:fltarr(5),lsig:0.0,ml:0.0,$
          lage:99.0,vmag:99.,fuv:99.,nuv:99.,logemline_h:0.0,logemline_oiii:0.0,$
          logemline_sii:0.0,logemline_ni:0.0,logemline_nii:0.0,delafe:0.0,$
-         delmgfe:0.0,delcafe:0.0,jitter:0.0,logsky:0.0,logm:0.0}
+         delmgfe:0.0,delcafe:0.0,jitter:0.0,logsky:0.0,logm:0.0,imf:fltarr(5)}
 
-  ss = strpos(file,'errp')
-  IF ss EQ -1 THEN BEGIN
+  errp = strpos(file,'errp')
+  IF errp EQ -1 THEN BEGIN
      tfeh = feh
   ENDIF ELSE BEGIN
      tfeh = fltarr(n_elements(feh))
@@ -94,14 +111,14 @@ FUNCTION READ_ALF_ONE, file, old=old, nwalker=nwalker
   res.tfeh = feh
   
   ;fold in the [Z/H] result into [Fe/H]
-  IF ss EQ -1 THEN BEGIN
+  IF errp EQ -1 THEN BEGIN
      res.feh = res.zh + feh
   ENDIF ELSE BEGIN
      res.feh = sqrt(res.zh^2+feh^2)
   ENDELSE
 
   ;compute the library enhancement factors
-  IF ss EQ -1 THEN BEGIN
+  IF errp EQ -1 THEN BEGIN
      delafe  = fltarr(n_elements(feh))
      delmgfe = delafe
      delcafe = delafe
@@ -150,6 +167,14 @@ FUNCTION READ_ALF_ONE, file, old=old, nwalker=nwalker
   res.imf1   = imf1
   res.imf2   = imf2
   res.imf3   = imf3
+  res.imf4   = imf4
+  IF n_elements(ts) EQ 51 THEN BEGIN
+     res.imf5 = imf5
+  ENDIF ELSE BEGIN
+     res.imf5   = 0.0 ;alog10( 1- (10^res.imf1+10^res.imf2+10^res.imf3+10^res.imf4) )
+  ENDELSE
+  FOR i=0,n_elements(logage)-1 DO $
+     res[i].imf = [res[i].imf1,res[i].imf2,res[i].imf3,res[i].imf4,res[i].imf5]
   res.logage = logage
   res.logfy  = logfy
   res.fy_logage = fy_logage
@@ -188,7 +213,7 @@ FUNCTION READ_ALF_ONE, file, old=old, nwalker=nwalker
   res.lsig = alog10(res.sigma)
   res.ml   = res.mli/res.mli_mw
 
-  IF strpos(file,'errp') EQ -1 THEN BEGIN
+  IF errp EQ -1 THEN BEGIN
      ;mass-weighted age
      res.lage = (1-10^res.logfy)*10^res.logage + 10^res.fy_logage*10^res.logfy
   ENDIF ELSE res.lage = -99.
@@ -217,9 +242,9 @@ END
 
 FUNCTION READ_ALF, file, old=old, nwalker=nwalker
 
-  sdir = getenv('SPECFIT_HOME')
+  sdir = getenv('ALF_HOME')
   IF sdir EQ '' THEN BEGIN
-     print,'READ_ALF ERROR: SPECFIT_HOME environment '+$
+     print,'READ_ALF ERROR: ALF_HOME environment '+$
            'variable not set, returning...'
      RETURN,0
   ENDIF

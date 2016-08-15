@@ -57,6 +57,7 @@ PROGRAM ALF
   REAL(DP), DIMENSION(npar,nwalkers) :: mpiposarr=0.0
   REAL(DP), DIMENSION(3,npar+2*nfil) :: runtot=0.0
   REAL(DP), DIMENSION(npar,npar)     :: xi=0.0
+  REAL(DP), DIMENSION(npar+2*nfil,nwalkers*nmcmc/nsample) :: mcmcpar=0.0
   CHARACTER(10) :: time
   REAL(SP)      :: time2
   REAL(SP), DIMENSION(2) :: dumt
@@ -503,6 +504,11 @@ PROGRAM ALF
            
            CALL UPDATE_RUNTOT(runtot,pos_emcee_in(:,j),m2l,m2lmw)
            
+           !save each chain element
+           mcmcpar(1:npar,j+(i-1)*nwalkers/nsample) = pos_emcee_in(:,j)
+           mcmcpar(npar+1:npar+nfil,j+(i-1)*nwalkers/nsample)        = m2l
+           mcmcpar(npar+nfil+1:npar+2*nfil,j+(i-1)*nwalkers/nsample) = m2lmw
+
         ENDDO
         
      ENDDO
@@ -528,14 +534,15 @@ PROGRAM ALF
      OPEN(13,FILE=TRIM(ALF_HOME)//TRIM(OUTDIR)//&
           TRIM(file)//TRIM(tag)//'.bestspec',STATUS='REPLACE')
      CALL STR2ARR(1,bpos,bposarr)
-     !NB: the model written to file has the lowest chi^2
+     !NB: the model written to file has the lowest chi^2, whereas
+     !the "best" parameters are the mean of the posteriors
      fret = func(bposarr,spec=mspec,funit=13)
      CLOSE(13)
  
      !write best-fit parameters
      !here, "best-fit" is the mean of the posterior distributions
      OPEN(14,FILE=TRIM(ALF_HOME)//TRIM(OUTDIR)//&
-          TRIM(file)//TRIM(tag)//'.bestp',STATUS='REPLACE')
+          TRIM(file)//TRIM(tag)//'.sum',STATUS='REPLACE')
      WRITE(14,'("#  Elapsed Time: ",F6.2," hr")') time2/3600.
      WRITE(14,'("#   dopowell  =",I2)') dopowell
      WRITE(14,'("#   fit_type  =",I2)') fit_type
@@ -550,15 +557,19 @@ PROGRAM ALF
      WRITE(14,'("#  Nchain     = ",I6)') nmcmc
      WRITE(14,'("#  Ncores     = ",I6)') ntasks
      WRITE(14,'("#  Facc: ",F5.2)') REAL(totacc)/REAL(nmcmc*nwalkers)
+     WRITE(14,'("#  rows: best params, 1 sigma errors, lower priors, upper priors ")') 
      WRITE(14,'(ES12.5,1x,F11.4,99(F9.4,1x))') bpos%chi2,runtot(2,:)/runtot(1,:)
+
+     !write 1 sigma errors
+     WRITE(14,'(ES12.5,1x,F11.4,99(F9.4,1x))') 0.0, &
+          SQRT( runtot(3,:)/runtot(1,:) - runtot(2,:)**2/runtot(1,:)**2 )
      CLOSE(14)
 
-     !write one sigma errors on parameters
-     OPEN(15,FILE=TRIM(ALF_HOME)//TRIM(OUTDIR)//&
-          TRIM(file)//TRIM(tag)//'.errp',STATUS='REPLACE')
-     WRITE(15,'(ES12.5,1x,F11.4,99(F9.4,1x))') 0.0, &
-          SQRT( runtot(3,:)/runtot(1,:) - runtot(2,:)**2/runtot(1,:)**2 )
-     CLOSE(15)
+     !write lower/upper priors
+     WRITE(14,'(ES12.5,1x,F11.4,99(F9.4,1x))') &
+          0.0,prloarr,m2l*0.0,m2lmw*0.0
+     WRITE(14,'(ES12.5,1x,F11.4,99(F9.4,1x))') &
+          0.0,prhiarr,m2l*0.0,m2lmw*0.0
 
      WRITE(*,*)
      WRITE(*,'(" ************************************")') 

@@ -21,17 +21,19 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
-  !vary age and metallicity of the empirical SSPs
+  !set up interpolants for age
   vt = MAX(MIN(locate(sspgrid%logagegrid,pos%logage),nage-1),1)
   dt = (pos%logage-sspgrid%logagegrid(vt))/&
        (sspgrid%logagegrid(vt+1)-sspgrid%logagegrid(vt))
   dt = MAX(MIN(dt,1.5),-0.3)  !0.5<age<15 Gyr
+
+  !set up interpolants for metallicity
   vm = MAX(MIN(locate(sspgrid%logzgrid,pos%zh),nzmet-1),1)
   dm = (pos%zh-sspgrid%logzgrid(vm)) / &
        (sspgrid%logzgrid(vm+1)-sspgrid%logzgrid(vm))
   dm = MAX(MIN(dm,1.5),-1.0) ! -2.0<[Z/H]<0.45
 
-  !vary IMF
+  !compute the IMF-variable SSP
   IF (mwimf.EQ.0.AND..NOT.PRESENT(mw).AND.&
        fit_type.EQ.0.AND.powell_fitting.EQ.0) THEN
      
@@ -40,23 +42,26 @@ SUBROUTINE GETMODEL(pos,spec,mw)
           (sspgrid%imfx1(vv1+1)-sspgrid%imfx1(vv1))
      dx1 = MAX(MIN(dx1,1.0),0.0)
 
-     IF (imf_type.EQ.0) THEN
+     IF (imf_type.EQ.0.OR.imf_type.EQ.2) THEN
+        !single power-law slope for IMF=0,2
         vv2 = vv1
         dx2 = dx1
      ELSE
+        !two-part power-law for IMF=1,3
         vv2 = MAX(MIN(locate(sspgrid%imfx2,pos%imf2),nimf-1),1)
         dx2 = (pos%imf2-sspgrid%imfx2(vv2))/&
              (sspgrid%imfx2(vv2+1)-sspgrid%imfx2(vv2))
         dx2 = MAX(MIN(dx2,1.0),0.0)        
      ENDIF
-     IF (imf_type.EQ.3) THEN
+     IF (imf_type.EQ.2.OR.imf_type.EQ.3) THEN
+        !variable low-mass cutoff for IMF=2,3
         vv3 = MAX(MIN(locate(sspgrid%imfx3,pos%imf3),nmcut-1),1)
         dx3 = (pos%imf3-sspgrid%imfx3(vv3))/&
              (sspgrid%imfx3(vv3+1)-sspgrid%imfx3(vv3))
         dx3 = MAX(MIN(dx3,1.0),0.0)
      ENDIF
 
-     IF (imf_type.EQ.3) THEN
+     IF (imf_type.EQ.2.OR.imf_type.EQ.3) THEN
 
         vm3 = MAX(MIN(locate(sspgrid%logzgrid2,pos%zh),nzmet3-1),1)
         dm3 = (pos%zh-sspgrid%logzgrid2(vm3)) / &
@@ -129,6 +134,8 @@ SUBROUTINE GETMODEL(pos,spec,mw)
 
      ELSE IF (imf_type.EQ.4) THEN
         
+        !non-parametric IMF
+
         imfw(1) = 10**pos%imf1
         imfw(2) = 10**pos%imf2
         imfw(3) = 10**pos%imf2
@@ -185,7 +192,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
 
   ELSE
   
-     !use a Kroupa IMF
+     !compute a Kroupa IMF
      spec = 10**( &
           dt*dm*sspgrid%logssp(:,imfr1,imfr2,vt+1,vm+1) + &
           (1-dt)*dm*sspgrid%logssp(:,imfr1,imfr2,vt,vm+1) + & 

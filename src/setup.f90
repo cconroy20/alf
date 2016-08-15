@@ -15,7 +15,6 @@ SUBROUTINE SETUP()
   CHARACTER(4), DIMENSION(nmcut) :: charm
   CHARACTER(5), DIMENSION(nage)  :: chart
   CHARACTER(3), DIMENSION(nage_rfcn) :: chart2
-  CHARACTER(20) :: imfstr
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -30,15 +29,6 @@ SUBROUTINE SETUP()
   charm  = (/'0.08','0.10','0.15','0.20','0.25','0.30','0.35','0.40'/)
   chart  = (/'t01.0','t03.0','t05.0','t07.0','t09.0','t11.0','t13.5'/)
   chart2 = (/'t01','t03','t05','t09','t13'/)
-
-  !this is the IMF flag for the "main" models
-  IF (imf_type.EQ.2) THEN
-     WRITE(*,*) 'ERROR: imf_type=2 is not currently supported'
-     STOP
-     imfstr = 'varymcut_varyx'     
-  ELSE
-     imfstr = 'varydoublex'
-  ENDIF
 
   sspgrid%logssp  = tiny_number
   sspgrid%logsspm = tiny_number
@@ -156,7 +146,7 @@ SUBROUTINE SETUP()
   DO z=1,nzmet
      DO t=1,nage
         OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v1_mcut0.08_'//&
-             chart(t)//'_Z'//charz(z)//'.ssp.imf_'//TRIM(imfstr)//'.s100',&
+             chart(t)//'_Z'//charz(z)//'.ssp.imf_varydoublex.s100',&
              STATUS='OLD',iostat=stat,ACTION='READ')
         IF (stat.NE.0) THEN
            WRITE(*,*) 'SETUP ERROR: IMF models not found'
@@ -188,7 +178,7 @@ SUBROUTINE SETUP()
            DO t=1,nage
               OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v1_mcut'//&
                    charm(m)//'_'//chart(t)//'_Z'//charz(z+2)//&
-                   '.ssp.imf_'//TRIM(imfstr)//'.s100',STATUS='OLD',&
+                   '.ssp.imf_varydoublex.s100',STATUS='OLD',&
                    iostat=stat,ACTION='READ')
               IF (stat.NE.0) THEN
                  WRITE(*,*) 'SETUP ERROR: IMF 3-part models not found'
@@ -251,20 +241,13 @@ SUBROUTINE SETUP()
   DO i=1,nimf
      sspgrid%imfx1(i) = 0.5+REAL(i-1+nimfoff)/5.d0 
   ENDDO
-  IF (imf_type.EQ.2) THEN
-     !sspgrid%imfx2 = (/0.07,0.10,0.15,0.2,0.25,0.3,0.35,0.4,&
-     !     0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8/)
-     write(*,*) 'ERROR: imf_type=2 no longer supported'
-     STOP
-  ELSE
-     sspgrid%imfx2 = sspgrid%imfx1
-     imfr1 = locate(sspgrid%imfx1,t13+1E-3)
-     imfr2 = locate(sspgrid%imfx2,t23+1E-3)
-  ENDIF
-  IF (imf_type.EQ.3) THEN
-     sspgrid%imfx3 = (/0.08,0.10,0.15,0.2,0.25,0.3,0.35,0.4/)
-     imfr3 = locate(sspgrid%imfx3,imflo+1E-3)
-  ENDIF
+  sspgrid%imfx2 = sspgrid%imfx1
+  sspgrid%imfx3 = (/0.08,0.10,0.15,0.2,0.25,0.3,0.35,0.4/)
+
+  !find indices of the reference IMF
+  imfr1 = locate(sspgrid%imfx1,t13+1E-3)
+  imfr2 = locate(sspgrid%imfx2,t23+1E-3)
+  imfr3 = locate(sspgrid%imfx3,imflo+1E-3)
 
   !-------------------------------------------------------------------------!
   !------------------------set up nuisance features-------------------------!
