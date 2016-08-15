@@ -33,13 +33,13 @@ PROGRAM WRITE_A_MODEL
   lmin = 3800.
   lmax = 11000.
 
-  pos%sigma   = 300.
-  pos%logage  = LOG10(10.0)
-  pos%zh      = 0.0
-  emnorm      = -5.0
-  pos%imf1    = 2.3
-  pos%imf2    = 2.3
-  pos%imf3    = 0.08
+  pos%sigma  = 300.
+  pos%logage = LOG10(10.0)
+  pos%zh     = 0.0
+  emnorm     = -5.0
+  pos%imf1   = 2.3
+  pos%imf2   = 2.3
+  pos%imf3   = 0.08
 
   IF (imf_type.EQ.4) THEN
      !Kroupa

@@ -34,11 +34,11 @@ PROGRAM ALF
   !number of chain steps to print to file
   INTEGER, PARAMETER :: nmcmc=1000
   !inverse sampling of the walkers for printing
-  INTEGER, PARAMETER :: nsample=32
+  INTEGER, PARAMETER :: nsample=8
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=30000
+  INTEGER, PARAMETER :: nburn=10000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=1024
+  INTEGER, PARAMETER :: nwalkers=512 !1024
   !save the chain outputs to file
   INTEGER, PARAMETER :: print_mcmc=1
 
@@ -83,7 +83,7 @@ PROGRAM ALF
   fit_type  = 0
   !type of IMF to fit
   !0=1PL, 1=2PL, 2=1PL+cutoff, 3=2PL+cutoff, 4=5-pt PL
-  imf_type  = 4
+  imf_type  = 3
   !are the data in the original observed frame?
   observed_frame = 1
 
@@ -270,11 +270,7 @@ PROGRAM ALF
         tpos%loghot = -5.0
         tpos%imf1 = 1.3
         tpos%imf2 = 2.3
-        tpos%imf3 = 0.235
-        tpos%imf1 = -0.319895+1.440772
-        tpos%imf2 = -0.546573+1.440772
-        tpos%imf3 = -0.867906+1.440772
-        tpos%imf4 = -1.185085+1.440772
+        tpos%imf3 = 0.08
         tpos%zh   = 0.0
         tpos%teff = 0.0
         msto = 10**(msto_t0+msto_t1*tpos%logage) * &
@@ -285,7 +281,11 @@ PROGRAM ALF
         CALL GETMODEL(tpos,mspec)
         CALL GETM2L(msto,lam,mspec,tpos,m2l) ! compute M/L
         write(*,'(2F7.2)') m2l(1:2)
-        STOP
+        tpos%imf3 = 0.25
+        CALL GETMODEL(tpos,mspec)
+        CALL GETM2L(msto,lam,mspec,tpos,m2l) ! compute M/L
+        write(*,'(2F7.2)') m2l(1:2)
+         STOP
      ENDIF
 
 
@@ -516,7 +516,7 @@ PROGRAM ALF
      CALL DATE_AND_TIME(TIME=time)
      CALL DTIME(dumt,time2)
      WRITE(*,*) 'End Time   '//time(1:2)//':'//time(3:4)
-     WRITE(*,'(" Elapsed Time: ",F6.2," hr")') time2/3600.
+     WRITE(*,'(" Elapsed Time: ",F5.2," hr")') time2/3600.
      WRITE(*,*) 
      WRITE(*,'("  Facc: ",F5.2)') REAL(totacc)/REAL(nmcmc*nwalkers)
 
