@@ -118,4 +118,11 @@ MODULE nr
      END SUBROUTINE ran1_v
   END INTERFACE ran1
 
+  INTERFACE
+     SUBROUTINE sort(arr)
+       USE nrtype
+       REAL(SP), DIMENSION(:), INTENT(INOUT) :: arr
+     END SUBROUTINE sort
+  END INTERFACE
+  
 END MODULE nr

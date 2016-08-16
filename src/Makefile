@@ -30,7 +30,7 @@ PROGS = alf write_a_model
 COMMON =  nrtype.o alf_vars.o nr.o nrutil.o ran_state.o alf_utils.o getmodel.o \
 	setup.o linterp.o velbroad.o tsum.o add_response.o \
 	contnormspec.o set_pinit_priors.o str2arr.o locate.o gasdev.o \
-	ran1.o lfit.o gaussj.o covsrt.o powell.o linmin.o \
+	ran1.o lfit.o gaussj.o covsrt.o powell.o linmin.o sort.o \
 	mnbrak.o brent.o getm2l.o read_data.o func.o init_random_seed.o \
 	getmass.o maskemlines.o getvelz.o emcee_advance_mpi.o update_runtot.o \
 	linterp3.o free_workers.o function_parallel_map.o myran.o

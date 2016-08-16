@@ -26,19 +26,19 @@ PROGRAM ALF
   !---------------------------------------------------------------------!
 
   USE alf_vars; USE alf_utils; USE mpi
-  USE nr, ONLY : locate,powell
+  USE nr, ONLY : locate,powell,sort
   USE ran_state, ONLY : ran_seed,ran_init
 
   IMPLICIT NONE
 
   !number of chain steps to print to file
-  INTEGER, PARAMETER :: nmcmc=1000
+  INTEGER, PARAMETER :: nmcmc=500
   !inverse sampling of the walkers for printing
-  INTEGER, PARAMETER :: nsample=8
+  INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=10000
+  INTEGER, PARAMETER :: nburn=1
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=512 !1024
+  INTEGER, PARAMETER :: nwalkers=128 !512 !1024
   !save the chain outputs to file
   INTEGER, PARAMETER :: print_mcmc=1
 
@@ -56,8 +56,10 @@ PROGRAM ALF
   REAL(DP), DIMENSION(npar) :: oposarr=0.,bposarr=0.0
   REAL(DP), DIMENSION(npar,nwalkers) :: mpiposarr=0.0
   REAL(DP), DIMENSION(3,npar+2*nfil) :: runtot=0.0
+  REAL(DP), DIMENSION(npar+2*nfil)  :: cl2p5,cl16,cl50,cl84,cl97p5
   REAL(DP), DIMENSION(npar,npar)     :: xi=0.0
   REAL(DP), DIMENSION(npar+2*nfil,nwalkers*nmcmc/nsample) :: mcmcpar=0.0
+  REAL(DP), DIMENSION(nwalkers*nmcmc/nsample) :: sortpos
   CHARACTER(10) :: time
   REAL(SP)      :: time2
   REAL(SP), DIMENSION(2) :: dumt
@@ -81,10 +83,10 @@ PROGRAM ALF
 
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
-  fit_type  = 0
+  fit_type  = 1
   !type of IMF to fit
   !0=1PL, 1=2PL, 2=1PL+cutoff, 3=2PL+cutoff, 4=5-pt PL
-  imf_type  = 3
+  imf_type  = 0
   !are the data in the original observed frame?
   observed_frame = 1
 
@@ -492,7 +494,7 @@ PROGRAM ALF
            
            IF (print_mcmc.EQ.1) THEN
               !write the chain element to file
-              WRITE(12,'(ES12.5,1x,F11.4,99(F9.4,1x))') &
+              WRITE(12,'(ES12.5,1x,99(F11.4,1x))') &
                    -2.0*lp_emcee_in(j),pos_emcee_in(:,j),m2l,m2lmw
            ENDIF
            
@@ -518,6 +520,17 @@ PROGRAM ALF
      !save the best position to the structure
      CALL STR2ARR(2,bpos,bposarr)  !arr->str
      bpos%chi2 = minchi2
+
+     !compute 16% and 84% CL
+     DO i=1,npar+2*nfil
+        sortpos = mcmcpar(i,:)
+        CALL SORT(sortpos)
+        cl2p5(i)  = sortpos(INT(0.025*nwalkers*nmcmc/nsample))
+        cl16(i)   = sortpos(INT(0.16*nwalkers*nmcmc/nsample))
+        cl50(i)   = sortpos(INT(0.50*nwalkers*nmcmc/nsample))
+        cl84(i)   = sortpos(INT(0.84*nwalkers*nmcmc/nsample))
+        cl97p5(i) = sortpos(INT(0.975*nwalkers*nmcmc/nsample))
+     ENDDO
           
      CALL DATE_AND_TIME(TIME=time)
      CALL DTIME(dumt,time2)
@@ -557,19 +570,29 @@ PROGRAM ALF
      WRITE(14,'("#  Nchain     = ",I6)') nmcmc
      WRITE(14,'("#  Ncores     = ",I6)') ntasks
      WRITE(14,'("#  Facc: ",F5.2)') REAL(totacc)/REAL(nmcmc*nwalkers)
-     WRITE(14,'("#  rows: best params, 1 sigma errors, lower priors, upper priors ")') 
-     WRITE(14,'(ES12.5,1x,F11.4,99(F9.4,1x))') bpos%chi2,runtot(2,:)/runtot(1,:)
+     WRITE(14,'("#  rows: mean posterior, pos(chi^2_min), 1 sigma errors, '//&
+          '2.5%, 16%, 50%, 84%, 97.5% CL, lower priors, upper priors ")') 
+     WRITE(14,'(ES12.5,1x,99(F11.4,1x))') bpos%chi2,runtot(2,:)/runtot(1,:)
+
+     !write position where chi^2=min
+     WRITE(14,'(ES12.5,1x,99(F11.4,1x))') bpos%chi2,bposarr,m2l*0.0,m2lmw*0.0
 
      !write 1 sigma errors
-     WRITE(14,'(ES12.5,1x,F11.4,99(F9.4,1x))') 0.0, &
+     WRITE(14,'(ES12.5,1x,99(F11.4,1x))') 0.0, &
           SQRT( runtot(3,:)/runtot(1,:) - runtot(2,:)**2/runtot(1,:)**2 )
-     CLOSE(14)
+
+     !write 2.5%, 16%, 50%, 84%, 97.5% CL
+     WRITE(14,'(ES12.5,1x,99(F11.4,1x))') 0.0, cl2p5
+     WRITE(14,'(ES12.5,1x,99(F11.4,1x))') 0.0, cl16
+     WRITE(14,'(ES12.5,1x,99(F11.4,1x))') 0.0, cl50
+     WRITE(14,'(ES12.5,1x,99(F11.4,1x))') 0.0, cl84
+     WRITE(14,'(ES12.5,1x,99(F11.4,1x))') 0.0, cl97p5
 
      !write lower/upper priors
-     WRITE(14,'(ES12.5,1x,F11.4,99(F9.4,1x))') &
-          0.0,prloarr,m2l*0.0,m2lmw*0.0
-     WRITE(14,'(ES12.5,1x,F11.4,99(F9.4,1x))') &
-          0.0,prhiarr,m2l*0.0,m2lmw*0.0
+     WRITE(14,'(ES12.5,1x,99(F11.4,1x))') 0.0,prloarr,m2l*0.0,m2lmw*0.0
+     WRITE(14,'(ES12.5,1x,99(F11.4,1x))') 0.0,prhiarr,m2l*0.0,m2lmw*0.0
+
+     CLOSE(14)
 
      WRITE(*,*)
      WRITE(*,'(" ************************************")') 
