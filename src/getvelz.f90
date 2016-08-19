@@ -51,10 +51,13 @@ FUNCTION GETVELZ()
         lo = MAX(l1(j),data(1)%lam0)+50
         hi = MIN(l2(j),data(datmax)%lam0)-50
         !dont use the near-IR in redshift fitting
-        IF (lo.GT.9500.) CYCLE
+        IF (lo.GT.9000.) CYCLE
         IF (lo.GE.hi) THEN
-           WRITE(*,*) 'GETVELZ ERROR:, lo>hi'
-           STOP
+           IF (j.EQ.1) THEN
+              WRITE(*,*) 'GETVELZ ERROR:, lo>hi & j=1'
+              STOP
+           ENDIF
+           CYCLE
         ENDIF
 
         !NB: this is the old way of doing things, compare with func.f90

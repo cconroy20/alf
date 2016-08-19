@@ -107,7 +107,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
         spec = 10**( dt*dm3*tmp1 + (1-dt)*dm3*tmp2 + &
              dt*(1-dm3)*tmp3 + (1-dt)*(1-dm3)*tmp4 )
 
-     ELSE IF (imf_type.EQ.0.OR.imf_type.EQ.1.OR.imf_type.EQ.2) THEN
+     ELSE IF (imf_type.EQ.0.OR.imf_type.EQ.1) THEN
 
         tmp1 = (1-dx1)*(1-dx2)*sspgrid%logssp(:,vv1,vv2,vt+1,vm+1)+&
              dx1*(1-dx2)*sspgrid%logssp(:,vv1+1,vv2,vt+1,vm+1)+&

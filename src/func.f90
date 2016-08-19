@@ -76,7 +76,7 @@ FUNCTION FUNC(nposarr,spec,funit)
         !if wavelength interval falls completely outside 
         !of the range of the data, then skip
         IF (tl1.GE.tl2) CYCLE
-        
+
         i1 = MIN(MAX(locate(data(1:datmax)%lam,tl1),1),datmax-1)
         i2 = MIN(MAX(locate(data(1:datmax)%lam,tl2),2),datmax)
 
@@ -108,11 +108,11 @@ FUNCTION FUNC(nposarr,spec,funit)
         IF (isnan(tchi2)) THEN
            WRITE(*,'(" FUNC ERROR: chi2 returned a NaN")') 
            WRITE(*,'(" error occured at wavelength interval: ",I1)') i
-           WRITE(*,*) 'lam  data   err   model '
+           WRITE(*,*) 'lam  data   err   model   poly'
            DO j=i1,i2
-              WRITE(*,'(F7.1,5ES12.3)') data(j)%lam,data(j)%flx,&
+              WRITE(*,'(F7.1,10ES12.3)') data(j)%lam,data(j)%flx,&
                    SQRT(data(j)%err**2*npos%jitter**2+&
-                   (10**npos%logsky*data(j)%sky)**2),mflx(j)
+                   (10**npos%logsky*data(j)%sky)**2),mflx(j),poly(j)
            ENDDO
            WRITE(*,*)
            WRITE(*,'("params:",100F14.2)') tposarr

@@ -94,7 +94,7 @@ PROGRAM ALF
   !dont fit transmission function in cases where the input
   !spectrum has already been de-redshifted to ~0.0
   IF (observed_frame.EQ.0) THEN
-     fit_trans     = 0
+     fit_trans     =  0
      prhi%logtrans = -5.0
      prhi%logsky   = -5.0 
   ELSE
@@ -301,6 +301,7 @@ PROGRAM ALF
      ELSE 
         velz = getvelz()
      ENDIF
+     velz = 0.0
      opos%velz = velz
      WRITE(*,'("    cz= ",F7.1," (z=",F6.3,")")') &
           velz, velz/3E5
