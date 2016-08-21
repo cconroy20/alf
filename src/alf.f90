@@ -192,7 +192,7 @@ PROGRAM ALF
 
   !we only compute things up to 500A beyond the input fit region
   nl_fit = MIN(MAX(locate(lam,l2(nlint)+500.0),1),nl)
-  !nl_fit = MIN(MAX(locate(lam,15000.d0),1),nl)
+  !nl_fit = MIN(MAX(locate(lam,11000.d0),1),nl)
 
   !define the log wavelength grid used in velbroad.f90
   dlstep = (LOG(sspgrid%lam(nl_fit))-LOG(sspgrid%lam(1)))/nl_fit
@@ -294,14 +294,12 @@ PROGRAM ALF
 
 
      !make an initial estimate of the redshift
-     !we do this to help Powell minimization
-     WRITE(*,*) ' Finding redshift...'
-     IF (file(1:4).EQ.'cdfs') THEN
+     IF (file(1:4).EQ.'cdfs'.OR.file(1:5).EQ.'legac') THEN
         velz = 0.0 
      ELSE 
+        WRITE(*,*) ' Finding redshift...'
         velz = getvelz()
      ENDIF
-     velz = 0.0
      opos%velz = velz
      WRITE(*,'("    cz= ",F7.1," (z=",F6.3,")")') &
           velz, velz/3E5
@@ -471,7 +469,6 @@ PROGRAM ALF
            opos%logemline_sii  = -8.0
            opos%logemline_ni   = -8.0
            opos%logtrans       = -8.0
-           opos%logsky         = -8.0
 
            !compute the main sequence turn-off mass vs. t and Z
            msto = MAX(MIN(10**(msto_t0+msto_t1*opos%logage) * &

@@ -97,7 +97,8 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
         DO i=grange+1,n2-grange
            nspec(i) = SUM( psf(1:2*grange+1)*tspec(i-grange:i+grange) )
         ENDDO
-     
+        nspec(n2-grange+1:n2) = spec(n2-grange+1:n2)
+
         !interpolate back to the main array
         spec(1:n2) = linterp(EXP(lnlam(1:n2)),nspec(1:n2),lambda(1:n2))
  

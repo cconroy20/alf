@@ -27,7 +27,7 @@ FUNCTION GETVELZ()
   tchi2   = 0.0
 
   !use ni=2 wavelength segments unless only 1 segment exists
-  IF (nlint.GE.2) THEN
+  IF (nlint.GE.3) THEN
      ni = 2
   ELSE
      ni = 1
