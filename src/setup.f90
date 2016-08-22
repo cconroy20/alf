@@ -432,7 +432,13 @@ SUBROUTINE SETUP()
      !of the data.  This *should't* matter since we dont use the model
      !beyond the range of the data, but I should double check this at some point
      smooth = linterp(data(1:datmax)%lam,data(1:datmax)%ires,sspgrid%lam)
-     smooth = MIN(MAX(smooth,0.0),MAXVAL(data(1:datmax)%ires))
+     DO k=1,nl
+        IF (sspgrid%lam(k).LT.data(1)%lam) THEN
+           smooth(k)=data(1)%ires
+        ELSE IF (sspgrid%lam(k).GT.data(datmax)%lam) THEN
+           smooth(k)=data(datmax)%ires
+        ENDIF
+     ENDDO
 
      !smooth the response functions
      DO k=1,nzmet

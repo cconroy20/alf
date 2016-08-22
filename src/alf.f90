@@ -40,7 +40,7 @@ PROGRAM ALF
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=1020
   !save the chain outputs to file
-  INTEGER, PARAMETER :: print_mcmc=0
+  INTEGER, PARAMETER :: print_mcmc=1
 
   !start w/ powell minimization?
   INTEGER, PARAMETER  :: dopowell=0
@@ -56,7 +56,7 @@ PROGRAM ALF
   REAL(DP), DIMENSION(npar) :: oposarr=0.,bposarr=0.0
   REAL(DP), DIMENSION(npar,nwalkers) :: mpiposarr=0.0
   REAL(DP), DIMENSION(3,npar+2*nfil) :: runtot=0.0
-  REAL(DP), DIMENSION(npar+2*nfil)  :: cl2p5,cl16,cl50,cl84,cl97p5
+  REAL(DP), DIMENSION(npar+2*nfil)   :: cl2p5,cl16,cl50,cl84,cl97p5
   REAL(DP), DIMENSION(npar,npar)     :: xi=0.0
   REAL(DP), DIMENSION(npar+2*nfil,nwalkers*nmcmc/nsample) :: mcmcpar=0.0
   REAL(DP), DIMENSION(nwalkers*nmcmc/nsample) :: sortpos
@@ -83,11 +83,11 @@ PROGRAM ALF
 
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
-  fit_type  = 0
+  fit_type = 0
   !type of IMF to fit
   !0=1PL, 1=2PL, 2=1PL+cutoff, 3=2PL+cutoff, 4=5-pt PL
-  imf_type  = 0
-  mwimf     = 1
+  imf_type = 0
+  mwimf    = 1
   !are the data in the original observed frame?
   observed_frame = 0
 
@@ -192,7 +192,6 @@ PROGRAM ALF
 
   !we only compute things up to 500A beyond the input fit region
   nl_fit = MIN(MAX(locate(lam,l2(nlint)+500.0),1),nl)
-  !nl_fit = MIN(MAX(locate(lam,11000.d0),1),nl)
 
   !define the log wavelength grid used in velbroad.f90
   dlstep = (LOG(sspgrid%lam(nl_fit))-LOG(sspgrid%lam(1)))/nl_fit
@@ -520,14 +519,14 @@ PROGRAM ALF
      CALL STR2ARR(2,bpos,bposarr)  !arr->str
      bpos%chi2 = minchi2
 
-     !compute 16% and 84% CL
+     !compute CLs
      DO i=1,npar+2*nfil
         sortpos = mcmcpar(i,:)
         CALL SORT(sortpos)
         cl2p5(i)  = sortpos(INT(0.025*nwalkers*nmcmc/nsample))
-        cl16(i)   = sortpos(INT(0.16*nwalkers*nmcmc/nsample))
-        cl50(i)   = sortpos(INT(0.50*nwalkers*nmcmc/nsample))
-        cl84(i)   = sortpos(INT(0.84*nwalkers*nmcmc/nsample))
+        cl16(i)   = sortpos(INT(0.160*nwalkers*nmcmc/nsample))
+        cl50(i)   = sortpos(INT(0.500*nwalkers*nmcmc/nsample))
+        cl84(i)   = sortpos(INT(0.840*nwalkers*nmcmc/nsample))
         cl97p5(i) = sortpos(INT(0.975*nwalkers*nmcmc/nsample))
      ENDDO
           
@@ -546,13 +545,11 @@ PROGRAM ALF
      OPEN(13,FILE=TRIM(ALF_HOME)//TRIM(OUTDIR)//&
           TRIM(file)//TRIM(tag)//'.bestspec',STATUS='REPLACE')
      CALL STR2ARR(1,bpos,bposarr)
-     !NB: the model written to file has the lowest chi^2, whereas
-     !the "best" parameters are the mean of the posteriors
+     !NB: the model written to file has the lowest chi^2
      fret = func(bposarr,spec=mspec,funit=13)
      CLOSE(13)
  
-     !write best-fit parameters
-     !here, "best-fit" is the mean of the posterior distributions
+     !write mean of the posterior distributions
      OPEN(14,FILE=TRIM(ALF_HOME)//TRIM(OUTDIR)//&
           TRIM(file)//TRIM(tag)//'.sum',STATUS='REPLACE')
      WRITE(14,'("#  Elapsed Time: ",F6.2," hr")') time2/3600.

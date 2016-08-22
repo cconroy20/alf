@@ -23,7 +23,7 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
    
   nn = SIZE(lambda)
 
-  IF (sigma.LE.tiny_number) RETURN
+  IF (sigma.LE.10.0) RETURN
 
   IF (sigma.GE.1E4) THEN
      WRITE(*,*) "VELBROAD ERROR: sigma>1E4 km/s - you've "//&
@@ -34,6 +34,8 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
   !compute smoothing the slightly less accurate way
   !but the only way in the case of wave-dep smoothing
   IF (velbroad_simple.EQ.1.OR.PRESENT(ires)) THEN
+
+     RETURN
 
      tspec(1:nn) = spec(1:nn)
      spec(1:nn)  = 0.0

@@ -243,7 +243,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      vm2 = vm
      dm2 = dm
   ENDIF
- 
+
   !Only sigma, velz, logage, and [Z/H] are fit when either
   !fitting in Powell mode or "super simple" mode
   IF (powell_fitting.EQ.0.AND.fit_type.NE.2) THEN
