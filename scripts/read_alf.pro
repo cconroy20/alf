@@ -1,5 +1,7 @@
 FUNCTION READ_ALF_ONE, file, nwalker=nwalker
 
+  ;this code is not fully functioning yet with the new rows...
+
   ;library correction factors from Schiavon 2007 Table 6
   ;note that I have forced the library corrections factors to
   ;be zero for [Fe/H]=0.0,0.2
@@ -88,9 +90,8 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker
      sind = [0,1,3,4,5,6,7,8,9]
      eind = 2
   ENDIF ELSE BEGIN
-     sind = indgen(n_elements(logage))
+     sind = lindgen(n_elements(logage))
   ENDELSE
-
 
   res.chi2 = chi2
   res.zh   = zh
@@ -107,13 +108,17 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker
 
   ;compute the library enhancement factors
   IF errp EQ -1 THEN BEGIN
-     delafe  = fltarr(n_elements(feh))
-     delmgfe = delafe
-     delcafe = delafe
-     FOR i=0,n_elements(feh)-1 DO BEGIN
-        delafe[i]  = mylinterp(libfeh,libofe,res[i].zh)
-        delmgfe[i] = mylinterp(libfeh,libmgfe,res[i].zh)
-        delcafe[i] = mylinterp(libfeh,libcafe,res[i].zh)
+     delafe  = fltarr(n_elements(logage))
+     delmgfe = fltarr(n_elements(logage))
+     delcafe = fltarr(n_elements(logage))
+     FOR i=0,n_elements(logage)-1 DO BEGIN
+        IF sum GT -1 AND i EQ 2 THEN BEGIN
+           tfeh[i]=0.0
+        ENDIF ELSE BEGIN
+           delafe[i]  = mylinterp(libfeh,libofe,res[i].zh)
+           delmgfe[i] = mylinterp(libfeh,libmgfe,res[i].zh)
+           delcafe[i] = mylinterp(libfeh,libcafe,res[i].zh)
+        ENDELSE
      ENDFOR
   ENDIF ELSE BEGIN
      delafe  = 0.0
@@ -121,34 +126,34 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker
      delcafe = 0.0
   ENDELSE
 
-  res[sind].delafe  = delafe[sind]
-  res[sind].delcafe = delcafe[sind]
-  res[sind].delmgfe = delmgfe[sind]
+  res.delafe  = delafe
+  res.delcafe = delcafe
+  res.delmgfe = delmgfe
 
-  res[sind].afe  = afe[sind] -tfeh[sind] + delafe[sind]
-  res[sind].mgfe = mgfe[sind]-tfeh[sind] + delmgfe[sind]
+  res.afe  = afe -tfeh + delafe
+  res.mgfe = mgfe-tfeh + delmgfe
 
   ;assume that Ca~Ti~Si
-  res[sind].sife = sife[sind]-tfeh[sind] + delcafe[sind]
-  res[sind].cafe = cafe[sind]-tfeh[sind] + delcafe[sind]
-  res[sind].tife = tife[sind]-tfeh[sind] + delcafe[sind]
+  res.sife = sife-tfeh + delcafe
+  res.cafe = cafe-tfeh + delcafe
+  res.tife = tife-tfeh + delcafe
 
   ;these elements seem to show no net enhancement at low Z
-  res[sind].cfe  = cfe[sind] -tfeh[sind]
-  res[sind].nfe  = nfe[sind] -tfeh[sind]
-  res[sind].crfe = crfe[sind]-tfeh[sind]
-  res[sind].nife = nife[sind]-tfeh[sind]
-  res[sind].nafe = nafe[sind]-tfeh[sind]
+  res.cfe  = cfe -tfeh
+  res.nfe  = nfe -tfeh
+  res.crfe = crfe-tfeh
+  res.nife = nife-tfeh
+  res.nafe = nafe-tfeh
 
   ;these have enhancements that I have not yet quantified
-  res[sind].bafe = bafe[sind]-tfeh[sind]
-  res[sind].eufe = eufe[sind]-tfeh[sind]
-  res[sind].srfe = srfe[sind]-tfeh[sind]
-  res[sind].cufe = cufe[sind]-tfeh[sind]
-  res[sind].cofe = cofe[sind]-tfeh[sind]
-  res[sind].kfe  = kfe[sind] -tfeh[sind]
-  res[sind].vfe  = vfe[sind] -tfeh[sind]
-  res[sind].mnfe = mnfe[sind]-tfeh[sind]
+  res.bafe = bafe-tfeh
+  res.eufe = eufe-tfeh
+  res.srfe = srfe-tfeh
+  res.cufe = cufe-tfeh
+  res.cofe = cofe-tfeh
+  res.kfe  = kfe -tfeh
+  res.vfe  = vfe -tfeh
+  res.mnfe = mnfe-tfeh
 
   res.imf1   = imf1
   res.imf2   = imf2

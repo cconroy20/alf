@@ -47,7 +47,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   pos%bah       = myran()*0.4-0.2
   pos%euh       = myran()*0.4-0.2
   pos%teff      = myran()*80.0-40.
-  pos%logfy          = myran()*1-4
+  pos%logfy          = myran()*2-4
   pos%fy_logage      = myran()*0.3
   pos%logm7g         = myran()*1-4
   pos%hotteff        = myran()*5+15
@@ -195,7 +195,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prhi%bah.EQ.test%bah) prhi%bah          = 0.5
   IF (prhi%euh.EQ.test%euh) prhi%euh          = 0.5
   IF (prhi%teff.EQ.test%teff) prhi%teff       = 50.0
-  IF (prhi%logfy.EQ.test%logfy) prhi%logfy      = -0.7
+  IF (prhi%logfy.EQ.test%logfy) prhi%logfy      = -0.1
   IF (prhi%fy_logage.EQ.test%fy_logage) prhi%fy_logage = LOG10(3.0)
   IF (prhi%logm7g.EQ.test%logm7g) prhi%logm7g   = -1.0
   IF (prhi%hotteff.EQ.test%hotteff) prhi%hotteff= 30.0

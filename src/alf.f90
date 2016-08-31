@@ -36,11 +36,11 @@ PROGRAM ALF
   !inverse sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=10000
+  INTEGER, PARAMETER :: nburn=20000
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=1020
   !save the chain outputs to file
-  INTEGER, PARAMETER :: print_mcmc=1
+  INTEGER, PARAMETER :: print_mcmc=0
 
   !start w/ powell minimization?
   INTEGER, PARAMETER  :: dopowell=0
@@ -86,8 +86,8 @@ PROGRAM ALF
   fit_type = 0
   !type of IMF to fit
   !0=1PL, 1=2PL, 2=1PL+cutoff, 3=2PL+cutoff, 4=5-pt PL
-  imf_type = 0
-  mwimf    = 1
+  imf_type = 1
+  mwimf    = 0
   !are the data in the original observed frame?
   observed_frame = 0
 
