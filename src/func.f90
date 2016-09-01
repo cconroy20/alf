@@ -14,7 +14,7 @@ FUNCTION FUNC(nposarr,spec,funit)
   INTEGER, INTENT(in), OPTIONAL :: funit
   REAL(DP) :: func,pr,tchi2,ml,tl1,tl2,oneplusz,tmps
   REAL(DP), DIMENSION(nl)   :: mspec
-  REAL(DP), DIMENSION(ndat) :: mflx,poly,zmspec
+  REAL(DP), DIMENSION(ndat) :: mflx,poly,zmspec,terr
   REAL(DP), DIMENSION(npar) :: tposarr=0.0
   REAL(DP), DIMENSION(npolymax) :: tcoeff
   INTEGER  :: i,i1,i2,j,npow,tpow
@@ -127,10 +127,15 @@ FUNCTION FUNC(nposarr,spec,funit)
                 tl1/1E4/oneplusz,tl2/1E4/oneplusz,&
                 SQRT( SUM( (data(i1:i2)%flx/mflx(i1:i2)-1)**2 )/&
                 (i2-i1+1) )*100,tchi2/(i2-i1)
+           IF (fit_type.EQ.0) THEN
+              terr = SQRT(data%err**2*npos%jitter**2+&
+                   (10**npos%logsky*data%sky)**2)
+           ELSE
+              terr = data%err
+           ENDIF
            DO j=i1,i2
               WRITE(funit,'(F9.2,4ES12.4)') data(j)%lam,mflx(j),&
-                   data(j)%flx,data(j)%flx/SQRT(data(j)%err**2*npos%jitter**2+&
-                   (10**npos%logsky*data(j)%sky)**2),poly(j)
+                   data(j)%flx,data(j)%flx/terr(j),poly(j)
            ENDDO
         ENDIF
 

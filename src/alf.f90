@@ -36,7 +36,7 @@ PROGRAM ALF
   !inverse sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=20000
+  INTEGER, PARAMETER :: nburn=10000
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=1020
   !save the chain outputs to file

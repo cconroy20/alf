@@ -22,7 +22,6 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   tprlo = prlo
   tprhi = prhi
   
-
   !setup the first position
   pos%logage    = myran()*0.4+0.6
   pos%zh        = myran()*1.0-1.0

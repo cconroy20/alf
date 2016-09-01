@@ -23,8 +23,8 @@ FUNCTION GETVELZ()
   !------------------------------------------------------!
  
   chi2    = huge_number
+  tchi2   = huge_number
   getvelz = 0.0
-  tchi2   = 0.0
 
   !use ni=2 wavelength segments unless only 1 segment exists
   IF (nlint.GE.3) THEN
@@ -54,9 +54,13 @@ FUNCTION GETVELZ()
         IF (lo.GT.9000.) CYCLE
         IF (lo.GE.hi) THEN
            IF (j.EQ.1) THEN
-              WRITE(*,*) 'GETVELZ ERROR:, lo>hi & j=1'
-              STOP
+              !WRITE(*,*) 'GETVELZ ERROR:, lo>hi & j=1'
+              !write(*,*) l1(j),l2(j)
+              !write(*,*) lo,hi
+              !write(*,*) data(1)%lam0,data(datmax)%lam0
+              !STOP
            ENDIF
+           tchi2(i) = huge_number
            CYCLE
         ENDIF
 
