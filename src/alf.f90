@@ -36,7 +36,7 @@ PROGRAM ALF
   !inverse sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=10000
+  INTEGER, PARAMETER :: nburn=20000
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=1020
   !save the chain outputs to file
@@ -89,7 +89,7 @@ PROGRAM ALF
   imf_type = 1
   mwimf    = 0
   !are the data in the original observed frame?
-  observed_frame = 0
+  observed_frame = 1
 
   !dont fit transmission function in cases where the input
   !spectrum has already been de-redshifted to ~0.0
