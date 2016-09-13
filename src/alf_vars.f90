@@ -5,6 +5,9 @@ MODULE ALF_VARS
   IMPLICIT NONE
   SAVE
 
+!use the VCJ SSPs, else use CvD (only for imf1 option)
+#define VCJ 1
+
   !directory for results (mcmc, bestspec, etc.)
   CHARACTER(100) :: OUTDIR='results/'
 
@@ -89,6 +92,16 @@ MODULE ALF_VARS
   !    the parameters below should not be modified unless you    !
   !    really know what you are doing!                           !
   !--------------------------------------------------------------!
+  
+#if (VCJ)
+  !VCJ models
+  CHARACTER(3), PARAMETER :: ssp_type='vcj'
+  INTEGER, PARAMETER :: nzmet3 = 3
+#else
+  !CvD models
+  CHARACTER(3), PARAMETER :: ssp_type='cvd'
+  INTEGER, PARAMETER :: nzmet3 = 1
+#endif
 
   !nstart and nend allow us to use only a subset of 
   !the full wavelength array
@@ -109,7 +122,7 @@ MODULE ALF_VARS
   !number of ages in the empirical SSP grid
   INTEGER, PARAMETER :: nage = 7
   !number of metallicities in the empirical SSP grid
-  INTEGER, PARAMETER :: nzmet = 5, nzmet3 = 3
+  INTEGER, PARAMETER :: nzmet = 5
   !number of parameters used when fitting in Powell model
   !or in the super-simple mode (fit_type=2)
   INTEGER, PARAMETER :: npowell = 4
@@ -228,7 +241,7 @@ MODULE ALF_VARS
      REAL(DP), DIMENSION(nzmet3)        :: logzgrid2     
      REAL(DP), DIMENSION(nl,nimf,nimf,nage,nzmet)        :: logssp
      REAL(DP), DIMENSION(nl,nimf,nimf,nage,nmcut,nzmet3) :: logsspm
-     REAL(DP), DIMENSION(nl,nimfnp,nage,nzmet)           :: sspnp
+     REAL(DP), DIMENSION(nl,nimfnp,nage,nzmet)         :: sspnp
      REAL(DP), DIMENSION(nimf)          :: imfx1,imfx2
      REAL(DP), DIMENSION(nmcut)         :: imfx3
      REAL(DP), DIMENSION(nl,nhot)       :: hotspec

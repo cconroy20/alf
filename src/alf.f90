@@ -36,11 +36,11 @@ PROGRAM ALF
   !inverse sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=10000
+  INTEGER, PARAMETER :: nburn=20000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=512 !1020
+  INTEGER, PARAMETER :: nwalkers=1020
   !save the chain outputs to file
-  INTEGER, PARAMETER :: print_mcmc=1
+  INTEGER, PARAMETER :: print_mcmc=0
 
   !start w/ powell minimization?
   INTEGER, PARAMETER  :: dopowell=0
@@ -120,6 +120,17 @@ PROGRAM ALF
  ! prhi%imf4 = 0.2557+0.01
  ! prlo%imf4 = 0.2557-0.01
 
+  IF (ssp_type.EQ.'cvd') THEN
+     !always limit the [Z/H] range for CvD since
+     !these models are actually only at Zsol
+     prhi%zh =  0.01
+     prlo%zh = -0.01
+     IF (imf_type.GT.1) THEN
+        WRITE(*,*) 'ALF ERROR, ssp_type=cvd but imf>1'
+        STOP
+     ENDIF
+  ENDIF
+
   IF (fit_type.EQ.1.OR.fit_type.EQ.2) mwimf=1
 
   !---------------------------------------------------------------!
@@ -151,10 +162,10 @@ PROGRAM ALF
      !write some important variables to screen
      WRITE(*,*) 
      WRITE(*,'(" ************************************")') 
-     WRITE(*,'("   dopowell  =",I2)') dopowell
+     WRITE(*,'("   ssp_type  =",A4)') ssp_type
      WRITE(*,'("   fit_type  =",I2)') fit_type
      WRITE(*,'("   imf_type  =",I2)') imf_type
-     WRITE(*,'("   fit_trans =",I2)') fit_trans
+     WRITE(*,'("  obs_frame  =",I2)') observed_frame 
      WRITE(*,'("      mwimf  =",I2)') mwimf
      WRITE(*,'("  age-dep Rf =",I2)') use_age_dep_resp_fcns
      WRITE(*,'("    Z-dep Rf =",I2)') use_z_dep_resp_fcns
@@ -548,10 +559,10 @@ PROGRAM ALF
      OPEN(14,FILE=TRIM(ALF_HOME)//TRIM(OUTDIR)//&
           TRIM(file)//TRIM(tag)//'.sum',STATUS='REPLACE')
      WRITE(14,'("#  Elapsed Time: ",F6.2," hr")') time2/3600.
-     WRITE(14,'("#   dopowell  =",I2)') dopowell
+     WRITE(14,'("    ssp_type  =",A4)') ssp_type
      WRITE(14,'("#   fit_type  =",I2)') fit_type
      WRITE(14,'("#   imf_type  =",I2)') imf_type
-     WRITE(14,'("#   fit_trans =",I2)') fit_trans
+     WRITE(14,'("  obs_frame  =",I2)') observed_frame 
      WRITE(14,'("#   fit_poly  =",I2)') fit_poly
      WRITE(14,'("#      mwimf  =",I2)') mwimf
      WRITE(14,'("#  age-dep Rf =",I2)') use_age_dep_resp_fcns

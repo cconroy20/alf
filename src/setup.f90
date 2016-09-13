@@ -11,6 +11,7 @@ SUBROUTINE SETUP()
   INTEGER :: stat,i,vv,j,k,t,z,ii,shift=100,m
   INTEGER, PARAMETER :: ntrans=22800
   REAL(DP), DIMENSION(ntrans) :: ltrans,ftrans_h2o,ftrans_o2,strans
+  REAL(DP), DIMENSION(3) :: tmpzgrid
   CHARACTER(4), DIMENSION(nzmet) :: charz
   CHARACTER(4), DIMENSION(nmcut) :: charm
   CHARACTER(5), DIMENSION(nage)  :: chart
@@ -140,14 +141,22 @@ SUBROUTINE SETUP()
 
   sspgrid%logagegrid = LOG10((/1.0,3.0,5.0,7.0,9.0,11.0,13.5/))
   sspgrid%logzgrid   = (/-1.5,-1.0,-0.5,0.0,0.25/)
-  sspgrid%logzgrid2  = (/-0.5,0.0,0.25/)
+  !below is to make things work when nzmet3=1 for cvd
+  tmpzgrid = (/-0.5,0.0,0.25/)
+  sspgrid%logzgrid2(1:nzmet3) = tmpzgrid(1:nzmet3)  
 
   !read in two parameter IMF models
   DO z=1,nzmet
      DO t=1,nage
-        OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v4_mcut0.08_'//&
-             chart(t)//'_Z'//charz(z)//'.ssp.imf_varydoublex.s100',&
-             STATUS='OLD',iostat=stat,ACTION='READ')
+        IF (ssp_type.EQ.'vcj') THEN
+           OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v4_mcut0.08_'//&
+                chart(t)//'_Z'//charz(z)//'.ssp.imf_varydoublex.s100',&
+                STATUS='OLD',iostat=stat,ACTION='READ')
+        ELSE
+           OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/CvD_v4_mcut0.08_'//&
+                chart(t)//'_Zp0.0.ssp.imf_varydoublex.s100',&
+                STATUS='OLD',iostat=stat,ACTION='READ')
+        ENDIF
         IF (stat.NE.0) THEN
            WRITE(*,*) 'SETUP ERROR: IMF models not found'
            STOP

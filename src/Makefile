@@ -16,7 +16,7 @@ F90 = mpifort
 #  (Uncomment only one)
 #========================
 # GNU
-F90FLAGS = -O3 -fno-strict-overflow
+F90FLAGS = -O3 -fno-strict-overflow -cpp
 #F90FLAGS = -O3 -fno-strict-overflow  #for odyssey
 #---------------------
 # Intel 
