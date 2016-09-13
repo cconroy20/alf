@@ -559,10 +559,10 @@ PROGRAM ALF
      OPEN(14,FILE=TRIM(ALF_HOME)//TRIM(OUTDIR)//&
           TRIM(file)//TRIM(tag)//'.sum',STATUS='REPLACE')
      WRITE(14,'("#  Elapsed Time: ",F6.2," hr")') time2/3600.
-     WRITE(14,'("    ssp_type  =",A4)') ssp_type
+     WRITE(14,'("#   ssp_type  =",A4)') ssp_type
      WRITE(14,'("#   fit_type  =",I2)') fit_type
      WRITE(14,'("#   imf_type  =",I2)') imf_type
-     WRITE(14,'("  obs_frame  =",I2)') observed_frame 
+     WRITE(14,'("#  obs_frame  =",I2)') observed_frame 
      WRITE(14,'("#   fit_poly  =",I2)') fit_poly
      WRITE(14,'("#      mwimf  =",I2)') mwimf
      WRITE(14,'("#  age-dep Rf =",I2)') use_age_dep_resp_fcns

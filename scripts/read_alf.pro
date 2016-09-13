@@ -66,7 +66,8 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker
      imf3   = findgen(n_elements(chi2))
      logsky = findgen(n_elements(chi2))
   ENDIF ELSE BEGIN
-     print,'READ_ALF ERROR: file format not recognized, returning...'
+     print,'READ_ALF ERROR: file format not recognized, returning...',$
+           n_elements(ts) EQ 47
      RETURN,0
   ENDELSE 
 
