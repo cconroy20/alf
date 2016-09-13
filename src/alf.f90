@@ -36,11 +36,11 @@ PROGRAM ALF
   !inverse sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=20000
+  INTEGER, PARAMETER :: nburn=10000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=1020
+  INTEGER, PARAMETER :: nwalkers=512 !1020
   !save the chain outputs to file
-  INTEGER, PARAMETER :: print_mcmc=0
+  INTEGER, PARAMETER :: print_mcmc=1
 
   !start w/ powell minimization?
   INTEGER, PARAMETER  :: dopowell=0
@@ -105,6 +105,12 @@ PROGRAM ALF
      smooth_trans = 0.0
   ENDIF
 
+  !set low upper prior limits to kill off these parameters
+  !prhi%logm7g = -5.00
+  !prhi%zh     =  0.01
+  !prlo%zh     = -0.01
+
+
  ! prhi%imf1 = 1.1209+0.01
  ! prlo%imf1 = 1.1209-0.01
  ! prhi%imf2 = 0.8942+0.01
@@ -113,17 +119,6 @@ PROGRAM ALF
  ! prlo%imf3 = 0.5729-0.01
  ! prhi%imf4 = 0.2557+0.01
  ! prlo%imf4 = 0.2557-0.01
-
-  !set low upper prior limits to kill off these parameters
-  !prhi%logm7g   = -5.0
-  !prhi%loghot   = -5.0
-  !prhi%logtrans = -5.0
-  !prhi%logfy    = -5.0
-  !prhi%logemline_h    = -5.0
-  !prhi%logemline_oiii = -5.0
-  !prhi%logemline_sii  = -5.0
-  !prhi%logemline_nii  = -5.0
-  !prhi%logemline_ni   = -5.0
 
   IF (fit_type.EQ.1.OR.fit_type.EQ.2) mwimf=1
 

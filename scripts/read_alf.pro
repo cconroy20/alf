@@ -7,8 +7,13 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker
   ;be zero for [Fe/H]=0.0,0.2
   libfeh  = [-1.6,-1.4,-1.2,-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2]
   libofe  = [0.6,0.5,0.5,0.4,0.3,0.2,0.2,0.1,0.0,0.0]
-  libmgfe = [0.4,0.4,0.4,0.4,0.29,0.20,0.13,0.08,0.0,0.0]
-  libcafe = [0.32,0.3,0.28,0.26,0.20,0.12,0.06,0.02,0.0,0.0]
+  ;libmgfe = [0.4,0.4,0.4,0.4,0.29,0.20,0.13,0.08,0.0,0.0]
+  ;libcafe = [0.32,0.3,0.28,0.26,0.20,0.12,0.06,0.02,0.0,0.0]
+
+  ;fitted to Bensby et al. 2014
+  libmgfe = [0.4,0.4,0.4,0.38,0.37,0.27,0.21,0.12,0.05,0.0]
+  libcafe = [0.32,0.3,0.28,0.26,0.26,0.17,0.12,0.06,0.0,0.0]
+ 
 
   sdir = getenv('ALF_HOME')
   dir  = sdir+'/results/'
@@ -200,7 +205,9 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker
 
   IF errp EQ -1 THEN BEGIN
      res[sind].lsig = alog10(res[sind].sigma)
-     res[sind].ml   = res[sind].mli/res[sind].mli_mw
+     ;this is not quite right below!  I think we need the actual
+     ;chain output to propogate the errors since mli and mli_mw are correlated
+     res[sind].ml   = res[sind].mli/res[0].mli_mw
      IF sum GT -1 THEN BEGIN
         res[eind].ml = sqrt(res[eind].mli^2+res[eind].mli_mw^2)/res[0].mli_mw
      ENDIF
