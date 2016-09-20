@@ -155,17 +155,17 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
      IF (prlo%imf1.EQ.test%imf1) prlo%imf1       = 0.5
      IF (prlo%imf3.EQ.test%imf3) prlo%imf3       = 0.08
   ELSE
-     IF (prlo%imf1.EQ.test%imf1) prlo%imf1    = -3.0
-     IF (prlo%imf3.EQ.test%imf3) prlo%imf3    = -3.0
+     IF (prlo%imf1.EQ.test%imf1) prlo%imf1    = -5.0
+     IF (prlo%imf3.EQ.test%imf3) prlo%imf3    = -5.0
   ENDIF
   IF (imf_type.EQ.0.OR.imf_type.EQ.1.OR.imf_type.EQ.3) THEN
      IF (prlo%imf2.EQ.test%imf2) prlo%imf2    = 0.5
   ELSE IF (imf_type.EQ.2) THEN
      IF (prlo%imf2.EQ.test%imf2) prlo%imf2    = 0.08
   ELSE IF (imf_type.EQ.4) THEN
-     IF (prlo%imf2.EQ.test%imf2) prlo%imf2    = -3.0
+     IF (prlo%imf2.EQ.test%imf2) prlo%imf2    = -5.0
   ENDIF
-  IF (prlo%imf4.EQ.test%imf4) prlo%imf4    = -3.0
+  IF (prlo%imf4.EQ.test%imf4) prlo%imf4    = -5.0
 
 
   !priors (high)

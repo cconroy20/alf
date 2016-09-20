@@ -36,11 +36,11 @@ PROGRAM ALF
   !inverse sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=20000
+  INTEGER, PARAMETER :: nburn=100000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=1020
+  INTEGER, PARAMETER :: nwalkers=1020 !1020
   !save the chain outputs to file
-  INTEGER, PARAMETER :: print_mcmc=0
+  INTEGER, PARAMETER :: print_mcmc=1
 
   !start w/ powell minimization?
   INTEGER, PARAMETER  :: dopowell=0
@@ -86,7 +86,7 @@ PROGRAM ALF
   fit_type = 0
   !type of IMF to fit
   !0=1PL, 1=2PL, 2=1PL+cutoff, 3=2PL+cutoff, 4=5-pt PL
-  imf_type = 1
+  imf_type = 4
   mwimf    = 0
   !are the data in the original observed frame?
   observed_frame = 1
@@ -109,16 +109,6 @@ PROGRAM ALF
   !prhi%logm7g = -5.00
   !prhi%zh     =  0.01
   !prlo%zh     = -0.01
-
-
- ! prhi%imf1 = 1.1209+0.01
- ! prlo%imf1 = 1.1209-0.01
- ! prhi%imf2 = 0.8942+0.01
- ! prlo%imf2 = 0.8942-0.01
- ! prhi%imf3 = 0.5729+0.01
- ! prlo%imf3 = 0.5729-0.01
- ! prhi%imf4 = 0.2557+0.01
- ! prlo%imf4 = 0.2557-0.01
 
   IF (ssp_type.EQ.'cvd') THEN
      !always limit the [Z/H] range for CvD since
@@ -277,23 +267,23 @@ PROGRAM ALF
         tpos%logfy  = -5.0
         tpos%logm7g = -5.0
         tpos%loghot = -5.0
-        tpos%imf1 = 1.3
-        tpos%imf2 = 2.3
-        tpos%imf3 = 0.08
+        !tpos%imf1 = 1.3
+        !tpos%imf2 = 2.3
+        !tpos%imf3 = 0.08
+        tpos%imf1 = 0.0
+        tpos%imf2 = 0.0
+        tpos%imf3 = 0.0
+        tpos%imf4 = 0.0
         tpos%zh   = 0.0
         tpos%teff = 0.0
         msto = 10**(msto_t0+msto_t1*tpos%logage) * &
              ( msto_z0 + msto_z1*tpos%zh + msto_z2*tpos%zh**2 )
         CALL GETMODEL(tpos,mspecmw,mw=1)     !get spectrum for MW IMF
         CALL GETM2L(msto,lam,mspecmw,tpos,m2lmw,mw=1) !compute M/L_MW
-        write(*,'(2F7.2)') m2lmw(1:2)
+        write(*,'("M/L=",2F7.2)') m2lmw(1:2)
         CALL GETMODEL(tpos,mspec)
-        CALL GETM2L(msto,lam,mspec,tpos,m2l) ! compute M/L
-        write(*,'(2F7.2)') m2l(1:2)
-        tpos%imf3 = 0.25
-        CALL GETMODEL(tpos,mspec)
-        CALL GETM2L(msto,lam,mspec,tpos,m2l) ! compute M/L
-        write(*,'(2F7.2)') m2l(1:2)
+        CALL GETM2L(msto,lam,mspec,tpos,m2l)
+        write(*,'("M/L=",2F7.2)') m2l(1:2)
          STOP
      ENDIF
 

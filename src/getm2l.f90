@@ -33,7 +33,7 @@ SUBROUTINE GETM2L(msto,lam,spec,pos,m2l,mw)
      ELSE IF (imf_type.EQ.2) THEN
         !single powerlaw index with variable low-mass cutoff
         mass = getmass(pos%imf3,msto,pos%imf1,pos%imf1,krpa_imf3)
-      ELSE IF (imf_type.EQ.3) THEN
+     ELSE IF (imf_type.EQ.3) THEN
         !double powerlaw index with variable low-mass cutoff
         mass = getmass(pos%imf3,msto,pos%imf1,pos%imf2,krpa_imf3)
      ELSE IF (imf_type.EQ.4) THEN

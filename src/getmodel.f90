@@ -137,13 +137,13 @@ SUBROUTINE GETMODEL(pos,spec,mw)
         !non-parametric IMF
 
         imfw(1) = 10**pos%imf1
-        imfw(2) = 10**pos%imf2
+        imfw(2) = 10**((pos%imf2+pos%imf1)/2.)
         imfw(3) = 10**pos%imf2
-        imfw(4) = 10**pos%imf3
+        imfw(4) = 10**((pos%imf3+pos%imf2)/2.)
         imfw(5) = 10**pos%imf3
-        imfw(6) = 10**pos%imf4
+        imfw(6) = 10**((pos%imf4+pos%imf3)/2.)
         imfw(7) = 10**pos%imf4
-        imfw(8) = 10**imf5
+        imfw(8) = 10**((imf5+pos%imf4)/2.)
         imfw(9) = 10**imf5
        
         tmp1 = 0.0

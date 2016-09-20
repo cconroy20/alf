@@ -218,7 +218,7 @@ SUBROUTINE SETUP()
   IF (imf_type.EQ.4) THEN 
      DO z=1,nzmet
         DO t=1,nage
-           IF (nonpimf_alpha.EQ.0) THEN
+           IF (nonpimf_alpha.EQ.0.0) THEN
               OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v4_'//&
                    chart(t)//'_Z'//charz(z)//'.ssp.imf_nonpara_flat'//&
                    '.s100',STATUS='OLD',iostat=stat,ACTION='READ')
