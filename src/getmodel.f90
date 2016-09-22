@@ -145,7 +145,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
         imfw(7) = 10**pos%imf4
         imfw(8) = 10**((imf5+pos%imf4)/2.)
         imfw(9) = 10**imf5
-       
+
         tmp1 = 0.0
         tmp2 = 0.0
         tmp3 = 0.0

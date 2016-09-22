@@ -161,6 +161,9 @@ MODULE ALF_VARS
   INTEGER, PARAMETER :: nimfnp5=5
   !mass boundaries for non-para IMF (starting at imflo, and ending at imfhi)
   REAL(DP), DIMENSION(nimfnp5) :: mbin_nimf = (/0.2,0.4,0.6,0.8,1.0/)
+  INTEGER, PARAMETER :: nimfnp9=9
+  REAL(DP), DIMENSION(nimfnp9+1) :: &
+       mbin_nimf9 = (/0.08,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0/)
 
   !----------Setup a common block of arrays and vars-------------!
 

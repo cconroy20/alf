@@ -38,7 +38,7 @@ PROGRAM ALF
   !length of chain burn-in
   INTEGER, PARAMETER :: nburn=100000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=1020 !1020
+  INTEGER, PARAMETER :: nwalkers=1085 !1020, 1085
   !save the chain outputs to file
   INTEGER, PARAMETER :: print_mcmc=1
 
@@ -89,7 +89,7 @@ PROGRAM ALF
   imf_type = 4
   mwimf    = 0
   !are the data in the original observed frame?
-  observed_frame = 1
+  observed_frame = 0
 
   !dont fit transmission function in cases where the input
   !spectrum has already been de-redshifted to ~0.0
@@ -270,10 +270,10 @@ PROGRAM ALF
         !tpos%imf1 = 1.3
         !tpos%imf2 = 2.3
         !tpos%imf3 = 0.08
-        tpos%imf1 = 0.0
-        tpos%imf2 = 0.0
-        tpos%imf3 = 0.0
-        tpos%imf4 = 0.0
+        tpos%imf1 = -1.1
+        tpos%imf2 = 1.179
+        tpos%imf3 = -2.47
+        tpos%imf4 = 0.1533
         tpos%zh   = 0.0
         tpos%teff = 0.0
         msto = 10**(msto_t0+msto_t1*tpos%logage) * &
