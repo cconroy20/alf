@@ -171,7 +171,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   !priors (high)
   !if you change the prior on the age, also change the max 
   !age allowed in getmodel
-  IF (prhi%logage.EQ.test%logage) prhi%logage = LOG10(15.0)
+  IF (prhi%logage.EQ.test%logage) prhi%logage = LOG10(14.0)
   IF (prhi%zh.EQ.test%zh) prhi%zh             = 0.3
   IF (prhi%feh.EQ.test%feh) prhi%feh          = 0.5
   IF (prhi%ah.EQ.test%ah) prhi%ah             = 0.5

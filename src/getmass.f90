@@ -14,7 +14,7 @@ FUNCTION GETMASS(mlo,mto,imf1,imf2,imfup,imf3,imf4,timfnorm)
   REAL(DP) :: imfnorm, getmass
   REAL(DP), PARAMETER :: bhlim=40.0,nslim=8.5
   REAL(DP) :: m2=0.5,m3=1.0,alpha
-  REAL(DP), DIMENSION(nimfnp9) :: imfw=0.0
+  REAL(DP), DIMENSION(nimfnp) :: imfw=0.0
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -89,7 +89,7 @@ FUNCTION GETMASS(mlo,mto,imf1,imf2,imfup,imf3,imf4,timfnorm)
      imfw(9) = 10**imf5
 
      imfnorm = 0.0
-     DO i=1,nimfnp9
+     DO i=1,nimfnp
         imfnorm = imfnorm + imfw(i)/alpha*(mbin_nimf9(i+1)**alpha-mbin_nimf9(i)**alpha)
      ENDDO
      imfnorm = imfnorm + imfw(9)/(-imfup+2)/(mbin_nimf9(10)**(-imfup)) * &
@@ -99,7 +99,7 @@ FUNCTION GETMASS(mlo,mto,imf1,imf2,imfup,imf3,imf4,timfnorm)
 
         ! MSTO > 1.0
         
-        DO i=1,nimfnp9
+        DO i=1,nimfnp
            getmass = getmass + imfw(i)/alpha*(mbin_nimf9(i+1)**alpha - &
                 mbin_nimf9(i)**alpha)
         ENDDO
@@ -116,7 +116,7 @@ FUNCTION GETMASS(mlo,mto,imf1,imf2,imfup,imf3,imf4,timfnorm)
 
         ! 0.9 < MSTO < 1.0
 
-        DO i=1,nimfnp9-1
+        DO i=1,nimfnp-1
            getmass = getmass + imfw(i)/alpha*(mbin_nimf9(i+1)**alpha - &
                 mbin_nimf9(i)**alpha)
         ENDDO
@@ -137,7 +137,7 @@ FUNCTION GETMASS(mlo,mto,imf1,imf2,imfup,imf3,imf4,timfnorm)
 
         ! 0.8 < MSTO < 0.9
 
-        DO i=1,nimfnp9-2
+        DO i=1,nimfnp-2
            getmass = getmass + imfw(i)/alpha*(mbin_nimf9(i+1)**alpha - &
                 mbin_nimf9(i)**alpha)
         ENDDO
@@ -164,7 +164,7 @@ FUNCTION GETMASS(mlo,mto,imf1,imf2,imfup,imf3,imf4,timfnorm)
 
         ! 0.7 < MSTO < 0.8
 
-        DO i=1,nimfnp9-3
+        DO i=1,nimfnp-3
            getmass = getmass + imfw(i)/alpha*(mbin_nimf9(i+1)**alpha - &
                 mbin_nimf9(i)**alpha)
         ENDDO

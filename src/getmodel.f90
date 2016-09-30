@@ -25,13 +25,13 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   vt = MAX(MIN(locate(sspgrid%logagegrid,pos%logage),nage-1),1)
   dt = (pos%logage-sspgrid%logagegrid(vt))/&
        (sspgrid%logagegrid(vt+1)-sspgrid%logagegrid(vt))
-  dt = MAX(MIN(dt,1.5),-0.3)  !0.5<age<15 Gyr
+  dt = MAX(MIN(dt,1.2),-0.3)  !0.5<age<14 Gyr
 
   !set up interpolants for metallicity
   vm = MAX(MIN(locate(sspgrid%logzgrid,pos%zh),nzmet-1),1)
   dm = (pos%zh-sspgrid%logzgrid(vm)) / &
        (sspgrid%logzgrid(vm+1)-sspgrid%logzgrid(vm))
-  dm = MAX(MIN(dm,1.5),-1.0) ! -2.0<[Z/H]<0.45
+  dm = MAX(MIN(dm,1.0),-1.0) ! -2.0<[Z/H]<0.25
 
   !compute the IMF-variable SSP
   IF (mwimf.EQ.0.AND..NOT.PRESENT(mw).AND.&
@@ -208,7 +208,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      vy    = MAX(MIN(locate(sspgrid%logagegrid,pos%fy_logage),nage-1),1)
      dy    = (pos%fy_logage-sspgrid%logagegrid(vy))/&
           (sspgrid%logagegrid(vy+1)-sspgrid%logagegrid(vy))
-     dy    = MAX(MIN(dy,1.0),-0.3) !0.5<age<13 Gyr
+     dy    = MAX(MIN(dy,1.0),-0.3) !0.5<age<13.5 Gyr
      yspec = &
           dy*dm*sspgrid%logssp(:,imfr1,imfr2,vy+1,vm+1) + &
           (1-dy)*dm*sspgrid%logssp(:,imfr1,imfr2,vy,vm+1) + & 

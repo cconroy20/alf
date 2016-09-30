@@ -226,8 +226,10 @@ SUBROUTINE SETUP()
               OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v4_'//&
                    chart(t)//'_Z'//charz(z)//'.ssp.imf_nonpara_x2.3'//&
                    '.s100',STATUS='OLD',iostat=stat,ACTION='READ')
+           ELSE
+              WRITE(*,*) 'SETUP ERROR: nonpimf_alpha=',nonpimf_alpha
            ENDIF
-              IF (stat.NE.0) THEN
+           IF (stat.NE.0) THEN
               WRITE(*,*) 'SETUP ERROR: non-param IMF models not found'
               STOP
            ENDIF

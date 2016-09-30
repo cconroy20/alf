@@ -36,9 +36,9 @@ PROGRAM ALF
   !inverse sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=100000
+  INTEGER, PARAMETER :: nburn=20000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=1085 !1020, 1085
+  INTEGER, PARAMETER :: nwalkers=1020 !1020 (15), 1085 (31)
   !save the chain outputs to file
   INTEGER, PARAMETER :: print_mcmc=1
 
@@ -85,11 +85,14 @@ PROGRAM ALF
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
   fit_type = 0
   !type of IMF to fit
-  !0=1PL, 1=2PL, 2=1PL+cutoff, 3=2PL+cutoff, 4=5-pt PL
+  !0=1PL, 1=2PL, 2=1PL+cutoff, 3=2PL+cutoff, 4=non-parametric IMF
   imf_type = 4
-  mwimf    = 0
   !are the data in the original observed frame?
-  observed_frame = 0
+  observed_frame = 1
+  !IMF slope within the non-parametric IMF bins
+  nonpimf_alpha = 0.0
+  !force MW IMF
+  mwimf    = 0
 
   !dont fit transmission function in cases where the input
   !spectrum has already been de-redshifted to ~0.0
@@ -155,6 +158,8 @@ PROGRAM ALF
      WRITE(*,'("   ssp_type  =",A4)') ssp_type
      WRITE(*,'("   fit_type  =",I2)') fit_type
      WRITE(*,'("   imf_type  =",I2)') imf_type
+     IF (imf_type.EQ.4) &
+          WRITE(*,'("   nonpimf   =",F4.1)') nonpimf_alpha
      WRITE(*,'("  obs_frame  =",I2)') observed_frame 
      WRITE(*,'("      mwimf  =",I2)') mwimf
      WRITE(*,'("  age-dep Rf =",I2)') use_age_dep_resp_fcns
@@ -552,6 +557,7 @@ PROGRAM ALF
      WRITE(14,'("#   ssp_type  =",A4)') ssp_type
      WRITE(14,'("#   fit_type  =",I2)') fit_type
      WRITE(14,'("#   imf_type  =",I2)') imf_type
+     WRITE(14,'("#    nonpimf  =",F4.1)') nonpimf_alpha
      WRITE(14,'("#  obs_frame  =",I2)') observed_frame 
      WRITE(14,'("#   fit_poly  =",I2)') fit_poly
      WRITE(14,'("#      mwimf  =",I2)') mwimf
