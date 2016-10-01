@@ -149,11 +149,11 @@ SUBROUTINE SETUP()
   DO z=1,nzmet
      DO t=1,nage
         IF (ssp_type.EQ.'vcj') THEN
-           OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v4_mcut0.08_'//&
+           OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v5_mcut0.08_'//&
                 chart(t)//'_Z'//charz(z)//'.ssp.imf_varydoublex.s100',&
                 STATUS='OLD',iostat=stat,ACTION='READ')
         ELSE
-           OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/CvD_v4_mcut0.08_'//&
+           OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/CvD_v5_mcut0.08_'//&
                 chart(t)//'_Zp0.0.ssp.imf_varydoublex.s100',&
                 STATUS='OLD',iostat=stat,ACTION='READ')
         ENDIF
@@ -185,7 +185,7 @@ SUBROUTINE SETUP()
      DO z=1,nzmet3
         DO m=1,nmcut
            DO t=1,nage
-              OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v4_mcut'//&
+              OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v5_mcut'//&
                    charm(m)//'_'//chart(t)//'_Z'//charz(z+2)//&
                    '.ssp.imf_varydoublex.s100',STATUS='OLD',&
                    iostat=stat,ACTION='READ')
@@ -219,11 +219,11 @@ SUBROUTINE SETUP()
      DO z=1,nzmet
         DO t=1,nage
            IF (nonpimf_alpha.EQ.0.0) THEN
-              OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v4_'//&
+              OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v5_'//&
                    chart(t)//'_Z'//charz(z)//'.ssp.imf_nonpara_flat'//&
                    '.s100',STATUS='OLD',iostat=stat,ACTION='READ')
            ELSE IF (nonpimf_alpha.EQ.2.3) THEN
-              OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v4_'//&
+              OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v5_'//&
                    chart(t)//'_Z'//charz(z)//'.ssp.imf_nonpara_x2.3'//&
                    '.s100',STATUS='OLD',iostat=stat,ACTION='READ')
            ELSE

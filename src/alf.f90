@@ -86,7 +86,7 @@ PROGRAM ALF
   fit_type = 0
   !type of IMF to fit
   !0=1PL, 1=2PL, 2=1PL+cutoff, 3=2PL+cutoff, 4=non-parametric IMF
-  imf_type = 4
+  imf_type = 0
   !are the data in the original observed frame?
   observed_frame = 1
   !IMF slope within the non-parametric IMF bins
