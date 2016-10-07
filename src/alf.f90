@@ -1,7 +1,7 @@
 PROGRAM ALF
 
   !  Master program to fit the absorption line spectrum
-  !  of a quiescent (>~1 Gyr) stellar population
+  !  of a quiescent (>1 Gyr) stellar population
 
   ! Some important points to keep in mind:
   ! 1. The prior bounds on the parameters are specified in set_pinit_priors. 
@@ -86,7 +86,7 @@ PROGRAM ALF
   fit_type = 0
   !type of IMF to fit
   !0=1PL, 1=2PL, 2=1PL+cutoff, 3=2PL+cutoff, 4=non-parametric IMF
-  imf_type = 0
+  imf_type = 1
   !are the data in the original observed frame?
   observed_frame = 1
   !IMF slope within the non-parametric IMF bins
@@ -109,9 +109,11 @@ PROGRAM ALF
   ENDIF
 
   !set low upper prior limits to kill off these parameters
-  !prhi%logm7g = -5.00
+  prhi%logm7g = -5.00
   !prhi%zh     =  0.01
   !prlo%zh     = -0.01
+  prhi%teff   =  2.0
+  prlo%teff   = -2.0
 
   IF (ssp_type.EQ.'cvd') THEN
      !always limit the [Z/H] range for CvD since
