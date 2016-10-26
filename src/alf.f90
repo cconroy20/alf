@@ -109,9 +109,7 @@ PROGRAM ALF
   ENDIF
 
   !set low upper prior limits to kill off these parameters
-  prhi%logm7g = -5.00
-  !prhi%zh     =  0.01
-  !prlo%zh     = -0.01
+  prhi%logm7g = -5.0
   prhi%teff   =  2.0
   prlo%teff   = -2.0
 
@@ -274,13 +272,10 @@ PROGRAM ALF
         tpos%logfy  = -5.0
         tpos%logm7g = -5.0
         tpos%loghot = -5.0
-        !tpos%imf1 = 1.3
-        !tpos%imf2 = 2.3
-        !tpos%imf3 = 0.08
-        tpos%imf1 = -1.1
-        tpos%imf2 = 1.179
-        tpos%imf3 = -2.47
-        tpos%imf4 = 0.1533
+        tpos%imf1 = 1.786
+        tpos%imf2 = 1.181
+        tpos%imf3 = 0.616
+        tpos%imf4 = 0.261
         tpos%zh   = 0.0
         tpos%teff = 0.0
         msto = 10**(msto_t0+msto_t1*tpos%logage) * &

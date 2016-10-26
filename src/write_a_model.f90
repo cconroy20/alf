@@ -21,15 +21,17 @@ PROGRAM WRITE_A_MODEL
   !instrumental resolution (<10 -> no broadening)
   ires = 1. !100.
 
-  imf_type = 4
+  imf_type = 1
 
   !initialize the random number generator
   CALL INIT_RANDOM_SEED()
+
+
   !compute an array of gaussian deviates
   CALL GASDEV(gdev)
 
-  file = 'model_imf4_salp_t10.0_x2.3.dat'
-  s2n  = 1E3
+  file = 'modelg_imf1_t10.0_sn0200_10.dat'
+  s2n  = 200.
   lmin = 3800.
   lmax = 11000.
 
@@ -37,26 +39,32 @@ PROGRAM WRITE_A_MODEL
   pos%logage = LOG10(10.0)
   pos%zh     = 0.0
   emnorm     = -5.0
-  pos%imf1   = 2.3
+  !Kroupa
+  pos%imf1   = 1.3
   pos%imf2   = 2.3
   pos%imf3   = 0.08
 
   IF (imf_type.EQ.4) THEN
-     !Kroupa
-    ! pos%imf1 = 1.121
-    ! pos%imf2 = 0.894
-    ! pos%imf3 = 0.573
-    ! pos%imf4 = 0.256
-     !Salpeter
-     pos%imf1 = 1.742
-     pos%imf2 = 1.155
-     pos%imf3 = 0.603
+     !bottom-light
+  !   pos%imf1 = 0.2
+  !   pos%imf2 = 0.2
+  !   pos%imf3 = 0.573
+  !   pos%imf4 = 0.256
+     !bottom-heavy
+     pos%imf1 = 2.2
+     pos%imf2 = 2.2
+     pos%imf3 = 0.573
      pos%imf4 = 0.256
-
-     pos%imf1 = 0.0
-     pos%imf2 = 0.0
-     pos%imf3 = 0.0
-     pos%imf4 = 0.0
+     !Kroupa
+   !  pos%imf1 = 1.121
+   !  pos%imf2 = 0.894
+   !  pos%imf3 = 0.573
+   !  pos%imf4 = 0.256
+     !Salpeter
+   !  pos%imf1 = 1.786
+   !  pos%imf2 = 1.181
+   !  pos%imf3 = 0.616
+   !  pos%imf4 = 0.261
      !flat
    !  pos%imf1 = -0.222
    !  pos%imf2 =  0.000
@@ -148,6 +156,11 @@ PROGRAM WRITE_A_MODEL
   
   !write model spectrum to file
   OPEN(12,FILE=TRIM(ALF_HOME)//'models/'//TRIM(file),STATUS='REPLACE')
+  WRITE(12,'("# 0.400 0.470")') 
+  WRITE(12,'("# 0.470 0.570")')
+  WRITE(12,'("# 0.570 0.640")')
+  WRITE(12,'("# 0.800 0.892")')
+  WRITE(12,'("# 0.963 1.015")') 
   DO i=1,nl
      IF (lam(i).GE.lmin.AND.lam(i).LE.lmax) THEN
         WRITE(12,'(F10.3,2ES12.4,2x,F4.1,2x,F7.2)') &

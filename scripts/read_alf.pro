@@ -11,7 +11,7 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker
   ;libcafe = [0.32,0.3,0.28,0.26,0.20,0.12,0.06,0.02,0.0,0.0]
 
   ;fitted to Bensby et al. 2014
-  libmgfe = [0.4,0.4,0.4,0.38,0.37,0.27,0.21,0.12,0.05,0.0]
+  libmgfe = [0.4,0.4,0.4,0.38,0.37,0.27,0.21,0.1,0.00,0.0]
   libcafe = [0.32,0.3,0.28,0.26,0.26,0.17,0.12,0.06,0.0,0.0]
  
 
@@ -255,7 +255,10 @@ FUNCTION READ_ALF, file,nwalker=nwalker,bestp=bestp,errp=errp,$
 
   IF n_elements(file) EQ 1 THEN BEGIN
      ff = findfile(sdir+'/results/'+file,count=ct)
-     IF ct EQ 0 THEN print,'READ_ALF ERROR: no files found'
+     IF ct EQ 0 THEN BEGIN
+        print,'READ_ALF ERROR: no files found'
+        RETURN,0
+     ENDIF
   ENDIF ELSE BEGIN
      ct = n_elements(file)
      ff = file
