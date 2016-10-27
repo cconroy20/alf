@@ -89,13 +89,11 @@ class Alf(object):
         To-Do:
             Only correcting the mean of the posterior values for now.
             Correct other parameters later.
-
-            Check on using Ca to correct for Si and Ti
         """
 
         # Schiavon 2008, Table 6
         lib_feh = [-1.6, -1.4, -1.2, -1.0, -0.8, -0.6, -0.4, -0.2, 0.0, 0.2]
-        lib_ofe = [0.6, 0.5, 0.5, 0.4, 0.3, 0.2, 0.2, 0.1, 0.0, -0.1]
+        lib_ofe = [0.6, 0.5, 0.5, 0.4, 0.3, 0.2, 0.2, 0.1, 0.0, 0.0]
         # Bensby+ 2014
         lib_mgfe = [0.4, 0.4, 0.4, 0.38, 0.37, 0.27, 0.21, 0.12, 0.05, 0.0]
         lib_cafe = [0.32, 0.3, 0.28, 0.26, 0.26, 0.17, 0.12, 0.06, 0.0, 0.0]
@@ -120,6 +118,7 @@ class Alf(object):
         return 0
 
     def plot_mcmc(self):
+        return 0
 
     def write_params(self):
         fname = '{0}_parameter_values.txt'.format(self.path)
