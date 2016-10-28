@@ -7,6 +7,10 @@ import sys
 import warnings
 import numpy as np
 from scipy import constants, interpolate
+<<<<<<< Updated upstream
+=======
+import matplotlib.pyplot as plt
+>>>>>>> Stashed changes
 from astropy.io import ascii
 
 class Alf(object):
@@ -22,7 +26,11 @@ class Alf(object):
         self.spec   = np.loadtxt('{0}.bestspec'.format(self.path))
         self.mcmc   = '{0}.mcmc'.format(self.path)
 
+<<<<<<< Updated upstream
         labels = ['chi2','velz','sigma','logage','zH',
+=======
+        self.labels = ['chi2','velz','sigma','logage','zH',
+>>>>>>> Stashed changes
                   'FeH', 'aH', 'CH', 'NH', 'NaH', 'MgH',
                   'SiH', 'KH', 'CaH', 'TiH','VH', 'CrH',
                   'MnH', 'CoH', 'NiH', 'CuH', 'SrH','BaH',
@@ -33,9 +41,15 @@ class Alf(object):
                   'logemline_Nii','jitter','IMF3', 'logsky', 'IMF4',
                   'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k']
 
+<<<<<<< Updated upstream
         results = ascii.read('{0}.sum'.format(self.path), names=labels)
 
         if len(labels) != len(results.colnames):
+=======
+        results = ascii.read('{0}.sum'.format(self.path), names=self.labels)
+
+        if len(self.labels) != len(results.colnames):
+>>>>>>> Stashed changes
             error = ('Label array and parameter array '
                      'have different lengths.')
             raise ValueError(error)
@@ -47,6 +61,7 @@ class Alf(object):
         3-7: 2.5%, 16%, 50%, 84%, 97.5% CLs
         8-9: lower and upper priors
         """
+<<<<<<< Updated upstream
         self.params = dict(zip(labels, results[0]))
         self.params_chi2 = dict(zip(labels, results[1]))
         self.errors = dict(zip(labels, results[2]))
@@ -57,11 +72,24 @@ class Alf(object):
         self.cl98 = dict(zip(labels, results[7]))
         self.lo_prior = dict(zip(labels, results[8]))
         self.lo_prior = dict(zip(labels, results[9]))
+=======
+        self.params = dict(zip(self.labels, results[0]))
+        self.params_chi2 = dict(zip(self.labels, results[1]))
+        self.errors = dict(zip(self.labels, results[2]))
+        self.cl25 = dict(zip(self.labels, results[3]))
+        self.cl16 = dict(zip(self.labels, results[4]))
+        self.cl50 = dict(zip(self.labels, results[5]))
+        self.cl84 = dict(zip(self.labels, results[6]))
+        self.cl98 = dict(zip(self.labels, results[7]))
+        self.lo_prior = dict(zip(self.labels, results[8]))
+        self.lo_prior = dict(zip(self.labels, results[9]))
+>>>>>>> Stashed changes
 
         """
         Check the values of the nuisance parameters
         and raise a warning if they are too large.
         """
+<<<<<<< Updated upstream
         warning = ('The value for {0} {1}, which is '
                    'larger than acceptable.')
         if self.params['logm7g'] > -1.0:
@@ -72,6 +100,18 @@ class Alf(object):
                           self.params['Teff']))
         elif self.params['loghot'] > -1.0:
             warnings.warn(warning.format('loghot',
+=======
+        warning = ('\n For {0} {1}={2}, which is '
+                   'larger than acceptable. \n')
+        if self.params['logm7g'] > -1.0:
+            warnings.warn(warning.format(self.name, 'logm7g',
+                          self.params['logm7g']))
+        elif self.params['Teff'] > -1.0:
+            warnings.warn(warning.format(self.name, 'Teff',
+                          self.params['Teff']))
+        elif self.params['loghot'] > -1.0:
+            warnings.warn(warning.format(self.name, 'loghot',
+>>>>>>> Stashed changes
                           self.params['loghot']))
 
         ## Change to read in from *.bestp
@@ -117,8 +157,32 @@ class Alf(object):
     def plot_model(self):
         return 0
 
-    def plot_mcmc(self):
+    def plot_covariance(self):
         return 0
+
+    def plot_posterior(self, path):
+        mcmc = ascii.read(self.mcmc, names=self.labels)
+
+        fig, axarr = plt.subplots(7, 7, figsize=(40,40),facecolor='white')
+        axarr = axarr.reshape(axarr.size,1).copy()
+        plt.tick_params(axis='both', which='major', labelsize=15)
+        plt.tick_params(axis='both', which='minor', labelsize=10)
+
+        for i, label in enumerate(self.labels):
+            if label=='chi2' or label=='ML_k' or label == 'MW_k': continue
+
+            axarr[i-1][0].set_ylabel(label, fontsize=16, labelpad=30)
+
+            if np.isnan(self.params[label]) == True: continue
+
+            axarr[i-1][0].hist(mcmc[label], bins=30, histtype = 'step',
+                        color='k', lw=2, alpha=0.9)
+            axarr[i-1][0].axvline(self.params[label], color='#E32017',
+                                   alpha=0.85)
+            axarr[i-1][0].autoscale(tight=True)
+
+        plt.tight_layout()
+        plt.savefig('{0}/{1}_posteriors.pdf'.format(path, self.name))
 
     def write_params(self):
         fname = '{0}_parameter_values.txt'.format(self.path)
@@ -127,9 +191,4 @@ class Alf(object):
                 f.write('{0:5}: {1:5.5} \n'.format(a, self.params[a]))
 
 if __name__=='__main__':
-
-    path = 'CharlieM31GCs'
-    fname = 'm31gc_b058_dwNaD_Oct01_imf1'
-    test = Alf(path, fname)
-    test.abundance_correct()
-
+    pass
