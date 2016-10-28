@@ -8,6 +8,7 @@ import warnings
 import numpy as np
 from scipy import constants, interpolate
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 from astropy.io import ascii
 
 class Alf(object):
@@ -21,7 +22,7 @@ class Alf(object):
             warnings.warn(warning)
             self.indata = None
         self.spec   = np.loadtxt('{0}.bestspec'.format(self.path))
-        self.mcmc   = '{0}.mcmc'.format(self.path)
+        self.mcmc   = None
 
         self.labels = ['chi2','velz','sigma','logage','zH',
                   'FeH', 'aH', 'CH', 'NH', 'NaH', 'MgH',
@@ -122,8 +123,47 @@ class Alf(object):
     def plot_covariance(self):
         return 0
 
+    def plot_traces(self, path):
+        outname = ('{0}/{1}_traces.pdf'.format(path, self.name))
+
+        plt.cla()
+        plt.clf()
+
+        if self.mcmc is None:
+            fname = '{0}.mcmc'.format(self.path)
+            self.mcmc = np.loadtxt(fname)
+
+        self.nchain = 100
+        self.nwalks = 1020
+
+        fig = plt.figure(figsize=(10,8), facecolor='white')
+
+        num = len(self.params)
+        data = np.zeros((self.nchain, self.nwalks, num))
+        for i in range(0, self.nchain):
+            for j in range(0,self.nwalks):
+                data[i,j] = self.mcmc[i*1020+j]
+
+        with PdfPages(outname) as pdf:
+            for i, (label, trace) in enumerate(zip(self.labels, data.T)):
+                if i == 0: # Don't care to see the chi^2 value
+                    continue
+                plt.plot(np.arange(0, self.nchain),
+                         data[:,:,i], color='k', alpha=0.1)
+                plt.axhline(self.params[label], color='#3399ff')
+                plt.xlabel('Step')
+                plt.ylabel(label)
+                pdf.savefig()
+                plt.close()
+                plt.cla()
+
     def plot_posterior(self, path):
-        mcmc = ascii.read(self.mcmc, names=self.labels)
+        plt.cla()
+        plt.clf()
+
+        if self.mcmc is None:
+            fname = '{0}.mcmc'.format(self.path)
+            self.mcmc = np.loadtxt(fname)
 
         fig, axarr = plt.subplots(7, 7, figsize=(40,40),facecolor='white')
         axarr = axarr.reshape(axarr.size,1).copy()
@@ -131,14 +171,16 @@ class Alf(object):
         plt.tick_params(axis='both', which='minor', labelsize=10)
 
         for i, label in enumerate(self.labels):
-            if label=='chi2' or label=='ML_k' or label == 'MW_k': continue
+            if (label=='chi2' or label=='ML_k' or
+                label == 'MW_k' or
+                np.isnan(self.params[label])==True):
+                continue
 
             axarr[i-1][0].set_ylabel(label, fontsize=16, labelpad=30)
 
-            if np.isnan(self.params[label]) == True: continue
-
-            axarr[i-1][0].hist(mcmc[label], bins=30, histtype = 'step',
-                        color='k', lw=2, alpha=0.9)
+            axarr[i-1][0].hist(self.mcmc[:,i], bins=30,
+                              histtype='step', color='k',
+                              lw=2, alpha=0.9)
             axarr[i-1][0].axvline(self.params[label], color='#E32017',
                                    alpha=0.85)
             axarr[i-1][0].autoscale(tight=True)
