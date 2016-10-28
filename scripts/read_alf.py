@@ -136,7 +136,6 @@ class Alf(object):
         self.nchain = 100
         self.nwalks = 1020
 
-        fig = plt.figure(figsize=(10,8), facecolor='white')
 
         num = len(self.params)
         data = np.zeros((self.nchain, self.nwalks, num))
@@ -146,6 +145,7 @@ class Alf(object):
 
         with PdfPages(outname) as pdf:
             for i, (label, trace) in enumerate(zip(self.labels, data.T)):
+                fig = plt.figure(figsize=(8,6), facecolor='white')
                 if i == 0: # Don't care to see the chi^2 value
                     continue
                 plt.plot(np.arange(0, self.nchain),
