@@ -12,9 +12,10 @@ from matplotlib.backends.backend_pdf import PdfPages
 from astropy.io import ascii
 
 class Alf(object):
-    def __init__(self, path, fname):
+    def __init__(self, path, fname, legend):
         self.name = fname
         self.path = '{0}/{1}'.format(path, fname)
+        self.legend = legend
         try:
             self.indata = np.loadtxt('{0}.dat'.format(self.path))
         except:
@@ -135,7 +136,6 @@ class Alf(object):
 
         self.nchain = 100
         self.nwalks = 1020
-
 
         num = len(self.params)
         data = np.zeros((self.nchain, self.nwalks, num))
