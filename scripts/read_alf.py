@@ -34,9 +34,7 @@ class Alf(object):
                   'logemline_Nii','jitter','IMF3', 'logsky', 'IMF4',
                   'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k']
 
-        results = ascii.read('{0}.sum'.format(self.path), names=labels)
 
-        if len(labels) != len(results.colnames):
         results = ascii.read('{0}.sum'.format(self.path), names=self.labels)
 
         if len(self.labels) != len(results.colnames):
