@@ -7,10 +7,7 @@ import sys
 import warnings
 import numpy as np
 from scipy import constants, interpolate
-<<<<<<< Updated upstream
-=======
 import matplotlib.pyplot as plt
->>>>>>> Stashed changes
 from astropy.io import ascii
 
 class Alf(object):
