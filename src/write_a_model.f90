@@ -26,45 +26,46 @@ PROGRAM WRITE_A_MODEL
   !initialize the random number generator
   CALL INIT_RANDOM_SEED()
 
-
   !compute an array of gaussian deviates
   CALL GASDEV(gdev)
 
-  file = 'modelg_imf1_t10.0_sn0200_10.dat'
-  s2n  = 200.
+  file = 'model2_3.1_1.4_0.48.dat'
+  s2n  = 1e5
   lmin = 3800.
   lmax = 11000.
 
-  pos%sigma  = 300.
-  pos%logage = LOG10(10.0)
-  pos%zh     = 0.0
+  pos%sigma  = 1. !300.
+  pos%logage = 1.13 !LOG10(10.0)
+  pos%mgh    = 0.3
+  pos%nah    = 0.4856
+  pos%zh     = 0.07
   emnorm     = -5.0
   !Kroupa
-  pos%imf1   = 1.3
-  pos%imf2   = 2.3
+  pos%imf1   = 3.1
+  pos%imf2   = 1.4
   pos%imf3   = 0.08
 
   IF (imf_type.EQ.4) THEN
-     !bottom-light
-  !   pos%imf1 = 0.2
-  !   pos%imf2 = 0.2
+     !x=3.3
+     pos%imf1 = 2.64
+     pos%imf2 = 1.68
+     pos%imf3 = 0.872
+     pos%imf4 = 0.369
+     !bottom-heavy
+  !   pos%imf1 = 2.2
+  !   pos%imf2 = 2.2
   !   pos%imf3 = 0.573
   !   pos%imf4 = 0.256
-     !bottom-heavy
-     pos%imf1 = 2.2
-     pos%imf2 = 2.2
-     pos%imf3 = 0.573
-     pos%imf4 = 0.256
      !Kroupa
    !  pos%imf1 = 1.121
    !  pos%imf2 = 0.894
    !  pos%imf3 = 0.573
    !  pos%imf4 = 0.256
-     !Salpeter
-   !  pos%imf1 = 1.786
-   !  pos%imf2 = 1.181
-   !  pos%imf3 = 0.616
-   !  pos%imf4 = 0.261
+     !Salpeter x=2.3
+  !   pos%imf1 = 1.741
+  !   pos%imf2 = 1.155
+  !   pos%imf3 = 0.603
+  !   pos%imf4 = 0.256
      !flat
    !  pos%imf1 = -0.222
    !  pos%imf2 =  0.000
@@ -72,37 +73,6 @@ PROGRAM WRITE_A_MODEL
    !  pos%imf4 =  0.000
    !  pos%imf5 =  0.000
   ENDIF
-
-  pos%feh     = 0.0
-  pos%ah      = 0.0
-  pos%ch      = 0.0
-  pos%nh      = 0.0
-  pos%nah     = 0.0
-  pos%mgh     = 0.0
-  pos%sih     = 0.0
-  pos%kh      = 0.0
-  pos%cah     = 0.0
-  pos%tih     = 0.0
-  pos%vh      = 0.0
-  pos%crh     = 0.0
-  pos%mnh     = 0.0
-  pos%coh     = 0.0
-  pos%nih     = 0.0
-  pos%cuh     = 0.0
-  pos%srh     = 0.0
-  pos%bah     = 0.0
-  pos%euh     = 0.0
-  pos%teff    = 0.0
-  pos%logfy   = -5.0
-  pos%fy_logage = -5.0
-  pos%logtrans  = -5.0
-  
-  pos%sigma2  = 300.
-  pos%velz    = 0.0
-  pos%velz2   = 0.0
-  pos%logm7g  = -5.0
-  pos%hotteff = 20.0
-  pos%loghot  = -5.0
 
   pos%logemline_h    = emnorm
   pos%logemline_oiii = emnorm

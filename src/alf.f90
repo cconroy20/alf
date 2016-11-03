@@ -34,7 +34,7 @@ PROGRAM ALF
   !number of chain steps to print to file
   INTEGER, PARAMETER :: nmcmc=100
   !inverse sampling of the walkers for printing
-  INTEGER, PARAMETER :: nsample=1
+  INTEGER, PARAMETER :: nsample=10
   !length of chain burn-in
   INTEGER, PARAMETER :: nburn=20000
   !number of walkers
@@ -272,10 +272,10 @@ PROGRAM ALF
         tpos%logfy  = -5.0
         tpos%logm7g = -5.0
         tpos%loghot = -5.0
-        tpos%imf1 = 1.786
-        tpos%imf2 = 1.181
-        tpos%imf3 = 0.616
-        tpos%imf4 = 0.261
+        tpos%imf1 = 0.0
+        tpos%imf2 = 0.0
+        tpos%imf3 = 0.0
+        tpos%imf4 = 0.0
         tpos%zh   = 0.0
         tpos%teff = 0.0
         msto = 10**(msto_t0+msto_t1*tpos%logage) * &

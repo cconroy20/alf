@@ -80,6 +80,20 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   ENDIF
   pos%imf4         = myran()*0.5
 
+  IF (imf_type.EQ.4) THEN
+     pos%imf4 = myran()*0.5
+     pos%imf3 = pos%imf4 + myran()*0.5
+     pos%imf2 = pos%imf3 + myran()*0.5
+     pos%imf1 = pos%imf2 + myran()*0.5
+  ENDIF
+
+  !IF (nonpimf_alpha.EQ.2.3) THEN 
+  !   pos%imf1 = myran()*1.0-0.5
+  !   pos%imf2 = myran()*1.0-0.5
+  !   pos%imf3 = myran()*1.0-0.5
+  !   pos%imf4 = myran()*1.0-0.5
+  !ENDIF
+
   IF (PRESENT(velz)) THEN
      IF (ABS(pos%velz).LE.tiny_number) THEN
         pos%velz  = myran()*1E4-1E3
@@ -90,12 +104,6 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
      pos%velz  = myran()*1E4-1E3
   ENDIF
 
-  IF (nonpimf_alpha.EQ.2.3) THEN 
-     pos%imf1 = myran()*1.0-0.5
-     pos%imf2 = myran()*1.0-0.5
-     pos%imf3 = myran()*1.0-0.5
-     pos%imf4 = myran()*1.0-0.5
-  ENDIF
 
   !these pr=test statements allow the user to pre-set
   !specific priors at the beginning of alf.f90; those

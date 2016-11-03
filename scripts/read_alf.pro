@@ -29,13 +29,7 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker
   sum    = strpos(file,'sum')
   simple = strpos(file,'simple')
 
-  IF n_elements(ts) EQ 51 THEN BEGIN
-     readcol,dir+file,chi2,velz,sigma,logage,zh,feh,afe,cfe,$
-             nfe,nafe,mgfe,sife,kfe,cafe,tife,vfe,crfe,mnfe,cofe,nife,$
-             cufe,srfe,bafe,eufe,teff,imf1,imf2,logfy,sigma2,$
-             velz2,logm7g,hotteff,loghot,fy_logage,logtrans,d1,d2,d3,d4,d5,$
-             jitter,imf3,logsky,imf4,imf5,m2lr,m2li,m2lk,m2lmwr,m2lmwi,m2lmwk,/sil
-  ENDIF ELSE IF n_elements(ts) EQ 50 THEN BEGIN
+  IF n_elements(ts) EQ 50 THEN BEGIN
      readcol,dir+file,chi2,velz,sigma,logage,zh,feh,afe,cfe,$
              nfe,nafe,mgfe,sife,kfe,cafe,tife,vfe,crfe,mnfe,cofe,nife,$
              cufe,srfe,bafe,eufe,teff,imf1,imf2,logfy,sigma2,$
