@@ -7,12 +7,15 @@ import sys
 import warnings
 import numpy as np
 from scipy import constants, interpolate
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 from astropy.io import ascii
 
 class Alf(object):
-    def __init__(self, path, fname):
+    def __init__(self, path, fname, legend):
         self.name = fname
         self.path = '{0}/{1}'.format(path, fname)
+        self.legend = legend
         try:
             self.indata = np.loadtxt('{0}.dat'.format(self.path))
         except:
@@ -20,9 +23,9 @@ class Alf(object):
             warnings.warn(warning)
             self.indata = None
         self.spec   = np.loadtxt('{0}.bestspec'.format(self.path))
-        self.mcmc   = '{0}.mcmc'.format(self.path)
+        self.mcmc   = None
 
-        labels = ['chi2','velz','sigma','logage','zH',
+        self.labels = ['chi2','velz','sigma','logage','zH',
                   'FeH', 'aH', 'CH', 'NH', 'NaH', 'MgH',
                   'SiH', 'KH', 'CaH', 'TiH','VH', 'CrH',
                   'MnH', 'CoH', 'NiH', 'CuH', 'SrH','BaH',
@@ -33,9 +36,10 @@ class Alf(object):
                   'logemline_Nii','jitter','IMF3', 'logsky', 'IMF4',
                   'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k']
 
-        results = ascii.read('{0}.sum'.format(self.path), names=labels)
 
-        if len(labels) != len(results.colnames):
+        results = ascii.read('{0}.sum'.format(self.path), names=self.labels)
+
+        if len(self.labels) != len(results.colnames):
             error = ('Label array and parameter array '
                      'have different lengths.')
             raise ValueError(error)
@@ -47,31 +51,31 @@ class Alf(object):
         3-7: 2.5%, 16%, 50%, 84%, 97.5% CLs
         8-9: lower and upper priors
         """
-        self.params = dict(zip(labels, results[0]))
-        self.params_chi2 = dict(zip(labels, results[1]))
-        self.errors = dict(zip(labels, results[2]))
-        self.cl25 = dict(zip(labels, results[3]))
-        self.cl16 = dict(zip(labels, results[4]))
-        self.cl50 = dict(zip(labels, results[5]))
-        self.cl84 = dict(zip(labels, results[6]))
-        self.cl98 = dict(zip(labels, results[7]))
-        self.lo_prior = dict(zip(labels, results[8]))
-        self.lo_prior = dict(zip(labels, results[9]))
+        self.params = dict(zip(self.labels, results[0]))
+        self.params_chi2 = dict(zip(self.labels, results[1]))
+        self.errors = dict(zip(self.labels, results[2]))
+        self.cl25 = dict(zip(self.labels, results[3]))
+        self.cl16 = dict(zip(self.labels, results[4]))
+        self.cl50 = dict(zip(self.labels, results[5]))
+        self.cl84 = dict(zip(self.labels, results[6]))
+        self.cl98 = dict(zip(self.labels, results[7]))
+        self.lo_prior = dict(zip(self.labels, results[8]))
+        self.lo_prior = dict(zip(self.labels, results[9]))
 
         """
         Check the values of the nuisance parameters
         and raise a warning if they are too large.
         """
-        warning = ('The value for {0} {1}, which is '
-                   'larger than acceptable.')
+        warning = ('\n For {0} {1}={2}, which is '
+                   'larger than acceptable. \n')
         if self.params['logm7g'] > -1.0:
-            warnings.warn(warning.format('logm7g',
+            warnings.warn(warning.format(self.name, 'logm7g',
                           self.params['logm7g']))
         elif self.params['Teff'] > -1.0:
-            warnings.warn(warning.format('Teff',
+            warnings.warn(warning.format(self.name, 'Teff',
                           self.params['Teff']))
         elif self.params['loghot'] > -1.0:
-            warnings.warn(warning.format('loghot',
+            warnings.warn(warning.format(self.name, 'loghot',
                           self.params['loghot']))
 
         ## Change to read in from *.bestp
@@ -117,8 +121,72 @@ class Alf(object):
     def plot_model(self):
         return 0
 
-    def plot_mcmc(self):
+    def plot_covariance(self):
         return 0
+
+    def plot_traces(self, path):
+        outname = ('{0}/{1}_traces.pdf'.format(path, self.name))
+
+        plt.cla()
+        plt.clf()
+
+        if self.mcmc is None:
+            fname = '{0}.mcmc'.format(self.path)
+            self.mcmc = np.loadtxt(fname)
+
+        self.nchain = 100
+        self.nwalks = 1020
+
+        num = len(self.params)
+        data = np.zeros((self.nchain, self.nwalks, num))
+        for i in range(0, self.nchain):
+            for j in range(0,self.nwalks):
+                data[i,j] = self.mcmc[i*1020+j]
+
+        with PdfPages(outname) as pdf:
+            for i, (label, trace) in enumerate(zip(self.labels, data.T)):
+                fig = plt.figure(figsize=(8,6), facecolor='white')
+                if i == 0: # Don't care to see the chi^2 value
+                    continue
+                plt.plot(np.arange(0, self.nchain),
+                         data[:,:,i], color='k', alpha=0.1)
+                plt.axhline(self.params[label], color='#3399ff')
+                plt.xlabel('Step')
+                plt.ylabel(label)
+                pdf.savefig()
+                plt.close()
+                plt.cla()
+
+    def plot_posterior(self, path):
+        plt.cla()
+        plt.clf()
+
+        if self.mcmc is None:
+            fname = '{0}.mcmc'.format(self.path)
+            self.mcmc = np.loadtxt(fname)
+
+        fig, axarr = plt.subplots(7, 7, figsize=(40,40),facecolor='white')
+        axarr = axarr.reshape(axarr.size,1).copy()
+        plt.tick_params(axis='both', which='major', labelsize=15)
+        plt.tick_params(axis='both', which='minor', labelsize=10)
+
+        for i, label in enumerate(self.labels):
+            if (label=='chi2' or label=='ML_k' or
+                label == 'MW_k' or
+                np.isnan(self.params[label])==True):
+                continue
+
+            axarr[i-1][0].set_ylabel(label, fontsize=16, labelpad=30)
+
+            axarr[i-1][0].hist(self.mcmc[:,i], bins=30,
+                              histtype='step', color='k',
+                              lw=2, alpha=0.9)
+            axarr[i-1][0].axvline(self.params[label], color='#E32017',
+                                   alpha=0.85)
+            axarr[i-1][0].autoscale(tight=True)
+
+        plt.tight_layout()
+        plt.savefig('{0}/{1}_posteriors.pdf'.format(path, self.name))
 
     def write_params(self):
         fname = '{0}_parameter_values.txt'.format(self.path)
@@ -127,9 +195,4 @@ class Alf(object):
                 f.write('{0:5}: {1:5.5} \n'.format(a, self.params[a]))
 
 if __name__=='__main__':
-
-    path = 'CharlieM31GCs'
-    fname = 'm31gc_b058_dwNaD_Oct01_imf1'
-    test = Alf(path, fname)
-    test.abundance_correct()
-
+    pass
