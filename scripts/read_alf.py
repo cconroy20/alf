@@ -169,20 +169,10 @@ class Alf(object):
             fname = '{0}.mcmc'.format(self.path)
             self.mcmc = np.loadtxt(fname)
 
+        figure = corner.corner(self.mcmc[:,0:5])
 
-        ndim, nsamples = 50, 10000
-        np.random.seed(42)
-        samples = np.random.randn(ndim * nsamples).reshape([nsamples, ndim])
-
-        np.random.seed(42)
-        data1 = np.random.randn(ndim * 4 * nsamples // 5).reshape([4 * nsamples // 5, ndim])
-        data2 = (4*np.random.rand(ndim)[None, :] + np.random.randn(ndim * nsamples // 5).reshape([nsamples // 5, ndim]))
-        data = np.vstack([data1, data2])
-
-        print np.shape(samples), np.shape(data), np.shape(self.mcmc)
-        #plt.show()
-        figure = corner.corner(samples)
-        plt.show()
+        plt.tight_layout()
+        plt.savefig('{0}/{1}_corner.pdf'.format(outpath, self.name))
 
 
     def plot_traces(self, path):
