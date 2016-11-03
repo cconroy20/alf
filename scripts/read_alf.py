@@ -118,11 +118,72 @@ class Alf(object):
         self.params['SiH'] = self.params['SiH'] + ca_correction
         self.params['TiH'] = self.params['TiH'] + ca_correction
 
-    def plot_model(self):
-        return 0
+    def plot_model(self, wrange, outpath, fname):
+        fig = plt.figure(figsize=(14,9), facecolor='white')
+        ax1 = plt.subplot2grid((3,2), (0,0), rowspan=2, colspan=2)
+        ax2 = plt.subplot2grid((3,2), (2,0), rowspan=1, colspan=2)
 
-    def plot_covariance(self):
-        return 0
+        velz = self.params['velz']
+        in_wave = self.indata[:,0]/(1.+velz*1e3/constants.c)
+        mod_wave = self.spec[:,0]/(1.+velz*1e3/constants.c)
+
+        model = np.interp(in_wave, mod_wave, self.spec[:,1])
+
+        i = (in_wave > wrange[0]) & (in_wave < wrange[1])
+        coeffs = np.polynomial.chebyshev.chebfit(in_wave[i],
+                    self.indata[:,1][i], 2)
+        poly = np.polynomial.chebyshev.chebval(in_wave[i],
+                    coeffs)
+        ax1.plot(in_wave[i], self.indata[:,1][i]/poly, 'k-', lw=2,
+                    label='Data')
+
+        i = (mod_wave > wrange[0]) & (mod_wave < wrange[1])
+        coeffs = np.polynomial.chebyshev.chebfit(mod_wave[i],
+                    self.spec[:,1][i], 2)
+        poly = np.polynomial.chebyshev.chebval(mod_wave[i],
+                    coeffs)
+        ax1.plot(mod_wave[i], self.spec[:,1][i]/poly, color='#E32017',
+                    lw=2, label='Model')
+        ax1.legend(frameon=False)
+
+        i = (in_wave > wrange[0]) & (in_wave < wrange[1])
+        ax2.plot(in_wave[i], (model[i]-self.indata[:,1][i])/model[i]*1e2,
+                    color='#7156A5', lw=2, alpha=0.7)
+        ax2.fill_between(in_wave[i], -self.indata[:,2][i]/self.indata[:,1][i]*1e2,
+                            self.indata[:,2][i]/self.indata[:,1][i]*1e2,
+                            color='#CCCCCC')
+        ax2.set_ylim(-4.9, 4.9)
+
+        ax1.set_ylabel(r'Flux (arbitrary units)',fontsize=22)
+        ax2.set_ylabel(r'Residual $\rm \%$',fontsize=22)
+
+        ax2.set_xlabel(r'Wavelength $(\AA)$',fontsize=22, labelpad=10)
+        ax2.set_xlabel(r'Wavelength $(\AA)$',fontsize=22, labelpad=10)
+
+        plt.savefig('{0}/{1}'.format(outpath, fname))
+
+    def plot_corner(self, outpath):
+        import corner
+
+        if self.mcmc is None:
+            fname = '{0}.mcmc'.format(self.path)
+            self.mcmc = np.loadtxt(fname)
+
+
+        ndim, nsamples = 50, 10000
+        np.random.seed(42)
+        samples = np.random.randn(ndim * nsamples).reshape([nsamples, ndim])
+
+        np.random.seed(42)
+        data1 = np.random.randn(ndim * 4 * nsamples // 5).reshape([4 * nsamples // 5, ndim])
+        data2 = (4*np.random.rand(ndim)[None, :] + np.random.randn(ndim * nsamples // 5).reshape([nsamples // 5, ndim]))
+        data = np.vstack([data1, data2])
+
+        print np.shape(samples), np.shape(data), np.shape(self.mcmc)
+        #plt.show()
+        figure = corner.corner(samples)
+        plt.show()
+
 
     def plot_traces(self, path):
         outname = ('{0}/{1}_traces.pdf'.format(path, self.name))
