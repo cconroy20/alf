@@ -118,6 +118,35 @@ class Alf(object):
         self.params['SiH'] = self.params['SiH'] + ca_correction
         self.params['TiH'] = self.params['TiH'] + ca_correction
 
+    def convert_abundances(self):
+        """
+        Abundances from ALF are over H, sometimes helpful to be
+        over Fe.
+
+        Need to always run abundance_correct first.
+        """
+        #self.params = dict(zip(self.labels, results[0]))
+
+        labels = ['aH', 'CH', 'NH', 'NaH', 'MgH',
+        'SiH', 'KH', 'CaH', 'TiH','VH', 'CrH', 'MnH',
+        'CoH', 'NiH', 'CuH', 'SrH','BaH', 'EuH']
+
+        abundances = np.array((len(labels)))
+        for i, label in enumerate(labels):
+            abundances[i] = self.params[label] - self.params['FeH']
+
+        errors = np.array((len(labels)))
+        for i, label in enumerate(labels):
+            error[i] = np.sqrt(self.params[label]**2 + self.errors['FeH']**2)
+
+        new_labels = ['aFe', 'CFe', 'NFe', 'NaFe', 'MgFe',
+        'SiFe', 'KFe', 'CaFe', 'TiFe','VFe', 'CrFe', 'MnFe',
+        'CoFe', 'NiFe', 'CuFe', 'SrFe','BaFe', 'EuFe']
+
+        self.params_fe = dict(zip(new_labels, abundances))
+        self.errors_fe = dict(zip(new_labels, abundances))
+
+
     def plot_model(self, wrange, outpath, fname):
         fig = plt.figure(figsize=(14,9), facecolor='white')
         ax1 = plt.subplot2grid((3,2), (0,0), rowspan=2, colspan=2)
