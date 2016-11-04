@@ -198,19 +198,16 @@ class Alf(object):
             fname = '{0}.mcmc'.format(self.path)
             self.mcmc = np.loadtxt(fname)
 
-        # This is a dumb way to remove the columns
-        # that don't have any dynamic range, which
-        # causes an error in corner. I'm sure if I
-        # was using Pandas or something there'd be
-        # a better way to do this.
-        use = []
-        for i in range(0,50):
-            if not np.all(np.abs(self.mcmc[:,i] - 0.) < 1e-5):
-                use.append(i)
-        use = np.array(use)
         labels = np.array(self.labels)
+        use = np.where((labels=='ML_r') |
+                        (labels=='ML_i') |
+                        (labels=='IMF1') |
+                        (labels=='IMF2')
+                        )
+        #print self.labels
+        #sys.exit()
 
-        figure = corner.corner(self.mcmc[:,use], labels=labels[use])
+        figure = corner.corner(self.mcmc[:,use[0]], labels=labels[use[0]])
 
         plt.tight_layout()
         plt.savefig('{0}/{1}_corner.pdf'.format(outpath, self.name))
