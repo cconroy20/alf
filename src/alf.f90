@@ -93,6 +93,8 @@ PROGRAM ALF
   nonpimf_alpha = 0.0
   !force MW IMF
   mwimf    = 0
+  !fit two-age SFH or not?
+  fit_two_ages = 1
 
   !dont fit transmission function in cases where the input
   !spectrum has already been de-redshifted to ~0.0

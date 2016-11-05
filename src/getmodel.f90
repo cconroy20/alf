@@ -203,7 +203,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   
   !vary young population - both fraction and age
   !only include these parameters in the "full" model
-  IF (fit_type.EQ.0.AND.powell_fitting.EQ.0) THEN
+  IF (fit_type.EQ.0.AND.powell_fitting.EQ.0.AND.fit_two_ages.EQ.1) THEN
      fy    = MAX(MIN(10**pos%logfy,1.0),0.0)
      vy    = MAX(MIN(locate(sspgrid%logagegrid,pos%fy_logage),nage-1),1)
      dy    = (pos%fy_logage-sspgrid%logagegrid(vy))/&
