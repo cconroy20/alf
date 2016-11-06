@@ -70,6 +70,9 @@ MODULE ALF_VARS
   !fit two-component SFH. Also requires fit_type=0
   INTEGER :: fit_two_ages=1
 
+  !regularize the non-parametric IMF
+  INTEGER :: nonpimf_regularize=1
+
   !--------------------------------------------------------------!
   !  the options below have not been tested/used in a long time  !
   !  and so are effectively deprecated                           !

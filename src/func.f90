@@ -51,7 +51,7 @@ FUNCTION FUNC(nposarr,spec,funit)
      IF ( (nposarr(i).GT.prhiarr(i)).OR.(nposarr(i).LT.prloarr(i)) ) pr=0.0
   ENDDO
 
-  IF (imf_type.EQ.4) THEN
+  IF (imf_type.EQ.4.AND.nonpimf_regularize.EQ.1) THEN
 
      IF ( (npos%imf2-npos%imf1).LT.0.0.AND.&
           (npos%imf3-npos%imf2).GT.0.0 ) pr=0.0

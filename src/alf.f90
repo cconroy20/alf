@@ -34,7 +34,7 @@ PROGRAM ALF
   !number of chain steps to print to file
   INTEGER, PARAMETER :: nmcmc=100
   !inverse sampling of the walkers for printing
-  INTEGER, PARAMETER :: nsample=10
+  INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
   INTEGER, PARAMETER :: nburn=20000
   !number of walkers
@@ -95,6 +95,8 @@ PROGRAM ALF
   mwimf    = 0
   !fit two-age SFH or not?
   fit_two_ages = 1
+  !regularize non-parametric IMF
+  nonpimf_regularize = 1
 
   !dont fit transmission function in cases where the input
   !spectrum has already been de-redshifted to ~0.0
