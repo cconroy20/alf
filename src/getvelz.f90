@@ -70,8 +70,6 @@ FUNCTION GETVELZ()
         CALL CONTNORMSPEC(sspgrid%lam,10**sspgrid%logssp(:,imfr1,imfr2,3,nzmet-1),&
              SQRT(10**sspgrid%logssp(:,imfr1,imfr2,3,nzmet-1)),lo,hi,mflx)
 
-      !  CALL VELBROAD(sspgrid%lam,mflx,300.d0,lo,hi)
-
         i1 = MIN(MAX(locate(sspgrid%lam,lo),1),nl_fit-1)
         i2 = MIN(MAX(locate(sspgrid%lam,hi),2),nl_fit)
 
@@ -104,14 +102,13 @@ FUNCTION GETVELZ()
   DO i=1,nv
      IF (tchi2(i).LT.delchi2_tol) tvza(i)=tvz(i)
   ENDDO
+
   IF ((MAXVAL(tvza)-MINVAL(tvza)).GT.max_dvelz) THEN
      WRITE(*,'("   Failed to find a redshift solution, setting velz=0.0")')
      WRITE(*,'("    delta(velz|chi2<0.5) = ",F8.2)') MAXVAL(tvza)-MINVAL(tvza)
-
-     DO i=1,nv
-        write(99,*) tvz(i),tchi2(i)
-     ENDDO
-
+     !DO i=1,nv
+     !   write(99,*) tvz(i),tchi2(i)
+     !ENDDO
      getvelz = 0.0
   ENDIF
 

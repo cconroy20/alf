@@ -21,7 +21,7 @@ PROGRAM WRITE_A_MODEL
   !instrumental resolution (<10 -> no broadening)
   ires = 1. !100.
 
-  imf_type = 1
+  imf_type = 3
 
   !initialize the random number generator
   CALL INIT_RANDOM_SEED()
@@ -29,20 +29,18 @@ PROGRAM WRITE_A_MODEL
   !compute an array of gaussian deviates
   CALL GASDEV(gdev)
 
-  file = 'model2_3.1_1.4_0.48.dat'
-  s2n  = 1e5
+  file = 'model_t10.0_sn0300_mc0.08_imf3.3.dat'
+  s2n  = 300.0
   lmin = 3800.
   lmax = 11000.
 
-  pos%sigma  = 1. !300.
-  pos%logage = 1.13 !LOG10(10.0)
-  pos%mgh    = 0.3
-  pos%nah    = 0.4856
-  pos%zh     = 0.07
+  pos%sigma  = 300.
+  pos%logage = LOG10(10.0)
+  pos%zh     = 0.0
   emnorm     = -5.0
   !Kroupa
-  pos%imf1   = 3.1
-  pos%imf2   = 1.4
+  pos%imf1   = 3.3
+  pos%imf2   = 3.3
   pos%imf3   = 0.08
 
   IF (imf_type.EQ.4) THEN
@@ -129,6 +127,7 @@ PROGRAM WRITE_A_MODEL
   WRITE(12,'("# 0.400 0.470")') 
   WRITE(12,'("# 0.470 0.570")')
   WRITE(12,'("# 0.570 0.640")')
+  WRITE(12,'("# 0.640 0.800")')
   WRITE(12,'("# 0.800 0.892")')
   WRITE(12,'("# 0.963 1.015")') 
   DO i=1,nl
