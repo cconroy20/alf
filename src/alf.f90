@@ -90,13 +90,24 @@ PROGRAM ALF
   !are the data in the original observed frame?
   observed_frame = 1
   !IMF slope within the non-parametric IMF bins
-  nonpimf_alpha = 0.0
+  nonpimf_alpha = 2.3
   !force MW IMF
   mwimf    = 0
   !fit two-age SFH or not?
   fit_two_ages = 1
   !regularize non-parametric IMF
   nonpimf_regularize = 1
+
+  !set low upper prior limits to kill off these parameters
+  prhi%logm7g = -5.0
+  prhi%teff   =  2.0
+  prlo%teff   = -2.0
+
+  !correction factor between Salpeter and flat intrabin weights
+  !for non-parametric IMF
+  IF (nonpimf_alpha.EQ.0.0) THEN
+     corr_salp_flat = 0.0
+  ENDIF
 
   !dont fit transmission function in cases where the input
   !spectrum has already been de-redshifted to ~0.0
@@ -111,11 +122,6 @@ PROGRAM ALF
      !in velocity space, set the parameter below to that extra smoothing
      smooth_trans = 0.0
   ENDIF
-
-  !set low upper prior limits to kill off these parameters
-  prhi%logm7g = -5.0
-  prhi%teff   =  2.0
-  prlo%teff   = -2.0
 
   IF (ssp_type.EQ.'cvd') THEN
      !always limit the [Z/H] range for CvD since
@@ -276,9 +282,9 @@ PROGRAM ALF
         tpos%logfy  = -5.0
         tpos%logm7g = -5.0
         tpos%loghot = -5.0
-        tpos%imf1 = 0.0
-        tpos%imf2 = 0.0
-        tpos%imf3 = 0.0
+        tpos%imf1 = 2.3
+        tpos%imf2 = 2.3
+        tpos%imf3 = 0.08
         tpos%imf4 = 0.0
         tpos%zh   = 0.0
         tpos%teff = 0.0
@@ -290,7 +296,7 @@ PROGRAM ALF
         CALL GETMODEL(tpos,mspec)
         CALL GETM2L(msto,lam,mspec,tpos,m2l)
         write(*,'("M/L=",2F7.2)') m2l(1:2)
-         STOP
+        STOP
      ENDIF
 
 

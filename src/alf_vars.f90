@@ -166,9 +166,11 @@ MODULE ALF_VARS
        msto_z2=0.070565820
   INTEGER, PARAMETER :: nimfnp5=5
   !mass boundaries for non-para IMF (starting at imflo, and ending at imfhi)
-  REAL(DP), DIMENSION(nimfnp5) :: mbin_nimf = (/0.2,0.4,0.6,0.8,1.0/)
+  !REAL(DP), DIMENSION(nimfnp5) :: mbin_nimf = (/0.2,0.4,0.6,0.8,1.0/)
   REAL(DP), DIMENSION(nimfnp+1) :: &
        mbin_nimf9 = (/0.08,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0/)
+  REAL(DP), DIMENSION(nimfnp) :: &
+       corr_salp_flat = (/2.12,1.44,1.08,0.82,0.61,0.44,0.30,0.17,0.054/)
 
   !----------Setup a common block of arrays and vars-------------!
 
