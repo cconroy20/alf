@@ -22,7 +22,12 @@ class Alf(object):
             warning = ('Do not have the input data file')
             warnings.warn(warning)
             self.indata = None
-        self.spec   = np.loadtxt('{0}.bestspec'.format(self.path))
+        try:
+            self.spec   = np.loadtxt('{0}.bestspec'.format(self.path))
+        except:
+            warning = ('Do not have the *.bestspec file')
+            warnings.warn(warning)
+            self.spec = None
         self.mcmc   = None
 
         self.labels = ['chi2','velz','sigma','logage','zH',
@@ -96,10 +101,10 @@ class Alf(object):
         """
 
         # Schiavon 2008, Table 6
-        lib_feh = [-1.6, -1.4, -1.2, -1.0, -0.8, -0.6, -0.4, -0.2, 0.0, 0.2]
+        lib_feh = [-1.6,-1.4,-1.2,-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2]
         lib_ofe = [0.6, 0.5, 0.5, 0.4, 0.3, 0.2, 0.2, 0.1, 0.0, 0.0]
         # Bensby+ 2014
-        lib_mgfe = [0.4, 0.4, 0.4, 0.38, 0.37, 0.27, 0.21, 0.12, 0.05, 0.0]
+        lib_mgfe = [0.4,0.4,0.4,0.38,0.37,0.27,0.21,0.12,0.05,0.0]
         lib_cafe = [0.32, 0.3, 0.28, 0.26, 0.26, 0.17, 0.12, 0.06, 0.0, 0.0]
 
         # In ALF the oxygen abundance is used a proxy for alpha abundance
@@ -107,44 +112,60 @@ class Alf(object):
         del_mgfe = interpolate.UnivariateSpline(lib_feh, lib_mgfe, s=1, k=1)
         del_cafe = interpolate.UnivariateSpline(lib_feh, lib_cafe, s=1, k=1)
 
-        alpha_correction = del_alfe(self.params['zH'] + self.params['FeH'])
+        #
+        alpha_correction = del_alfe(self.params['zH'])
         self.params['aH'] = self.params['aH'] + alpha_correction
 
-        mg_correction = del_alfe(self.params['zH'] + self.params['FeH'])
+        mg_correction = del_alfe(self.params['zH'])
         self.params['MgH'] = self.params['MgH'] + mg_correction
 
-        ca_correction = del_alfe(self.params['zH'] + self.params['FeH'])
+        ca_correction = del_alfe(self.params['zH'])
         self.params['CaH'] = self.params['CaH'] + ca_correction
         self.params['SiH'] = self.params['SiH'] + ca_correction
         self.params['TiH'] = self.params['TiH'] + ca_correction
 
-    def convert_abundances(self):
+        #
+        alpha_correction = del_alfe(self.params_chi2['zH'])
+        self.params_chi2['aH'] = self.params_chi2['aH'] + alpha_correction
+
+        mg_correction = del_alfe(self.params_chi2['zH'])
+        self.params_chi2['MgH'] = self.params_chi2['MgH'] + mg_correction
+
+        ca_correction = del_alfe(self.params_chi2['zH'])
+        self.params_chi2['CaH'] = self.params_chi2['CaH'] + ca_correction
+        self.params_chi2['SiH'] = self.params_chi2['SiH'] + ca_correction
+        self.params_chi2['TiH'] = self.params_chi2['TiH'] + ca_correction
+
+    def convert_abundances(self, chi2=False):
         """
         Abundances from ALF are over H, sometimes helpful to be
         over Fe.
 
         Need to always run abundance_correct first.
         """
-        #self.params = dict(zip(self.labels, results[0]))
 
         labels = ['aH', 'CH', 'NH', 'NaH', 'MgH',
         'SiH', 'KH', 'CaH', 'TiH','VH', 'CrH', 'MnH',
         'CoH', 'NiH', 'CuH', 'SrH','BaH', 'EuH']
 
-        abundances = np.array((len(labels)))
-        for i, label in enumerate(labels):
-            abundances[i] = self.params[label] - self.params['FeH']
+        abundances = np.zeros((len(labels)))
+        if chi2:
+            for i, label in enumerate(labels):
+                abundances[i] = self.params_chi2[label] - self.params_chi2['FeH']
+        else:
+            for i, label in enumerate(labels):
+                abundances[i] = self.params[label] - self.params['FeH']
 
-        errors = np.array((len(labels)))
+        errors = np.zeros((len(labels)))
         for i, label in enumerate(labels):
-            error[i] = np.sqrt(self.params[label]**2 + self.errors['FeH']**2)
+            errors[i] = np.sqrt(self.errors[label]**2 + self.errors['FeH']**2)
 
-        new_labels = ['aFe', 'CFe', 'NFe', 'NaFe', 'MgFe',
-        'SiFe', 'KFe', 'CaFe', 'TiFe','VFe', 'CrFe', 'MnFe',
-        'CoFe', 'NiFe', 'CuFe', 'SrFe','BaFe', 'EuFe']
+        new_labels = ['a', 'C', 'N', 'Na', 'Mg',
+        'Si', 'K', 'Ca', 'Ti','V', 'Cr', 'Mn',
+        'Co', 'Ni', 'Cu', 'Sr','Ba', 'Eu']
 
         self.params_fe = dict(zip(new_labels, abundances))
-        self.errors_fe = dict(zip(new_labels, abundances))
+        self.errors_fe = dict(zip(new_labels, errors))
 
 
     def plot_model(self, wrange, outpath, fname):
