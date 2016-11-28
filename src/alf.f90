@@ -36,9 +36,9 @@ PROGRAM ALF
   !inverse sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=20000
+  INTEGER, PARAMETER :: nburn=2000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=1020 !1020 (15), 1085 (31)
+  INTEGER, PARAMETER :: nwalkers=128 !1020
   !save the chain outputs to file
   INTEGER, PARAMETER :: print_mcmc=1
 
@@ -83,7 +83,7 @@ PROGRAM ALF
 
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
-  fit_type = 0
+  fit_type = 1
   !type of IMF to fit
   !0=1PL, 1=2PL, 2=1PL+cutoff, 3=2PL+cutoff, 4=non-parametric IMF
   imf_type = 1
@@ -97,6 +97,8 @@ PROGRAM ALF
   fit_two_ages = 1
   !regularize non-parametric IMF
   nonpimf_regularize = 1
+
+  velbroad_simple=1
 
   !set low upper prior limits to kill off these parameters
   prhi%logm7g = -5.0
@@ -282,7 +284,7 @@ PROGRAM ALF
         tpos%logfy  = -5.0
         tpos%logm7g = -5.0
         tpos%loghot = -5.0
-        tpos%imf1 = 2.3
+        tpos%imf1 = 3.0
         tpos%imf2 = 2.3
         tpos%imf3 = 0.08
         tpos%imf4 = 0.0
@@ -423,18 +425,6 @@ PROGRAM ALF
         IF (i.EQ.nburn/4.*1) THEN
            WRITE (*,'(A)',advance='no') ' ...25%'
            CALL FLUSH()
-           !now increase the prior range on the IMF
-         !  prhi%imf1 =  4.0
-         !  prlo%imf1 = -4.0
-         !  prhi%imf2 =  4.0
-         !  prlo%imf2 = -4.0
-         !  prhi%imf3 =  4.0
-         !  prlo%imf3 = -4.0
-         !  prhi%imf4 =  4.0
-         !  prlo%imf4 = -4.0
-         !  !convert the structures into their equivalent arrays
-         !  CALL STR2ARR(1,prlo,prloarr)   !str->arr
-         !  CALL STR2ARR(1,prhi,prhiarr)   !str->arr
         ENDIF
         IF (i.EQ.nburn/4.*2) THEN
            WRITE (*,'(A)',advance='no') '...50%'

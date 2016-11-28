@@ -8,82 +8,42 @@ PROGRAM WRITE_A_MODEL
 
   IMPLICIT NONE
 
-  INTEGER  :: i
-  REAL(DP) :: s2n,lmin,lmax,ires=0.,emnorm
-  REAL(DP), DIMENSION(nl) :: mspec,lam,err,gdev
+  INTEGER  :: i,j
+  REAL(DP) :: s2n,s2np,lmin,lmax,ires=0.,emnorm
+  REAL(DP), DIMENSION(nl) :: gspec,mspec,lam,err,gdev
   CHARACTER(100) :: file=''
   CHARACTER(50)  :: infile=''
-  TYPE(PARAMS)   :: pos
+  CHARACTER(2), DIMENSION(10)  :: str=''
+  CHARACTER(2) :: is
+  TYPE(PARAMS) :: pos
   
   !-----------------------------------------------------------!
   !-----------------------------------------------------------!
 
   !instrumental resolution (<10 -> no broadening)
-  ires = 1. !100.
+  ires     = 1. !100.
+  imf_type = 1
 
-  imf_type = 3
+  str = (/'00','01','02','03','04','05','06','07','08','09'/)
 
   !initialize the random number generator
   CALL INIT_RANDOM_SEED()
 
-  !compute an array of gaussian deviates
-  CALL GASDEV(gdev)
-
-  file = 'model_t10.0_sn0300_mc0.08_imf3.3.dat'
-  s2n  = 300.0
   lmin = 3800.
   lmax = 11000.
-
-  pos%sigma  = 300.
-  pos%logage = LOG10(10.0)
-  pos%zh     = 0.0
-  emnorm     = -5.0
-  !Kroupa
-  pos%imf1   = 3.3
-  pos%imf2   = 3.3
-  pos%imf3   = 0.08
-
-  IF (imf_type.EQ.4) THEN
-     !x=3.3
-     pos%imf1 = 2.64
-     pos%imf2 = 1.68
-     pos%imf3 = 0.872
-     pos%imf4 = 0.369
-     !bottom-heavy
-  !   pos%imf1 = 2.2
-  !   pos%imf2 = 2.2
-  !   pos%imf3 = 0.573
-  !   pos%imf4 = 0.256
-     !Kroupa
-   !  pos%imf1 = 1.121
-   !  pos%imf2 = 0.894
-   !  pos%imf3 = 0.573
-   !  pos%imf4 = 0.256
-     !Salpeter x=2.3
-  !   pos%imf1 = 1.741
-  !   pos%imf2 = 1.155
-  !   pos%imf3 = 0.603
-  !   pos%imf4 = 0.256
-     !flat
-   !  pos%imf1 = -0.222
-   !  pos%imf2 =  0.000
-   !  pos%imf3 =  0.000
-   !  pos%imf4 =  0.000
-   !  pos%imf5 =  0.000
-  ENDIF
-
-  pos%logemline_h    = emnorm
-  pos%logemline_oiii = emnorm
-  pos%logemline_sii  = emnorm
-  pos%logemline_ni   = emnorm
-  pos%logemline_nii  = emnorm
-
   !force a constant instrumental resolution
   !needs to be done this way for setup.f90 to work
   datmax=lmax-lmin
   DO i=1,datmax
-     data(i)%lam=i+lmin
+     data(i)%lam  = i+lmin
      data(i)%ires = ires
+
+     IF (data(i)%lam.LT.7000) THEN
+        data(i)%ires = 200.
+     ELSE
+        data(i)%ires = 50.
+     ENDIF
+
   ENDDO
 
   !use the LRIS instrumental dispersion
@@ -104,39 +64,73 @@ PROGRAM WRITE_A_MODEL
   nlint = 2
   l2(nlint) = lmax
 
-  !get a model spectrum
-  CALL GETMODEL(pos,mspec)
+  DO j=0,0
 
-  IF (1.EQ.1) THEN
-     err   = mspec/s2n
-     mspec = mspec + err*gdev
-  ELSE
+     !compute an array of gaussian deviates
+     CALL GASDEV(gdev)
+
+     IF (j.LE.10) THEN
+        is = str(j+1)
+     ELSE
+        WRITE(is,'(I2)') j
+     ENDIF
+
+     file = 'nmodel_t10.0_sn0030_mc0.08_imf2.3_'//is//'.dat'
+     file = 'tmodel_salp_lris_high.dat'
+     s2n  = 300.  !S/N per A
+ 
+     pos%sigma  = 300.
+     pos%logage = LOG10(10.0)
+     pos%zh     = 0.0
+     emnorm     = -5.0
+
+     pos%imf1   = 2.3
+     pos%imf2   = 2.3
+     pos%imf3   = 0.08
+
+     pos%logemline_h    = emnorm
+     pos%logemline_oiii = emnorm
+     pos%logemline_sii  = emnorm
+     pos%logemline_ni   = emnorm
+     pos%logemline_nii  = emnorm
+
+     !get a model spectrum
+     gspec = 0.0
+     mspec = 0.0
+     CALL GETMODEL(pos,mspec)
+     
      DO i=1,nl
-        IF (lam(i).LT.4600) THEN
-           err(i) = mspec(i)/10. 
-           mspec(i) = mspec(i) + err(i)*gdev(i)
+        IF (lam(i).LT.7500.) THEN
+           s2np = s2n*SQRT(0.9)
         ELSE
-           err(i) = mspec(i)/30.
-           mspec(i) = mspec(i) + err(i)*gdev(i)
+           s2np = s2n*SQRT(2.5)
+        ENDIF
+        err(i)   = mspec(i)/s2np
+        gspec(i) = mspec(i) + err(i)*gdev(i)
+     ENDDO
+ 
+     !write model spectrum to file
+     OPEN(12,FILE=TRIM(ALF_HOME)//'models/'//TRIM(file),STATUS='REPLACE')
+     WRITE(12,'("# 0.400 0.470")') 
+     WRITE(12,'("# 0.470 0.570")')
+     WRITE(12,'("# 0.570 0.640")')
+     WRITE(12,'("# 0.640 0.800")')
+     WRITE(12,'("# 0.800 0.892")')
+     WRITE(12,'("# 0.963 1.015")') 
+     DO i=1,nl
+        IF (lam(i).GE.lmin.AND.lam(i).LE.lmax) THEN
+           IF (lam(i).LT.7000) THEN
+              WRITE(12,'(F10.3,2ES12.4,2x,F4.1,2x,F7.2)') &
+                   lam(i),gspec(i),err(i),1.0,224. !ires
+           ELSE
+              WRITE(12,'(F10.3,2ES12.4,2x,F4.1,2x,F7.2)') &
+                   lam(i),gspec(i),err(i),1.0,50. !ires
+           ENDIF
         ENDIF
      ENDDO
-  ENDIF
-  
-  !write model spectrum to file
-  OPEN(12,FILE=TRIM(ALF_HOME)//'models/'//TRIM(file),STATUS='REPLACE')
-  WRITE(12,'("# 0.400 0.470")') 
-  WRITE(12,'("# 0.470 0.570")')
-  WRITE(12,'("# 0.570 0.640")')
-  WRITE(12,'("# 0.640 0.800")')
-  WRITE(12,'("# 0.800 0.892")')
-  WRITE(12,'("# 0.963 1.015")') 
-  DO i=1,nl
-     IF (lam(i).GE.lmin.AND.lam(i).LE.lmax) THEN
-        WRITE(12,'(F10.3,2ES12.4,2x,F4.1,2x,F7.2)') &
-             lam(i),mspec(i),err(i),1.0,ires
-     ENDIF
+     CLOSE(12)
+
   ENDDO
-  CLOSE(12)
 
 
 END PROGRAM WRITE_A_MODEL

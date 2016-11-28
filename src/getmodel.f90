@@ -12,9 +12,9 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   REAL(DP), DIMENSION(nl), INTENT(out) :: spec
   INTEGER, OPTIONAL :: mw
   REAL(DP), DIMENSION(nl) :: tmp,tmpr,yspec,tmp1,tmp2,tmp3,tmp4
-  INTEGER  :: vt,vy,vv1,vv2,vv3,i,vr,vm,vh,vm2,vm3
+  INTEGER  :: vt,vy,vv1,vv2,vv3,i,vr,vm,vh,vm2,vm3,il
   REAL(DP) :: dt,fy,dx1,dx2,dx3,lsig,ve,dr,dm,dm2,dm3,dh,dy,tmps,inorm,mass,msto
-  REAL(DP), DIMENSION(nl)   :: tmp_ltrans,tmp_ftrans_h2o,tmp_ftrans_o2
+  REAL(DP), DIMENSION(nl)   :: tmp_ltrans,tmp_ftrans_h2o,tmp_ftrans_o2,tres
   REAL(DP), DIMENSION(neml) :: emnormall=1.0
   REAL(DP), DIMENSION(nimfnp) :: imfw=0.0  
 
@@ -393,7 +393,15 @@ SUBROUTINE GETMODEL(pos,spec,mw)
 
   !velocity broaden the model
   IF (pos%sigma.GT.5.0) THEN
-     CALL VELBROAD(sspgrid%lam,spec,pos%sigma,l1(1),l2(nlint))
+
+     il = locate(sspgrid%lam,7E3)
+     tres = 0.0
+     tres(1:il) = pos%sigb0 + pos%sigb1*(sspgrid%lam(1:il)-5E3)/1E3
+     tres(1:il) = tres(1:il) / sspgrid%lam(1:il) * 3E5
+     tres = SQRT(tres**2+pos%sigma**2)
+
+     CALL VELBROAD(sspgrid%lam,spec,pos%sigma,l1(1),l2(nlint),tres)
+
   ENDIF
 
   !apply an atmospheric transmission function only in full mode

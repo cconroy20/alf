@@ -1,6 +1,7 @@
-FUNCTION READ_ALF_ONE, file, nwalker=nwalker
+FUNCTION READ_ALF_ONE, file, nwalker=nwalker, alfparams=alfparams
 
-  ;this code is not fully functioning yet with the new rows...
+  ;this code is not fully functioning yet with the new rows, especially
+  ;for the errors, which we cannot properly propagate with the *sum files
 
   ;library correction factors from Schiavon 2007 Table 6
   ;note that I have forced the library corrections factors to
@@ -9,8 +10,7 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker
   libofe  = [0.6,0.5,0.5,0.4,0.3,0.2,0.2,0.1,0.0,0.0]
   ;libmgfe = [0.4,0.4,0.4,0.4,0.29,0.20,0.13,0.08,0.0,0.0]
   ;libcafe = [0.32,0.3,0.28,0.26,0.20,0.12,0.06,0.02,0.0,0.0]
-
-  ;fitted to Bensby et al. 2014
+  ;fitted to Bensby et al. 2014:
   libmgfe = [0.4,0.4,0.4,0.38,0.37,0.27,0.21,0.1,0.00,0.0]
   libcafe = [0.32,0.3,0.28,0.26,0.26,0.17,0.12,0.06,0.0,0.0]
  
@@ -25,7 +25,6 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker
   free_lun,lun
 
   ;what kind of file are we dealing with?
-  errp   = strpos(file,'errp')
   sum    = strpos(file,'sum')
   simple = strpos(file,'simple')
 
@@ -50,18 +49,9 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker
              jitter,imf3,m2lr,m2li,m2lk,m2lmwr,m2lmwi,m2lmwk,/sil
      imf4   = findgen(n_elements(chi2))
      logsky = findgen(n_elements(chi2))
-  ENDIF ELSE IF n_elements(ts) EQ 47 THEN BEGIN
-     readcol,dir+file,chi2,velz,sigma,logage,zh,feh,afe,cfe,$
-             nfe,nafe,mgfe,sife,kfe,cafe,tife,vfe,crfe,mnfe,cofe,nife,$
-             cufe,srfe,bafe,eufe,teff,imf1,imf2,logfy,sigma2,$
-             velz2,logm7g,hotteff,loghot,fy_logage,logtrans,d1,d2,d3,d4,d5,$
-             jitter,m2lr,m2li,m2lk,m2lmwr,m2lmwi,m2lmwk,/sil
-     imf4   = findgen(n_elements(chi2))
-     imf3   = findgen(n_elements(chi2))
-     logsky = findgen(n_elements(chi2))
   ENDIF ELSE BEGIN
      print,'READ_ALF ERROR: file format not recognized, returning...',$
-           n_elements(ts) EQ 47
+           n_elements(ts)
      RETURN,0
   ENDELSE 
 
@@ -76,11 +66,8 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker
          logemline_sii:0.0,logemline_ni:0.0,logemline_nii:0.0,delafe:0.0,$
          delmgfe:0.0,delcafe:0.0,jitter:0.0,logsky:0.0,logm:0.0,imf:fltarr(5)}
 
-  IF errp EQ -1 THEN BEGIN
-     tfeh = feh
-  ENDIF ELSE BEGIN
-     tfeh = fltarr(n_elements(feh))
-  ENDELSE
+
+  tfeh = feh
 
   res = replicate(str,n_elements(logage))
 
@@ -97,38 +84,35 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker
   res.zh   = zh
   res.tfeh = feh
   
-  ;fold in the [Z/H] result into [Fe/H]
-  IF errp EQ -1 THEN BEGIN
-     res[sind].feh = res[sind].zh + feh[sind]
-     IF sum GT -1 THEN $
-        res[eind].feh = sqrt(res[eind].zh^2+feh[eind]^2)
-  ENDIF ELSE BEGIN
-     res.feh = sqrt(res.zh^2+feh^2)
-  ENDELSE
-
+  ;fold [Z/H] into [Fe/H]
+  res[sind].feh = res[sind].zh + feh[sind]
+  IF sum GT -1 THEN $
+     res[eind].feh = sqrt(res[eind].zh^2+feh[eind]^2)
+  
   ;compute the library enhancement factors
-  IF errp EQ -1 THEN BEGIN
-     delafe  = fltarr(n_elements(logage))
-     delmgfe = fltarr(n_elements(logage))
-     delcafe = fltarr(n_elements(logage))
-     FOR i=0,n_elements(logage)-1 DO BEGIN
-        IF sum GT -1 AND i EQ 2 THEN BEGIN
-           tfeh[i]=0.0
-        ENDIF ELSE BEGIN
-           delafe[i]  = mylinterp(libfeh,libofe,res[i].zh)
-           delmgfe[i] = mylinterp(libfeh,libmgfe,res[i].zh)
-           delcafe[i] = mylinterp(libfeh,libcafe,res[i].zh)
-        ENDELSE
-     ENDFOR
-  ENDIF ELSE BEGIN
-     delafe  = 0.0
-     delmgfe = 0.0
-     delcafe = 0.0
-  ENDELSE
+  delafe  = fltarr(n_elements(logage))
+  delmgfe = fltarr(n_elements(logage))
+  delcafe = fltarr(n_elements(logage))
+  FOR i=0,n_elements(logage)-1 DO BEGIN
+     IF sum GT -1 AND i EQ 2 THEN BEGIN
+        tfeh[i]=0.0
+     ENDIF ELSE BEGIN
+        delafe[i]  = mylinterp(libfeh,libofe,res[i].zh)
+        delmgfe[i] = mylinterp(libfeh,libmgfe,res[i].zh)
+        delcafe[i] = mylinterp(libfeh,libcafe,res[i].zh)
+     ENDELSE
+  ENDFOR
 
   res.delafe  = delafe
   res.delcafe = delcafe
   res.delmgfe = delmgfe
+
+  IF keyword_set(alfparams) THEN BEGIN
+     tfeh    = tfeh*0.0
+     delafe  = delafe*0.0
+     delmgfe = delmgfe*0.0
+     delcafe = delcafe*0.0
+  ENDIF
 
   res.afe  = afe -tfeh + delafe
   res.mgfe = mgfe-tfeh + delmgfe
@@ -198,26 +182,22 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker
   res.logemline_ni   = res.emline[3]
   res.logemline_nii  = res.emline[4]
 
-  IF errp EQ -1 THEN BEGIN
-     res[sind].lsig = alog10(res[sind].sigma)
-     ;this is not quite right below!  I think we need the actual
-     ;chain output to propogate the errors since mli and mli_mw are correlated
-     res[sind].ml   = res[sind].mli/res[0].mli_mw
-     IF sum GT -1 THEN BEGIN
-        res[eind].ml = sqrt(res[eind].mli^2+res[eind].mli_mw^2)/res[0].mli_mw
-     ENDIF
-  ENDIF
+  res[sind].lsig = alog10(res[sind].sigma)
+  
+  IF sum GT -1 THEN BEGIN
+     res[sind].ml = res[sind].mlr/res[0].mlr_mw
+     res[eind].ml = sqrt(res[eind].mlr^2+res[eind].mlr_mw^2)/res[0].mlr_mw
+  ENDIF ELSE BEGIN
+     res.ml = res.mlr/res.mlr_mw
+  ENDELSE
 
   ;mass-weighted age
-  IF errp EQ -1 THEN BEGIN
-     IF simple EQ -1 THEN BEGIN
-        res[sind].lage = (1-10^res[sind].logfy)*10^res[sind].logage + $
-                         10^res[sind].fy_logage*10^res[sind].logfy
-     ENDIF ELSE BEGIN
-        res[sind].lage = 10^res[sind].logage
-     ENDELSE 
-  ENDIF
-
+  IF simple EQ -1 THEN BEGIN
+     res[sind].lage = (1-10^res[sind].logfy)*10^res[sind].logage + $
+                      10^res[sind].fy_logage*10^res[sind].logfy
+  ENDIF ELSE BEGIN
+     res[sind].lage = 10^res[sind].logage
+  ENDELSE 
 
   ;split the chain into separate walkers
   IF keyword_set(nwalker) THEN BEGIN
@@ -238,7 +218,7 @@ END
 
 FUNCTION READ_ALF, file,nwalker=nwalker,bestp=bestp,errp=errp,$
                    cl2=cl2,cl16=cl16,cl50=cl50,cl84=cl84,cl97=cl97,$
-                   minp=minp,prlo=prlo,prhi=prhi
+                   minp=minp,prlo=prlo,prhi=prhi,alfparams=alfparams
 
   sdir = getenv('ALF_HOME')
   IF sdir EQ '' THEN BEGIN
@@ -261,7 +241,7 @@ FUNCTION READ_ALF, file,nwalker=nwalker,bestp=bestp,errp=errp,$
   FOR i=0,ct-1 DO BEGIN
      tf  = strsplit(ff[i],'/',/extr)
      tf  = tf[n_elements(tf)-1]
-     one = read_alf_one(tf, nwalker=nwalker)
+     one = read_alf_one(tf, nwalker=nwalker,alfparams=alfparams)
      none = n_elements(one)
      IF i EQ 0 THEN $
         all = replicate(one[0],n_elements(one),ct)

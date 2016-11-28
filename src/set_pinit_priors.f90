@@ -63,6 +63,8 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   pos%logemline_sii  = myran()*2-4
   pos%jitter         = myran()*0.5+0.75
   pos%logsky         = myran()*2-4
+  pos%sigb0 = myran()+2.
+  pos%sigb1 = myran()*0.2+0.1
 
   IF (imf_type.LE.3) THEN
      pos%imf1      = myran()*1.0-0.3 + 1.3
@@ -159,6 +161,10 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prlo%jitter.EQ.test%jitter) prlo%jitter    = 0.1
   IF (prlo%logsky.EQ.test%logsky) prlo%logsky    = -6.0
 
+  IF (prlo%sigb0.EQ.test%sigb0) prlo%sigb0    = 0.0
+  IF (prlo%sigb1.EQ.test%sigb1) prlo%sigb1    = 0.0
+
+
   IF (imf_type.LE.3) THEN
      IF (prlo%imf1.EQ.test%imf1) prlo%imf1       = 0.5
      IF (prlo%imf3.EQ.test%imf3) prlo%imf3       = 0.08
@@ -220,11 +226,15 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prhi%jitter.EQ.test%jitter) prhi%jitter    = 10.0
   IF (prhi%logsky.EQ.test%logsky) prhi%logsky    = 2.0
 
+  IF (prhi%sigb0.EQ.test%sigb0) prhi%sigb0    = 5.
+  IF (prhi%sigb1.EQ.test%sigb1) prhi%sigb1    = 3.
+
+
   IF (imf_type.LE.3) THEN
      IF (prhi%imf1.EQ.test%imf1) prhi%imf1       = 3.5
      IF (prhi%imf3.EQ.test%imf3) prhi%imf3       = 0.4
   ELSE
-     IF (prhi%imf1.EQ.test%imf1) prhi%imf1 = 3.0
+     IF (prhi%imf1.EQ.test%imf1) prhi%imf1 = 4.0
      IF (prhi%imf3.EQ.test%imf3) prhi%imf3 = 3.0
   ENDIF
   IF (imf_type.EQ.0.OR.imf_type.EQ.1.OR.imf_type.EQ.3) THEN
