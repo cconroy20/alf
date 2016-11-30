@@ -38,7 +38,7 @@ PROGRAM ALF
   !length of chain burn-in
   INTEGER, PARAMETER :: nburn=20000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=1020 !1020 (15), 1085 (31)
+  INTEGER, PARAMETER :: nwalkers=1020
   !save the chain outputs to file
   INTEGER, PARAMETER :: print_mcmc=1
 

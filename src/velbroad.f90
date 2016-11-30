@@ -35,8 +35,6 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
   !but the only way in the case of wave-dep smoothing
   IF (velbroad_simple.EQ.1.OR.PRESENT(ires)) THEN
 
-     RETURN
-
      tspec(1:nn) = spec(1:nn)
      spec(1:nn)  = 0.0
 

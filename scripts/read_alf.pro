@@ -25,8 +25,8 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker
   free_lun,lun
 
   ;what kind of file are we dealing with?
-  errp   = strpos(file,'errp')
-  sum    = strpos(file,'sum')
+  errp   = strpos(file,'.errp')
+  sum    = strpos(file,'.sum')
   simple = strpos(file,'simple')
 
   IF n_elements(ts) EQ 50 THEN BEGIN
