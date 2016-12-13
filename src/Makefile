@@ -25,7 +25,7 @@ F90FLAGS = -O3 -fno-strict-overflow -cpp
 #F90FLAGS = -O3 -funroll-loops -xP
 #---------------------
 
-PROGS = alf write_a_model
+PROGS = alf write_a_model spec_from_sum
 
 COMMON =  nrtype.o alf_vars.o nr.o nrutil.o ran_state.o alf_utils.o getmodel.o \
 	setup.o linterp.o velbroad.o tsum.o add_response.o \
@@ -46,9 +46,14 @@ alf : alf.o $(COMMON)
 write_a_model : write_a_model.o $(COMMON) 
 	$(F90) -o ../bin/write_a_model.exe write_a_model.o $(COMMON)
 
+spec_from_sum : spec_from_sum.o $(COMMON) 
+	$(F90) -o ../bin/spec_from_sum.exe spec_from_sum.o $(COMMON)
+
 alf.o : alf_vars.o nrtype.o nr.o alf_utils.o ran_state.o nrutil.o
 
 write_a_model.o : alf_vars.o nrtype.o nr.o alf_utils.o ran_state.o nrutil.o
+
+spec_from_sum.o : alf_vars.o nrtype.o nr.o alf_utils.o ran_state.o nrutil.o
 
 ran_state.o: nrutil.o
 

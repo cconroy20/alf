@@ -13,7 +13,7 @@ SUBROUTINE SETUP()
   REAL(DP), DIMENSION(ntrans) :: ltrans,ftrans_h2o,ftrans_o2,strans
   REAL(DP), DIMENSION(3) :: tmpzgrid
   CHARACTER(4), DIMENSION(nzmet) :: charz
-  CHARACTER(4), DIMENSION(nmcut) :: charm
+  CHARACTER(4), DIMENSION(8) :: charm
   CHARACTER(5), DIMENSION(nage)  :: chart
   CHARACTER(3), DIMENSION(nage_rfcn) :: chart2
 

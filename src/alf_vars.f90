@@ -65,7 +65,7 @@ MODULE ALF_VARS
   INTEGER :: powell_fitting = 0
 
   !IMF power-law slope within each bin for non-paramtric IMF
-  REAL(DP) :: nonpimf_alpha = 0.0
+  REAL(DP) :: nonpimf_alpha = 2.3
 
   !fit two-component SFH. Also requires fit_type=0
   INTEGER :: fit_two_ages=1
@@ -111,8 +111,8 @@ MODULE ALF_VARS
 
   !nstart and nend allow us to use only a subset of 
   !the full wavelength array
-  INTEGER, PARAMETER :: nstart = 100   ! 0.36 um
-  INTEGER, PARAMETER :: nend   = 5830  ! 1.10 um
+  INTEGER, PARAMETER :: nstart = 100 !100   ! 0.36 um
+  INTEGER, PARAMETER :: nend   = 5830 !10566 ! 5830  ! 1.10 um
   !number of spectral elements in SSPs
   INTEGER, PARAMETER :: nl = nend-nstart+1
   !number actually used over the range to be fit

@@ -98,10 +98,16 @@ PROGRAM ALF
   !regularize non-parametric IMF
   nonpimf_regularize = 1
 
-  !set low upper prior limits to kill off these parameters
+  !change the prior limits to kill off these parameters
   prhi%logm7g = -5.0
   prhi%teff   =  2.0
   prlo%teff   = -2.0
+
+
+  !---------------------------------------------------------------!
+  !--------------Do not change things below this line-------------!
+  !---------------unless you know what you are doing--------------!
+  !---------------------------------------------------------------!
 
   !correction factor between Salpeter and flat intrabin weights
   !for non-parametric IMF
@@ -577,6 +583,8 @@ PROGRAM ALF
      WRITE(14,'("#  Facc: ",F5.2)') REAL(totacc)/REAL(nmcmc*nwalkers)
      WRITE(14,'("#  rows: mean posterior, pos(chi^2_min), 1 sigma errors, '//&
           '2.5%, 16%, 50%, 84%, 97.5% CL, lower priors, upper priors ")') 
+
+     !write mean of posteriors
      WRITE(14,'(ES12.5,1x,99(F11.4,1x))') bpos%chi2,runtot(2,:)/runtot(1,:)
 
      !write position where chi^2=min
