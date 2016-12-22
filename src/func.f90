@@ -157,7 +157,7 @@ FUNCTION FUNC(nposarr,spec,funit)
      ELSE
 
         CALL GETINDX(sspgrid%lam,mspec,mindx)
-        func = SUM((data_indx%indx-mindx)**2 / data_indx%err)
+        func = SUM( (data_indx%indx-mindx)**2/data_indx%err**2 )
 
         IF (PRESENT(funit)) THEN
            DO j=1,nindx

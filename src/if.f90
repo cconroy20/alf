@@ -34,11 +34,11 @@ PROGRAM IF
   !number of chain steps to print to file
   INTEGER, PARAMETER :: nmcmc=100
   !inverse sampling of the walkers for printing
-  INTEGER, PARAMETER :: nsample=1
+  INTEGER, PARAMETER :: nsample=2
   !length of chain burn-in
   INTEGER, PARAMETER :: nburn=1000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=512
+  INTEGER, PARAMETER :: nwalkers=1020
   !save the chain outputs to file and the model spectra
   INTEGER, PARAMETER :: print_mcmc=1, print_mcmc_spec=1
 
@@ -89,7 +89,7 @@ PROGRAM IF
 
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
-  fit_type = 1
+  fit_type = 0
   !type of IMF to fit
   !0=1PL, 1=2PL, 2=1PL+cutoff, 3=2PL+cutoff, 4=non-parametric IMF
   imf_type = 1
@@ -106,6 +106,7 @@ PROGRAM IF
 
   !change the prior limits to kill off these parameters
   prhi%logm7g = -5.0
+  prhi%loghot = -5.0
   prhi%teff   =  2.0
   prlo%teff   = -2.0
 

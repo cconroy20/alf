@@ -150,7 +150,7 @@ MODULE ALF_VARS
   !total number of parameters in the simple model
   INTEGER, PARAMETER :: nparsimp = 14
   !number of indices defined in allindices.dat
-  INTEGER, PARAMETER :: nindx=20
+  INTEGER, PARAMETER :: nindx=24
   !number of filters
   INTEGER, PARAMETER :: nfil=3
   !number of hot stars

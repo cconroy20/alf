@@ -36,9 +36,9 @@ PROGRAM ALF
   !inverse sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=200
+  INTEGER, PARAMETER :: nburn=20000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=10
+  INTEGER, PARAMETER :: nwalkers=1020
   !save the chain outputs to file and the model spectra
   INTEGER, PARAMETER :: print_mcmc=1,print_mcmc_spec=0
 
@@ -84,7 +84,7 @@ PROGRAM ALF
 
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
-  fit_type = 1
+  fit_type = 0
   !type of IMF to fit
   !0=1PL, 1=2PL, 2=1PL+cutoff, 3=2PL+cutoff, 4=non-parametric IMF
   imf_type = 1

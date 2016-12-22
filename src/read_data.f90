@@ -28,6 +28,7 @@ SUBROUTINE READ_DATA(file,sigma,velz)
           STATUS='OLD',iostat=stat,ACTION='READ')
      IF (stat.NE.0) THEN
         WRITE(*,*) 'READ_DATA ERROR: file not found'
+        WRITE(*,*) TRIM(ALF_HOME)//'/indata/'//TRIM(file)//'.indx'
         STOP
      ENDIF
      
@@ -42,6 +43,7 @@ SUBROUTINE READ_DATA(file,sigma,velz)
           STATUS='OLD',iostat=stat,ACTION='READ')
      IF (stat.NE.0) THEN
         WRITE(*,*) 'READ_DATA ERROR: file not found'
+        WRITE(*,*) TRIM(ALF_HOME)//'/indata/'//TRIM(file)//'.dat'
         STOP
      ENDIF
 

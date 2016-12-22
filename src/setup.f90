@@ -556,7 +556,7 @@ SUBROUTINE SETUP()
         STOP
      ENDIF
      !convert the Lick indices from air to vacuum wavelengths
-     IF (i.LE.20) THEN 
+     IF (i.LE.21) THEN 
         indxdef(1:6,i) = airtovac(indxdef(1:6,i))
      ENDIF
   ENDDO
