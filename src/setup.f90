@@ -2,7 +2,8 @@ SUBROUTINE SETUP()
 
   !read in and set up all the arrays
 
-  USE alf_vars; USE nr, ONLY : locate; USE alf_utils, ONLY : linterp,velbroad
+  USE alf_vars; USE nr, ONLY : locate
+  USE alf_utils, ONLY : linterp,velbroad,airtovac
   IMPLICIT NONE
   
   REAL(DP) :: d1,l1um=1E4,t13=1.3,t23=2.3,sig0=99.,lamlo,lamhi
@@ -539,8 +540,31 @@ SUBROUTINE SETUP()
   sspgrid%logssp  = LOG10(sspgrid%logssp+tiny_number)
   sspgrid%logsspm = LOG10(sspgrid%logsspm+tiny_number)
 
+  !----------------------------------------------------------------!
+  !-----------------read in index definitions----------------------!
+  !----------------------------------------------------------------!
+
+  OPEN(99,FILE=TRIM(ALF_HOME)//'/infiles/allindices.dat',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  DO i=1,4  !burn the header
+     READ(99,*)
+  ENDDO
+  DO i=1,nindx
+     READ(99,*,IOSTAT=stat) indxdef(:,i)
+     IF (stat.NE.0) THEN 
+        WRITE(*,*) 'SPS_SETUP ERROR: error during index defintion read'
+        STOP
+     ENDIF
+     !convert the Lick indices from air to vacuum wavelengths
+     IF (i.LE.20) THEN 
+        indxdef(1:6,i) = airtovac(indxdef(1:6,i))
+     ENDIF
+  ENDDO
+  CLOSE(99)
+
+  !----------------------------------------------------------------!
+
   !locate where lam=7000A
   lam7 = locate(lam,7000.d0)
-
 
 END SUBROUTINE SETUP

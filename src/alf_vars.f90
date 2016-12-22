@@ -24,6 +24,7 @@ MODULE ALF_VARS
   !2: only fit velz, sigma, SSP age, Z
   INTEGER :: fit_type=0
 
+
   !turn on the use of age-dependent response functions
   INTEGER :: use_age_dep_resp_fcns=1
   !if above is set to 0, fix the response functions to this age (Gyr)
@@ -72,6 +73,9 @@ MODULE ALF_VARS
 
   !regularize the non-parametric IMF
   INTEGER :: nonpimf_regularize=1
+
+  !fit indices (only when using if.exe)
+  INTEGER :: fit_indices=1
 
   !--------------------------------------------------------------!
   !  the options below have not been tested/used in a long time  !
@@ -145,6 +149,8 @@ MODULE ALF_VARS
   INTEGER, PARAMETER :: ndat = 30000
   !total number of parameters in the simple model
   INTEGER, PARAMETER :: nparsimp = 14
+  !number of indices defined in allindices.dat
+  INTEGER, PARAMETER :: nindx=20
   !number of filters
   INTEGER, PARAMETER :: nfil=3
   !number of hot stars
@@ -206,6 +212,10 @@ MODULE ALF_VARS
   INTEGER, PARAMETER :: nskylines = 39324
   REAL(DP), DIMENSION(nskylines) :: lsky,fsky
 
+  !array of index definitions
+  REAL(DP), DIMENSION(7,nindx) :: indxdef=0.
+  INTEGER, DIMENSION(nindx) :: indx2fit=0
+
   !---------------------Physical Constants-----------------------!
   !---------------in cgs units where applicable------------------!
 
@@ -264,9 +274,15 @@ MODULE ALF_VARS
      REAL(DP) :: lam=1E6,flx=0.0,err=0.0,wgt=0.0,ires=0.0,lam0=1E6,sky=0.0
   END TYPE TDATA
 
+  !structure for the indices measured from the data
+  TYPE IDATA
+     REAL(DP) :: indx=0.0, err=99.0
+  END TYPE IDATA
+
+  !define the actual variable holding the index data
+  TYPE(IDATA), DIMENSION(nindx) :: data_indx
   !define the actual SSP grid to be shared between the routines
   TYPE(SSP) :: sspgrid
-
   !define the object for the raw data array
   TYPE(TDATA), DIMENSION(ndat) :: data
   !define the object for the data interpolated to the model arr

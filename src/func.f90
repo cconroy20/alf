@@ -6,7 +6,7 @@ FUNCTION FUNC(nposarr,spec,funit)
 
   USE alf_vars; USE nr, ONLY : locate
   USE alf_utils, ONLY : linterp3,contnormspec,getmass,&
-       str2arr,getmodel,linterp
+       str2arr,getmodel,linterp,getindx
   IMPLICIT NONE
 
   REAL(DP), DIMENSION(:), INTENT(inout) :: nposarr
@@ -17,6 +17,7 @@ FUNCTION FUNC(nposarr,spec,funit)
   REAL(DP), DIMENSION(ndat) :: mflx,poly,zmspec,terr
   REAL(DP), DIMENSION(npar) :: tposarr=0.0
   REAL(DP), DIMENSION(npolymax) :: tcoeff
+  REAL(DP), DIMENSION(nindx) :: mindx
   INTEGER  :: i,i1,i2,j,npow,tpow
   TYPE(PARAMS)   :: npos
 
@@ -24,11 +25,6 @@ FUNCTION FUNC(nposarr,spec,funit)
 
   func = 0.0
   tpow = 0
-
-  !IF (SIZE(nposarr).NE.npar.AND.SIZE(nposarr).NE.npowell) THEN
-  !   WRITE(*,*) 'FUNC ERROR: size(nposarr) NE npar or npowell'
-  !   STOP
-  !ENDIF
 
   !this is for Powell minimization
   IF (SIZE(nposarr).LT.npar) THEN
@@ -48,6 +44,7 @@ FUNCTION FUNC(nposarr,spec,funit)
   DO i=1,npar
      IF (i.GT.npowell.AND.(powell_fitting.EQ.1.OR.fit_type.EQ.2)) CYCLE
      IF (fit_type.EQ.1.AND.i.GT.nparsimp) CYCLE
+     IF (fit_indices.EQ.1.AND.i.LE.2) CYCLE
      IF ( (nposarr(i).GT.prhiarr(i)).OR.(nposarr(i).LT.prloarr(i)) ) pr=0.0
   ENDDO
 
@@ -74,85 +71,101 @@ FUNCTION FUNC(nposarr,spec,funit)
         spec = mspec
      ENDIF
 
-     !redshift the model and interpolate to data wavelength array
-     oneplusz = (1+npos%velz/clight*1E5)
-     zmspec   = 0.0
-     zmspec(1:datmax) = LINTERP(sspgrid%lam(1:nl_fit)*oneplusz,&
-          mspec(1:nl_fit),data(1:datmax)%lam)
+     IF (fit_indices.EQ.0) THEN
 
-     !compute chi2, looping over wavelength intervals
-     DO i=1,nlint
+        !redshift the model and interpolate to data wavelength array
+        oneplusz = (1+npos%velz/clight*1E5)
+        zmspec   = 0.0
+        zmspec(1:datmax) = LINTERP(sspgrid%lam(1:nl_fit)*oneplusz,&
+             mspec(1:nl_fit),data(1:datmax)%lam)
+
+        !compute chi2, looping over wavelength intervals
+        DO i=1,nlint
         
-        tl1 = MAX(l1(i)*oneplusz,data(1)%lam)
-        tl2 = MIN(l2(i)*oneplusz,data(datmax)%lam)
-        ml  = (tl1+tl2)/2.0
-        !if wavelength interval falls completely outside 
-        !of the range of the data, then skip
-        IF (tl1.GE.tl2) CYCLE
+           tl1 = MAX(l1(i)*oneplusz,data(1)%lam)
+           tl2 = MIN(l2(i)*oneplusz,data(datmax)%lam)
+           ml  = (tl1+tl2)/2.0
+           !if wavelength interval falls completely outside 
+           !of the range of the data, then skip
+           IF (tl1.GE.tl2) CYCLE
 
-        i1 = MIN(MAX(locate(data(1:datmax)%lam,tl1),1),datmax-1)
-        i2 = MIN(MAX(locate(data(1:datmax)%lam,tl2),2),datmax)
+           i1 = MIN(MAX(locate(data(1:datmax)%lam,tl1),1),datmax-1)
+           i2 = MIN(MAX(locate(data(1:datmax)%lam,tl2),2),datmax)
 
-        !fit a polynomial to the ratio of model and data
-        CALL CONTNORMSPEC(data(1:datmax)%lam,&
-             data(1:datmax)%flx/zmspec(1:datmax),&
-             data(1:datmax)%err/zmspec(1:datmax),tl1,tl2,&
-             mflx(1:datmax),coeff=tcoeff)
-        poly = 0.0
-        npow = MIN(NINT((tl2-tl1)/poly_dlam),npolymax)
-        DO j=1,npow+1 
-           poly = poly + tcoeff(j)*(data%lam-ml)**(j-1)
-        ENDDO
-        mflx  = zmspec * poly
-        !compute chi^2
-        IF (fit_type.EQ.0) THEN
-           !include jitter term
-           tchi2 = SUM( (data(i1:i2)%flx-mflx(i1:i2))**2 / &
-                (data(i1:i2)%err**2*npos%jitter**2+&
-                (10**npos%logsky*data(i1:i2)%sky)**2) + &
-                LOG(2*mypi*(data(i1:i2)%err**2*npos%jitter**2+&
-                (10**npos%logsky*data(i1:i2)%sky)**2)) )
-        ELSE
-           !no jitter in simple mode
-           tchi2 = SUM( (data(i1:i2)%flx-mflx(i1:i2))**2/data(i1:i2)%err**2 )
-        ENDIF
-      
-        !error checking
-        IF (isnan(tchi2)) THEN
-           WRITE(*,'(" FUNC ERROR: chi2 returned a NaN")') 
-           WRITE(*,'(" error occured at wavelength interval: ",I1)') i
-           WRITE(*,*) 'lam  data   err   model   poly'
-           DO j=i1,i2
-              WRITE(*,'(F7.1,10ES12.3)') data(j)%lam,data(j)%flx,&
-                   SQRT(data(j)%err**2*npos%jitter**2+&
-                   (10**npos%logsky*data(j)%sky)**2),mflx(j),poly(j)
+           !fit a polynomial to the ratio of model and data
+           CALL CONTNORMSPEC(data(1:datmax)%lam,&
+                data(1:datmax)%flx/zmspec(1:datmax),&
+                data(1:datmax)%err/zmspec(1:datmax),tl1,tl2,&
+                mflx(1:datmax),coeff=tcoeff)
+           poly = 0.0
+           npow = MIN(NINT((tl2-tl1)/poly_dlam),npolymax)
+           DO j=1,npow+1 
+              poly = poly + tcoeff(j)*(data%lam-ml)**(j-1)
            ENDDO
-           WRITE(*,*)
-           WRITE(*,'("params:",100F14.2)') tposarr
-           STOP
-        ENDIF
-        
-        func  = func + tchi2
-        
-        IF (PRESENT(funit)) THEN
-           !write final results to screen and file
-           WRITE(*,'(2x,F5.2,"um-",F5.2,"um:"," rms:",F5.1,"%, ","Chi2/dof:",F6.1)') &
-                tl1/1E4/oneplusz,tl2/1E4/oneplusz,&
-                SQRT( SUM( (data(i1:i2)%flx/mflx(i1:i2)-1)**2 )/&
-                (i2-i1+1) )*100,tchi2/(i2-i1)
+           mflx  = zmspec * poly
+           !compute chi^2
            IF (fit_type.EQ.0) THEN
-              terr = SQRT(data%err**2*npos%jitter**2+&
-                   (10**npos%logsky*data%sky)**2)
+              !include jitter term
+              tchi2 = SUM( (data(i1:i2)%flx-mflx(i1:i2))**2 / &
+                   (data(i1:i2)%err**2*npos%jitter**2+&
+                   (10**npos%logsky*data(i1:i2)%sky)**2) + &
+                   LOG(2*mypi*(data(i1:i2)%err**2*npos%jitter**2+&
+                   (10**npos%logsky*data(i1:i2)%sky)**2)) )
            ELSE
-              terr = data%err
+              !no jitter in simple mode
+              tchi2 = SUM( (data(i1:i2)%flx-mflx(i1:i2))**2/data(i1:i2)%err**2 )
            ENDIF
-           DO j=i1,i2
-              WRITE(funit,'(F9.2,4ES12.4)') data(j)%lam,mflx(j),&
-                   data(j)%flx,data(j)%flx/terr(j),poly(j)
+           
+           !error checking
+           IF (isnan(tchi2)) THEN
+              WRITE(*,'(" FUNC ERROR: chi2 returned a NaN")') 
+              WRITE(*,'(" error occured at wavelength interval: ",I1)') i
+              WRITE(*,*) 'lam  data   err   model   poly'
+              DO j=i1,i2
+                 WRITE(*,'(F7.1,10ES12.3)') data(j)%lam,data(j)%flx,&
+                      SQRT(data(j)%err**2*npos%jitter**2+&
+                      (10**npos%logsky*data(j)%sky)**2),mflx(j),poly(j)
+              ENDDO
+              WRITE(*,*)
+              WRITE(*,'("params:",100F14.2)') tposarr
+              STOP
+           ENDIF
+        
+           func  = func + tchi2
+        
+           IF (PRESENT(funit)) THEN
+              !write final results to screen and file
+              WRITE(*,'(2x,F5.2,"um-",F5.2,"um:"," rms:",F5.1,"%,'//&
+                   ' ","Chi2/dof:",F6.1)') &
+                   tl1/1E4/oneplusz,tl2/1E4/oneplusz,&
+                   SQRT( SUM( (data(i1:i2)%flx/mflx(i1:i2)-1)**2 )/&
+                   (i2-i1+1) )*100,tchi2/(i2-i1)
+              IF (fit_type.EQ.0) THEN
+                 terr = SQRT(data%err**2*npos%jitter**2+&
+                      (10**npos%logsky*data%sky)**2)
+              ELSE
+                 terr = data%err
+              ENDIF
+              DO j=i1,i2
+                 WRITE(funit,'(F9.2,4ES12.4)') data(j)%lam,mflx(j),&
+                      data(j)%flx,data(j)%flx/terr(j),poly(j)
+              ENDDO
+           ENDIF
+
+        ENDDO
+
+     ELSE
+
+        CALL GETINDX(sspgrid%lam,mspec,mindx)
+        func = SUM((data_indx%indx-mindx)**2 / data_indx%err)
+
+        IF (PRESENT(funit)) THEN
+           DO j=1,nindx
+              WRITE(funit,'(3F9.4)') data_indx(j)%indx,mindx(j),data_indx(j)%err
            ENDDO
         ENDIF
 
-     ENDDO
+     ENDIF
   
   ENDIF
 
@@ -162,7 +175,6 @@ FUNCTION FUNC(nposarr,spec,funit)
   ELSE 
      func = func - 2*LOG(pr)
   ENDIF
-
 
   !for testing purposes
   IF (1.EQ.0) THEN

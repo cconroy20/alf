@@ -1,7 +1,7 @@
-PROGRAM ALF
+PROGRAM IF
 
   !  Master program to fit the absorption line spectrum
-  !  of a quiescent (>1 Gyr) stellar population
+  !  of a quiescent (>1 Gyr) stellar population in index space
 
   ! Some important points to keep in mind:
   ! 1. The prior bounds on the parameters are specified in set_pinit_priors. 
@@ -26,7 +26,7 @@ PROGRAM ALF
   !---------------------------------------------------------------------!
 
   USE alf_vars; USE alf_utils; USE mpi
-  USE nr, ONLY : locate,powell,sort
+  USE nr, ONLY : locate,powell,sort,gasdev
   USE ran_state, ONLY : ran_seed,ran_init
 
   IMPLICIT NONE
@@ -36,18 +36,18 @@ PROGRAM ALF
   !inverse sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=200
+  INTEGER, PARAMETER :: nburn=1000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=10
+  INTEGER, PARAMETER :: nwalkers=512
   !save the chain outputs to file and the model spectra
-  INTEGER, PARAMETER :: print_mcmc=1,print_mcmc_spec=0
+  INTEGER, PARAMETER :: print_mcmc=1, print_mcmc_spec=1
 
   !start w/ powell minimization?
   INTEGER, PARAMETER  :: dopowell=0
   !Powell iteration tolerance
   REAL(DP), PARAMETER :: ftol=0.1
   !if set, will print to screen timing of likelihood calls
-  INTEGER, PARAMETER  :: test_time=0
+  INTEGER, PARAMETER  :: test_time=0, nmcindx=1000
 
   INTEGER  :: i,j,k,totacc=0,iter=30,npos
   REAL(DP) :: velz,msto,minchi2=huge_number,fret,wdth,bret=huge_number
@@ -65,6 +65,9 @@ PROGRAM ALF
   REAL(SP), DIMENSION(2) :: dumt
   CHARACTER(50) :: file='',tag=''
   TYPE(PARAMS)  :: opos,prlo,prhi,bpos,tpos
+  REAL(DP)     :: sigma_indx,velz_indx
+  REAL(DP), DIMENSION(ndat) :: gdev,tflx
+  REAL(DP), DIMENSION(nmcindx,nindx) :: tmpindx=0.
   REAL(SP), DIMENSION(nmcmc*nwalkers/nsample+1,nl) :: mspec_mcmc=0.0
 
   !variables for emcee
@@ -82,14 +85,16 @@ PROGRAM ALF
   !---------------------------Setup-------------------------------!
   !---------------------------------------------------------------!
 
+  fit_indices=1
+
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
   fit_type = 1
   !type of IMF to fit
   !0=1PL, 1=2PL, 2=1PL+cutoff, 3=2PL+cutoff, 4=non-parametric IMF
   imf_type = 1
-  !are the data in the original observed frame?
-  observed_frame = 1
+  !do not apply obs frame stuff in index mode
+  observed_frame = 0
   !IMF slope within the non-parametric IMF bins
   nonpimf_alpha = 2.3
   !force MW IMF
@@ -142,12 +147,10 @@ PROGRAM ALF
      prhi%zh =  0.01
      prlo%zh = -0.01
      IF (imf_type.GT.1) THEN
-        WRITE(*,*) 'ALF ERROR, ssp_type=cvd but imf>1'
+        WRITE(*,*) 'IF ERROR, ssp_type=cvd but imf>1'
         STOP
      ENDIF
   ENDIF
-
-  fit_indices=0  ! we are not fitting indices in alf.exe
 
   IF (fit_type.EQ.1.OR.fit_type.EQ.2) mwimf=1
 
@@ -166,7 +169,7 @@ PROGRAM ALF
   CALL INIT_RANDOM_SEED()
 
   IF (IARGC().LT.1) THEN
-     WRITE(*,*) 'ALF ERROR: You need to specify an input file'
+     WRITE(*,*) 'IF ERROR: You need to specify an input file'
      STOP
   ELSE
      CALL GETARG(1,file)
@@ -179,7 +182,9 @@ PROGRAM ALF
   IF (taskid.EQ.masterid) THEN
      !write some important variables to screen
      WRITE(*,*) 
-     WRITE(*,'(" ************************************")') 
+     WRITE(*,'(" ************************************")')
+     WRITE(*,'(" ***********Index Fitter*************")')
+     WRITE(*,'(" ************************************")')
      WRITE(*,'("   ssp_type  =",A4)') ssp_type
      WRITE(*,'("   fit_type  =",I2)') fit_type
      WRITE(*,'("   imf_type  =",I2)') imf_type
@@ -194,7 +199,7 @@ PROGRAM ALF
      WRITE(*,'("  Nchain     = ",I6)') nmcmc
      WRITE(*,'("  Ncores     = ",I6)') ntasks
      WRITE(*,'("  filename   = ",A)') TRIM(file)//TRIM(tag)
-     WRITE(*,'(" ************************************")') 
+     WRITE(*,'(" ************************************")')
      CALL DATE_AND_TIME(TIME=time)
      CALL DTIME(dumt,time2)
      WRITE(*,*) 
@@ -203,33 +208,42 @@ PROGRAM ALF
   ENDIF
 
   !read in the data and wavelength boundaries
-  CALL READ_DATA(file)
+  CALL READ_DATA(file,sigma_indx,velz_indx)
 
   !read in the SSPs and bandpass filters
   CALL SETUP()
   lam = sspgrid%lam
 
-  !interpolate the sky emission model onto the observed wavelength grid
-  IF (observed_frame.EQ.1) THEN
-     data(1:datmax)%sky = MAX(linterp(lsky,fsky,data(1:datmax)%lam),0.0)
-  ELSE
-     data%sky = tiny_number
-  ENDIF
+  !we dont use velocities or dispersions here, so this 
+  !should be unnecessary
+  prlo%velz  = -10.
+  prhi%velz  =  10.
+  prlo%sigma = sigma_indx-10.
+  prhi%sigma = sigma_indx+10.
 
-  !we only compute things up to 500A beyond the input fit region
-  nl_fit = MIN(MAX(locate(lam,l2(nlint)+500.0),1),nl)
 
-  !define the log wavelength grid used in velbroad.f90
-  dlstep = (LOG(sspgrid%lam(nl_fit))-LOG(sspgrid%lam(1)))/nl_fit
-  DO i=1,nl_fit
-     lnlam(i) = i*dlstep+LOG(sspgrid%lam(1))
+  !fold in the approx data sigma into the "instrumental"
+  data%ires = SQRT(data%ires**2+sigma_indx**2)
+
+  !de-redshift, monte carlo sample the noise, and compute indices
+  DO j=1,nmcindx
+     CALL GASDEV(gdev(1:datmax))
+     tflx(1:datmax) = linterp(data(1:datmax)%lam/(1+velz_indx),data(1:datmax)%flx+&
+          gdev(1:datmax)*data(1:datmax)%err,data(1:datmax)%lam)
+     CALL GETINDX(data(1:datmax)%lam,tflx(1:datmax),tmpindx(j,:))
   ENDDO
 
-  !masked regions have wgt=0.0.  We'll use wgt as a pseudo-error
-  !array in contnormspec, so turn these into large numbers
-  data%wgt = MIN(1/(data%wgt+tiny_number),huge_number)
-  !fold the masked regions into the errors
-  data%err = MIN(data%err*data%wgt, huge_number)
+  !compute mean indices and errors
+  DO j=1,nindx
+     IF (indx2fit(j).EQ.1) THEN
+        data_indx(j)%indx = SUM(tmpindx(:,j))/nmcindx
+        data_indx(j)%err  = SQRT( SUM(tmpindx(:,j)**2)/nmcindx - &
+             (SUM(tmpindx(:,j))/nmcindx)**2 )
+     ELSE
+        data_indx(j)%indx = 0.0
+        data_indx(j)%err  = 999.
+     ENDIF
+  ENDDO
 
   !set initial params, step sizes, and prior ranges
   CALL SET_PINIT_PRIORS(opos,prlo,prhi)
@@ -284,13 +298,6 @@ PROGRAM ALF
   !this is the master process
   IF (taskid.EQ.masterid) THEN
  
-     WRITE(*,'("  Fitting ",I1," wavelength intervals")') nlint
-     IF (l2(nlint).GT.lam(nl).OR.l1(1).LT.lam(1)) THEN
-        WRITE(*,*) 'ERROR: wavelength boundaries exceed model wavelength grid'
-        WRITE(*,'(4F8.1)') l2(nlint),lam(nl),l1(1),lam(1)
-        STOP
-     ENDIF
-
      !for testing
      IF (1.EQ.0) THEN
         tpos%logage = 1.0
@@ -314,67 +321,11 @@ PROGRAM ALF
         STOP
      ENDIF
 
-
-     !make an initial estimate of the redshift
-     IF (file(1:4).EQ.'cdfs'.OR.file(1:5).EQ.'legac') THEN
-        velz = 0.0 
-     ELSE 
-        WRITE(*,*) ' Finding redshift...'
-        velz = getvelz()
-     ENDIF
-     opos%velz = velz
-     WRITE(*,'("    cz= ",F7.1," (z=",F6.3,")")') &
-          velz, velz/3E5
-
      CALL STR2ARR(1,opos,oposarr)   !str->arr
 
      !initialize the random number generator
      !why is this being done here again?
      CALL INIT_RANDOM_SEED()
-
-     !---------------------------------------------------------------!
-     !---------------------Powell minimization-----------------------!
-     !---------------------------------------------------------------!
-     
-     IF (dopowell.EQ.1) THEN 
-
-        WRITE(*,*) ' Running Powell...'
-        powell_fitting = 1
-        DO j=1,10
-           xi=0.0
-           DO i=1,npar
-              xi(i,i) = 1E-2
-           ENDDO
-           fret = huge_number
-           CALL SET_PINIT_PRIORS(opos,prlo,prhi,velz=velz)
-           CALL STR2ARR(1,opos,oposarr) !str->arr
-           CALL POWELL(oposarr(1:npowell),xi(1:npowell,1:npowell),&
-                ftol,iter,fret)
-           CALL STR2ARR(2,opos,oposarr) !arr->str
-           IF (fret.LT.bret) THEN
-              bposarr = oposarr
-              bpos    = opos
-              bret    = fret
-           ENDIF
-        ENDDO
-        powell_fitting = 0
-        
-        !use the best-fit Powell position for the first MCMC position
-        CALL STR2ARR(2,opos,bposarr) !arr->str
-        
-        WRITE(*,'("    best velocity: ",F7.1)') opos%velz
-        WRITE(*,'("    best sigma:    ",F6.1)') opos%sigma
-        WRITE(*,'("    best age:      ",F6.1)') 10**opos%logage
-        WRITE(*,'("    best [Z/H]:    ",F6.1)') opos%zh
-        
-     ENDIF
-     
-     IF (maskem.EQ.1) THEN
-        !now that we have a good guess of the redshift and velocity dispersion, 
-        !mask out regions where emission line contamination may be a problem
-        !In full mode, the default is to actually *fit* for emissions lines.
-        CALL MASKEMLINES(opos%velz,opos%sigma)
-     ENDIF
 
      !---------------------------------------------------------------!
      !-----------------------------MCMC------------------------------!
@@ -383,9 +334,6 @@ PROGRAM ALF
      WRITE(*,*) ' Running emcee...'
      CALL FLUSH()
      
-     !CALL STR2ARR(1,prlo,prloarr)   !str->arr
-     !CALL STR2ARR(1,prhi,prhiarr)   !str->arr
-
      !initialize the walkers
      DO j=1,nwalkers
         
@@ -415,7 +363,7 @@ PROGRAM ALF
    
         !check for initialization errors
         IF (-2.*lp_emcee_in(j).GE.huge_number/2.) THEN
-           WRITE(*,*) 'ALF ERROR: initial lnp out of bounds!', j
+           WRITE(*,*) 'IF ERROR: initial lnp out of bounds!', j
            DO i=1,npar
               IF (pos_emcee_in(i,j).GT.prhiarr(i).OR.&
                    pos_emcee_in(i,j).LT.prloarr(i)) THEN
@@ -435,6 +383,7 @@ PROGRAM ALF
              lp_emcee_in,pos_emcee_out,lp_emcee_out,accept_emcee,ntasks-1)
         pos_emcee_in = pos_emcee_out
         lp_emcee_in  = lp_emcee_out
+
         IF (i.EQ.nburn/4.*1) THEN
            WRITE (*,'(A)',advance='no') ' ...25%'
            CALL FLUSH()
@@ -498,6 +447,8 @@ PROGRAM ALF
            mspec_mcmc(1+j+(i-1)*nwalkers/nsample,:) = mspec
 
            !these parameters aren't actually being updated
+           pos_emcee_in(1,:) = 0.0
+           pos_emcee_in(2,:) = sigma_indx
            IF (fit_type.EQ.1) THEN
               pos_emcee_in(nparsimp+1:,j) = 0.0
            ELSE IF (fit_type.EQ.2) THEN
@@ -629,4 +580,4 @@ PROGRAM ALF
   CALL MPI_FINALIZE(ierr)
  
 
-END PROGRAM ALF
+END PROGRAM IF

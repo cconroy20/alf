@@ -13,6 +13,14 @@ MODULE ALF_UTILS
   END INTERFACE
 
   INTERFACE
+     FUNCTION AIRTOVAC(lam)
+       USE alf_vars
+       REAL(DP), DIMENSION(:), INTENT(in) :: lam
+       REAL(DP), DIMENSION(SIZE(lam)) :: airtovac
+     END FUNCTION AIRTOVAC
+  END INTERFACE
+
+  INTERFACE
      SUBROUTINE CONTNORMSPEC(lam,flx,err,il1,il2,flxout,coeff)
        USE alf_vars
        REAL(DP), DIMENSION(:), INTENT(in) :: lam,flx,err
@@ -76,6 +84,14 @@ MODULE ALF_UTILS
   END INTERFACE
 
   INTERFACE
+     SUBROUTINE GETINDX(lambda,spec,indices)
+       USE alf_vars
+       REAL(DP), INTENT(in), DIMENSION(:) :: spec,lambda
+       REAL(DP), INTENT(inout), DIMENSION(nindx) :: indices
+     END SUBROUTINE GETINDX
+  END INTERFACE
+
+  INTERFACE
      SUBROUTINE GETM2L(msto,lam,spec,pos,m2l,mw)
        USE alf_vars
        REAL(DP), DIMENSION(nl), INTENT(in) :: lam,spec
@@ -121,6 +137,16 @@ MODULE ALF_UTILS
   END INTERFACE 
 
   INTERFACE
+     FUNCTION INTIND(lam,func,lo,hi)
+       USE alf_vars
+       REAL(DP), INTENT(in), DIMENSION(:) :: lam,func
+       REAL(DP), INTENT(in) :: lo,hi
+       REAL(DP) :: intind
+     END FUNCTION INTIND
+  END INTERFACE
+
+
+  INTERFACE
      FUNCTION LINTERP(xin,yin,xout)
        USE alf_vars
        REAL(DP), DIMENSION(:), INTENT(in) :: xin,yin
@@ -153,9 +179,10 @@ MODULE ALF_UTILS
   END INTERFACE
 
   INTERFACE
-     SUBROUTINE READ_DATA(file)
+     SUBROUTINE READ_DATA(file,sigma,velz)
        USE alf_vars
        CHARACTER(50), INTENT(in)  :: file
+       REAL(DP), OPTIONAL :: sigma, velz
      END SUBROUTINE READ_DATA
   END INTERFACE
 
@@ -197,6 +224,14 @@ MODULE ALF_UTILS
        REAL(DP), INTENT(in), DIMENSION(nfil) :: m2l,m2lmw
        REAL(DP), INTENT(in), DIMENSION(npar) :: inarr
      END SUBROUTINE UPDATE_RUNTOT
+  END INTERFACE
+
+  INTERFACE
+     FUNCTION VACTOAIR(lam)
+       USE alf_vars
+       REAL(DP), DIMENSION(:), INTENT(in) :: lam
+       REAL(DP), DIMENSION(SIZE(lam)) :: vactoair
+     END FUNCTION VACTOAIR
   END INTERFACE
 
   INTERFACE

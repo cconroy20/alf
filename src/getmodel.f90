@@ -392,7 +392,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   ENDIF
 
   !velocity broaden the model
-  IF (pos%sigma.GT.5.0) THEN
+  IF (pos%sigma.GT.5.0.AND.fit_indices.EQ.0) THEN
      CALL VELBROAD(sspgrid%lam,spec,pos%sigma,l1(1),l2(nlint))
   ENDIF
 
