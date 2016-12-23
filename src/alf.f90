@@ -40,7 +40,7 @@ PROGRAM ALF
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=1020
   !save the chain outputs to file and the model spectra
-  INTEGER, PARAMETER :: print_mcmc=1,print_mcmc_spec=1
+  INTEGER, PARAMETER :: print_mcmc=1,print_mcmc_spec=0
 
   !start w/ powell minimization?
   INTEGER, PARAMETER  :: dopowell=0
@@ -88,7 +88,7 @@ PROGRAM ALF
   !---------------------------------------------------------------!
 
   !flag specifying if fitting indices or spectra
-  fit_indices = 1
+  fit_indices = 0
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
   fit_type = 0
