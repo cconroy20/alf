@@ -36,9 +36,9 @@ PROGRAM IF
   !inverse sampling of the walkers for printing
   INTEGER, PARAMETER :: nsample=2
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=1000
+  INTEGER, PARAMETER :: nburn=5000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=1020
+  INTEGER, PARAMETER :: nwalkers=512 !1020
   !save the chain outputs to file and the model spectra
   INTEGER, PARAMETER :: print_mcmc=1, print_mcmc_spec=1
 
@@ -85,7 +85,7 @@ PROGRAM IF
   !---------------------------Setup-------------------------------!
   !---------------------------------------------------------------!
 
-  fit_indices=1
+  fit_indices = 1
 
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
@@ -211,9 +211,8 @@ PROGRAM IF
   !read in the data and wavelength boundaries
   CALL READ_DATA(file,sigma_indx,velz_indx)
 
-  !read in the SSPs and bandpass filters
-  CALL SETUP()
-  lam = sspgrid%lam
+  !fold in the approx data sigma into the "instrumental"
+  data%ires = SQRT(data%ires**2+sigma_indx**2)
 
   !we dont use velocities or dispersions here, so this 
   !should be unnecessary
@@ -222,9 +221,9 @@ PROGRAM IF
   prlo%sigma = sigma_indx-10.
   prhi%sigma = sigma_indx+10.
 
-
-  !fold in the approx data sigma into the "instrumental"
-  data%ires = SQRT(data%ires**2+sigma_indx**2)
+  !read in the SSPs and bandpass filters
+  CALL SETUP()
+  lam = sspgrid%lam
 
   !de-redshift, monte carlo sample the noise, and compute indices
   DO j=1,nmcindx

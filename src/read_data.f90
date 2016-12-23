@@ -10,8 +10,8 @@ SUBROUTINE READ_DATA(file,sigma,velz)
   CHARACTER(50), INTENT(in)  :: file
   INTEGER :: stat,i
   CHARACTER(1) :: char
-  REAL(DP) :: ll1,ll2
-  REAL(DP), OPTIONAL :: sigma, velz
+  REAL(DP) :: ll1,ll2, isig=0.,ivelz=0.
+  REAL(DP), INTENT(inout), OPTIONAL :: sigma, velz
   
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -35,7 +35,7 @@ SUBROUTINE READ_DATA(file,sigma,velz)
      DO i=1,nindx
         READ(10,'(I1)') indx2fit(i)
      ENDDO
-     READ(10,*) velz,sigma
+     READ(10,*) ivelz,isig
 
   ELSE
 
@@ -121,6 +121,11 @@ SUBROUTINE READ_DATA(file,sigma,velz)
   IF (i.GT.ndat) THEN
      WRITE(*,*) 'READ_DATA ERROR: data file length exceeds ndat, returning'
      STOP
+  ENDIF
+
+  IF (PRESENT(sigma).AND.PRESENT(velz)) THEN
+     sigma = isig
+     velz  = ivelz
   ENDIF
 
   datmax = i-1

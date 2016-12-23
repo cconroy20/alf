@@ -26,7 +26,7 @@ PROGRAM ALF
   !---------------------------------------------------------------------!
 
   USE alf_vars; USE alf_utils; USE mpi
-  USE nr, ONLY : locate,powell,sort
+  USE nr, ONLY : locate,powell,sort,gasdev
   USE ran_state, ONLY : ran_seed,ran_init
 
   IMPLICIT NONE
@@ -34,13 +34,13 @@ PROGRAM ALF
   !number of chain steps to print to file
   INTEGER, PARAMETER :: nmcmc=100
   !inverse sampling of the walkers for printing
-  INTEGER, PARAMETER :: nsample=1
+  INTEGER, PARAMETER :: nsample=2
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=20000
+  INTEGER, PARAMETER :: nburn=10000
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=1020
   !save the chain outputs to file and the model spectra
-  INTEGER, PARAMETER :: print_mcmc=1,print_mcmc_spec=0
+  INTEGER, PARAMETER :: print_mcmc=1,print_mcmc_spec=1
 
   !start w/ powell minimization?
   INTEGER, PARAMETER  :: dopowell=0
@@ -48,6 +48,8 @@ PROGRAM ALF
   REAL(DP), PARAMETER :: ftol=0.1
   !if set, will print to screen timing of likelihood calls
   INTEGER, PARAMETER  :: test_time=0
+  !number of Monte Carlo realizations of the noise for index errors
+  INTEGER, PARAMETER  :: nmcindx=1000
 
   INTEGER  :: i,j,k,totacc=0,iter=30,npos
   REAL(DP) :: velz,msto,minchi2=huge_number,fret,wdth,bret=huge_number
@@ -65,6 +67,9 @@ PROGRAM ALF
   REAL(SP), DIMENSION(2) :: dumt
   CHARACTER(50) :: file='',tag=''
   TYPE(PARAMS)  :: opos,prlo,prhi,bpos,tpos
+  REAL(DP)     :: sigma_indx,velz_indx
+  REAL(DP), DIMENSION(ndat) :: gdev,tflx
+  REAL(DP), DIMENSION(nmcindx,nindx) :: tmpindx=0.
   REAL(SP), DIMENSION(nmcmc*nwalkers/nsample+1,nl) :: mspec_mcmc=0.0
 
   !variables for emcee
@@ -82,6 +87,8 @@ PROGRAM ALF
   !---------------------------Setup-------------------------------!
   !---------------------------------------------------------------!
 
+  !flag specifying if fitting indices or spectra
+  fit_indices = 1
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
   fit_type = 0
@@ -104,12 +111,6 @@ PROGRAM ALF
   prhi%teff   =  2.0
   prlo%teff   = -2.0
 
-  prhi%logemline_h    = -5.0
-  prhi%logemline_oiii = -5.0
-  prhi%logemline_nii  = -5.0
-  prhi%logemline_sii  = -5.0
-  prhi%logemline_ni   = -5.0
-
 
   !---------------------------------------------------------------!
   !--------------Do not change things below this line-------------!
@@ -124,7 +125,7 @@ PROGRAM ALF
 
   !dont fit transmission function in cases where the input
   !spectrum has already been de-redshifted to ~0.0
-  IF (observed_frame.EQ.0) THEN
+  IF (observed_frame.EQ.0.OR.fit_indices.EQ.1) THEN
      fit_trans     =  0
      prhi%logtrans = -5.0
      prhi%logsky   = -5.0 
@@ -146,8 +147,6 @@ PROGRAM ALF
         STOP
      ENDIF
   ENDIF
-
-  fit_indices=0  ! we are not fitting indices in alf.exe
 
   IF (fit_type.EQ.1.OR.fit_type.EQ.2) mwimf=1
 
@@ -180,6 +179,12 @@ PROGRAM ALF
      !write some important variables to screen
      WRITE(*,*) 
      WRITE(*,'(" ************************************")') 
+     IF (fit_indices.EQ.1) THEN
+        WRITE(*,'(" ***********Index Fitter*************")')
+     ELSE
+        WRITE(*,'(" **********Spectral Fitter***********")')
+     ENDIF
+     WRITE(*,'(" ************************************")') 
      WRITE(*,'("   ssp_type  =",A4)') ssp_type
      WRITE(*,'("   fit_type  =",I2)') fit_type
      WRITE(*,'("   imf_type  =",I2)') imf_type
@@ -203,33 +208,87 @@ PROGRAM ALF
   ENDIF
 
   !read in the data and wavelength boundaries
-  CALL READ_DATA(file)
+  CALL READ_DATA(file,sigma_indx,velz_indx)
 
-  !read in the SSPs and bandpass filters
-  CALL SETUP()
-  lam = sspgrid%lam
+  IF (fit_indices.EQ.1) THEN
 
-  !interpolate the sky emission model onto the observed wavelength grid
-  IF (observed_frame.EQ.1) THEN
-     data(1:datmax)%sky = MAX(linterp(lsky,fsky,data(1:datmax)%lam),0.0)
-  ELSE
-     data%sky = tiny_number
+     !fold in the approx data sigma into the "instrumental"
+     data%ires = SQRT(data%ires**2+sigma_indx**2)
+
+     !read in the SSPs and bandpass filters
+     CALL SETUP()
+     lam = sspgrid%lam
+
+     prhi%logemline_h    = -5.0
+     prhi%logemline_oiii = -5.0
+     prhi%logemline_nii  = -5.0
+     prhi%logemline_sii  = -5.0
+     prhi%logemline_ni   = -5.0
+     prhi%loghot         = -5.0
+     prhi%logm7g = -5.0
+     prhi%teff   =  2.0
+     prlo%teff   = -2.0
+     !we dont use velocities or dispersions here, so this 
+     !should be unnecessary, but haven't tested turning them off yet.
+     prlo%velz  = -10.
+     prhi%velz  =  10.
+     prlo%sigma = sigma_indx-10.
+     prhi%sigma = sigma_indx+10.
+
+     !de-redshift, monte carlo sample the noise, and compute indices
+     DO j=1,nmcindx
+        CALL GASDEV(gdev(1:datmax))
+        tflx(1:datmax) = linterp(data(1:datmax)%lam/(1+velz_indx),&
+             data(1:datmax)%flx+gdev(1:datmax)*data(1:datmax)%err,&
+             data(1:datmax)%lam)
+        CALL GETINDX(data(1:datmax)%lam,tflx(1:datmax),tmpindx(j,:))
+     ENDDO
+
+     !compute mean indices and errors
+     DO j=1,nindx
+        IF (indx2fit(j).EQ.1) THEN
+           data_indx(j)%indx = SUM(tmpindx(:,j))/nmcindx
+           data_indx(j)%err  = SQRT( SUM(tmpindx(:,j)**2)/nmcindx - &
+                (SUM(tmpindx(:,j))/nmcindx)**2 )
+        ELSE
+           data_indx(j)%indx = 0.0
+           data_indx(j)%err  = 999.
+        ENDIF
+     ENDDO
+
+     nl_fit = nl
+
   ENDIF
 
-  !we only compute things up to 500A beyond the input fit region
-  nl_fit = MIN(MAX(locate(lam,l2(nlint)+500.0),1),nl)
+  IF (fit_indices.EQ.0) THEN
 
-  !define the log wavelength grid used in velbroad.f90
-  dlstep = (LOG(sspgrid%lam(nl_fit))-LOG(sspgrid%lam(1)))/nl_fit
-  DO i=1,nl_fit
-     lnlam(i) = i*dlstep+LOG(sspgrid%lam(1))
-  ENDDO
+     !read in the SSPs and bandpass filters
+     CALL SETUP()
+     lam = sspgrid%lam
 
-  !masked regions have wgt=0.0.  We'll use wgt as a pseudo-error
-  !array in contnormspec, so turn these into large numbers
-  data%wgt = MIN(1/(data%wgt+tiny_number),huge_number)
-  !fold the masked regions into the errors
-  data%err = MIN(data%err*data%wgt, huge_number)
+     !interpolate the sky emission model onto the observed wavelength grid
+     IF (observed_frame.EQ.1) THEN
+        data(1:datmax)%sky = MAX(linterp(lsky,fsky,data(1:datmax)%lam),0.0)
+     ELSE
+        data%sky = tiny_number
+     ENDIF
+
+     !we only compute things up to 500A beyond the input fit region
+     nl_fit = MIN(MAX(locate(lam,l2(nlint)+500.0),1),nl)
+
+     !define the log wavelength grid used in velbroad.f90
+     dlstep = (LOG(sspgrid%lam(nl_fit))-LOG(sspgrid%lam(1)))/nl_fit
+     DO i=1,nl_fit
+        lnlam(i) = i*dlstep+LOG(sspgrid%lam(1))
+     ENDDO
+
+     !masked regions have wgt=0.0.  We'll use wgt as a pseudo-error
+     !array in contnormspec, so turn these into large numbers
+     data%wgt = MIN(1/(data%wgt+tiny_number),huge_number)
+     !fold the masked regions into the errors
+     data%err = MIN(data%err*data%wgt, huge_number)
+
+  ENDIF
 
   !set initial params, step sizes, and prior ranges
   CALL SET_PINIT_PRIORS(opos,prlo,prhi)
@@ -284,25 +343,13 @@ PROGRAM ALF
   !this is the master process
   IF (taskid.EQ.masterid) THEN
  
-     WRITE(*,'("  Fitting ",I1," wavelength intervals")') nlint
-     IF (l2(nlint).GT.lam(nl).OR.l1(1).LT.lam(1)) THEN
-        WRITE(*,*) 'ERROR: wavelength boundaries exceed model wavelength grid'
-        WRITE(*,'(4F8.1)') l2(nlint),lam(nl),l1(1),lam(1)
-        STOP
-     ENDIF
-
-     !for testing
+    !for testing
      IF (1.EQ.0) THEN
         tpos%logage = 1.0
-        tpos%logfy  = -5.0
-        tpos%logm7g = -5.0
-        tpos%loghot = -5.0
         tpos%imf1 = 2.3
         tpos%imf2 = 2.3
         tpos%imf3 = 0.08
         tpos%imf4 = 0.0
-        tpos%zh   = 0.0
-        tpos%teff = 0.0
         msto = 10**(msto_t0+msto_t1*tpos%logage) * &
              ( msto_z0 + msto_z1*tpos%zh + msto_z2*tpos%zh**2 )
         CALL GETMODEL(tpos,mspecmw,mw=1)     !get spectrum for MW IMF
@@ -314,17 +361,27 @@ PROGRAM ALF
         STOP
      ENDIF
 
+     IF (fit_indices.EQ.0) THEN
 
-     !make an initial estimate of the redshift
-     IF (file(1:4).EQ.'cdfs'.OR.file(1:5).EQ.'legac') THEN
-        velz = 0.0 
-     ELSE 
-        WRITE(*,*) ' Finding redshift...'
-        velz = getvelz()
+        WRITE(*,'("  Fitting ",I1," wavelength intervals")') nlint
+        IF (l2(nlint).GT.lam(nl).OR.l1(1).LT.lam(1)) THEN
+           WRITE(*,*) 'ERROR: wavelength boundaries exceed model wavelength grid'
+           WRITE(*,'(4F8.1)') l2(nlint),lam(nl),l1(1),lam(1)
+           STOP
+        ENDIF
+
+        !make an initial estimate of the redshift
+        IF (file(1:4).EQ.'cdfs'.OR.file(1:5).EQ.'legac') THEN
+           velz = 0.0 
+        ELSE 
+           WRITE(*,*) ' Finding redshift...'
+           velz = getvelz()
+        ENDIF
+        opos%velz = velz
+        WRITE(*,'("    cz= ",F7.1," (z=",F6.3,")")') &
+             velz, velz/3E5
+        
      ENDIF
-     opos%velz = velz
-     WRITE(*,'("    cz= ",F7.1," (z=",F6.3,")")') &
-          velz, velz/3E5
 
      CALL STR2ARR(1,opos,oposarr)   !str->arr
 
@@ -383,14 +440,12 @@ PROGRAM ALF
      WRITE(*,*) ' Running emcee...'
      CALL FLUSH()
      
-     !CALL STR2ARR(1,prlo,prloarr)   !str->arr
-     !CALL STR2ARR(1,prhi,prhiarr)   !str->arr
-
      !initialize the walkers
      DO j=1,nwalkers
         
         !random initialization of each walker
         CALL SET_PINIT_PRIORS(opos,prlo,prhi,velz=velz)
+
         CALL STR2ARR(1,opos,pos_emcee_in(:,j))
 
         IF (dopowell.EQ.1) THEN
@@ -498,6 +553,10 @@ PROGRAM ALF
            mspec_mcmc(1+j+(i-1)*nwalkers/nsample,:) = mspec
 
            !these parameters aren't actually being updated
+           IF (fit_indices.EQ.1) THEN
+              pos_emcee_in(1,j) = 0.0
+              pos_emcee_in(2,j) = sigma_indx
+           ENDIF
            IF (fit_type.EQ.1) THEN
               pos_emcee_in(nparsimp+1:,j) = 0.0
            ELSE IF (fit_type.EQ.2) THEN

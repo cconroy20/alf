@@ -156,7 +156,9 @@ FUNCTION FUNC(nposarr,spec,funit)
 
      ELSE
 
+        !compute indices
         CALL GETINDX(sspgrid%lam,mspec,mindx)
+        !compute chi^2 for the indices
         func = SUM( (data_indx%indx-mindx)**2/data_indx%err**2 )
 
         IF (PRESENT(funit)) THEN
