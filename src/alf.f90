@@ -34,13 +34,14 @@ PROGRAM ALF
   !number of chain steps to print to file
   INTEGER, PARAMETER :: nmcmc=100
   !inverse sampling of the walkers for printing
-  INTEGER, PARAMETER :: nsample=2
+  !NB: setting this to >1 currently results in errors in the *sum outputs
+  INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
   INTEGER, PARAMETER :: nburn=10000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=1020
+  INTEGER, PARAMETER :: nwalkers=512
   !save the chain outputs to file and the model spectra
-  INTEGER, PARAMETER :: print_mcmc=1,print_mcmc_spec=0
+  INTEGER, PARAMETER :: print_mcmc=0, print_mcmc_spec=0
 
   !start w/ powell minimization?
   INTEGER, PARAMETER  :: dopowell=0
@@ -89,33 +90,38 @@ PROGRAM ALF
 
   !flag specifying if fitting indices or spectra
   fit_indices = 0
+
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
   fit_type = 0
+
   !type of IMF to fit
   !0=1PL, 1=2PL, 2=1PL+cutoff, 3=2PL+cutoff, 4=non-parametric IMF
   imf_type = 1
+
   !are the data in the original observed frame?
   observed_frame = 1
-  !IMF slope within the non-parametric IMF bins
-  nonpimf_alpha = 2.3
+
   !force MW IMF
   mwimf    = 0
+
   !fit two-age SFH or not?
   fit_two_ages = 1
-  !regularize non-parametric IMF
-  nonpimf_regularize = 1
 
   !change the prior limits to kill off these parameters
   prhi%logm7g = -5.0
   prhi%teff   =  2.0
   prlo%teff   = -2.0
 
-
   !---------------------------------------------------------------!
   !--------------Do not change things below this line-------------!
   !---------------unless you know what you are doing--------------!
   !---------------------------------------------------------------!
+
+  !IMF slope within the non-parametric IMF bins
+  nonpimf_alpha = 2.3
+  !regularize non-parametric IMF
+  nonpimf_regularize = 1
 
   !correction factor between Salpeter and flat intrabin weights
   !for non-parametric IMF
@@ -250,6 +256,7 @@ PROGRAM ALF
            data_indx(j)%indx = SUM(tmpindx(:,j))/nmcindx
            data_indx(j)%err  = SQRT( SUM(tmpindx(:,j)**2)/nmcindx - &
                 (SUM(tmpindx(:,j))/nmcindx)**2 )
+           !write(*,'(I2,2F6.2)') j,data_indx(j)%indx,data_indx(j)%err
         ELSE
            data_indx(j)%indx = 0.0
            data_indx(j)%err  = 999.

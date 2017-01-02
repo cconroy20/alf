@@ -150,7 +150,7 @@ MODULE ALF_VARS
   !total number of parameters in the simple model
   INTEGER, PARAMETER :: nparsimp = 14
   !number of indices defined in allindices.dat
-  INTEGER, PARAMETER :: nindx=24
+  INTEGER, PARAMETER :: nindx=25
   !number of filters
   INTEGER, PARAMETER :: nfil=3
   !number of hot stars
@@ -215,6 +215,8 @@ MODULE ALF_VARS
   !array of index definitions
   REAL(DP), DIMENSION(7,nindx) :: indxdef=0.
   INTEGER, DIMENSION(nindx) :: indx2fit=0
+  !index definition for CaT
+  REAL(DP), DIMENSION(6,3) :: indxcat=0.0
 
   !---------------------Physical Constants-----------------------!
   !---------------in cgs units where applicable------------------!

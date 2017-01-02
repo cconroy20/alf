@@ -48,7 +48,7 @@ SUBROUTINE GETINDX(lambda,spec,indices)
   USE alf_utils, ONLY : intind
   IMPLICIT NONE
 
-  INTEGER :: j,nn
+  INTEGER :: j,i,nn
   REAL(DP), INTENT(in), DIMENSION(:) :: spec,lambda
   REAL(DP), INTENT(inout), DIMENSION(nindx) :: indices
   REAL(DP) :: intfifc,cb,cr,lr,lb
@@ -56,18 +56,18 @@ SUBROUTINE GETINDX(lambda,spec,indices)
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
-  indices = 999.
+  indices = 0.0
   nn = SIZE(lambda)
 
   DO j=1,nindx
 
-     !blue continuum
-     cb = intind(lambda,spec,indxdef(3,j),indxdef(4,j))
-     cb = cb / (indxdef(4,j)-indxdef(3,j))     
-     lb = (indxdef(3,j)+indxdef(4,j))/2.
+     IF (indxdef(7,j).LE.2.) THEN
 
-     IF (indxdef(7,j).NE.4) THEN 
-
+        !blue continuum
+        cb = intind(lambda,spec,indxdef(3,j),indxdef(4,j))
+        cb = cb / (indxdef(4,j)-indxdef(3,j))     
+        lb = (indxdef(3,j)+indxdef(4,j))/2.
+        
         !red continuum 
         cr = intind(lambda,spec,indxdef(5,j),indxdef(6,j))
         cr = cr / (indxdef(6,j)-indxdef(5,j))
@@ -77,33 +77,49 @@ SUBROUTINE GETINDX(lambda,spec,indices)
         !NB: fc here is a linear interpolation between the red and blue.
         intfifc = intind(lambda,spec/((cr-cb)/(lr-lb)*(lambda-lb)+cb),&
              indxdef(1,j),indxdef(2,j))
+        
+        IF (indxdef(7,j).EQ.1.) THEN
+           !compute magnitude
+           indices(j) = -2.5*LOG10(intfifc/(indxdef(2,j)-indxdef(1,j)))
+        ELSE IF (indxdef(7,j).EQ.2.) THEN
+           !compute EW (in Ang)
+           indices(j) = (indxdef(2,j)-indxdef(1,j)) - intfifc
+        ENDIF
+        
+        !set dummy values for indices defined off of the wavelength grid
+        IF (indxdef(6,j).GT.lambda(nn)) indices(j) = 999.0
+        IF (indxdef(3,j).LT.lambda(1))  indices(j) = 999.0
 
-     ELSE
-        intfifc = intind(lambda,spec,indxdef(1,j),indxdef(2,j))
-        intfifc = intfifc/(indxdef(2,j)-indxdef(1,j))
-     ENDIF
-
-     IF (indxdef(7,j).EQ.1.) THEN
-        !compute magnitude
-        indices(j) = -2.5*LOG10(intfifc/(indxdef(2,j)-indxdef(1,j)))
-     ELSE IF (indxdef(7,j).EQ.2.) THEN
-        !compute EW (in Ang)
-        indices(j) = (indxdef(2,j)-indxdef(1,j)) - intfifc
      ELSE IF (indxdef(7,j).EQ.3.) THEN
-        !compute Dn4000
-        !NB: this only works with cr and cb computed above b/c 
-        !the wavelength intervals for blue and red are the 
-        !same for these indices, otherwise a slightly 
-        !different cr and cb would have to be computed
-        indices(j) = cr/cb
-     ELSE IF (indxdef(7,j).EQ.4.) THEN
-        !compute magnitude from a flux ratio
-        indices(j) = -2.5*LOG10(intfifc/cb)
-     ENDIF
+      
+        !compute CaT index
 
-     !set dummy values for indices defined off of the wavelength grid
-     IF (indxdef(6,j).GT.lambda(nn)) indices(j) = 999.0
-     IF (indxdef(3,j).LT.lambda(1))  indices(j) = 999.0
+        DO i=1,3
+
+           !blue continuum
+           cb = intind(lambda,spec,indxcat(3,i),indxcat(4,i))
+           cb = cb / (indxcat(4,i)-indxcat(3,i))     
+           lb = (indxcat(3,i)+indxcat(4,i))/2.
+           
+           !red continuum 
+           cr = intind(lambda,spec,indxcat(5,i),indxcat(6,i))
+           cr = cr / (indxcat(6,i)-indxcat(5,i))
+           lr = (indxcat(5,i)+indxcat(6,i))/2.
+        
+           !compute integral(fi/fc)
+           !NB: fc here is a linear interpolation between the red and blue.
+           intfifc = intind(lambda,spec/((cr-cb)/(lr-lb)*(lambda-lb)+cb),&
+                indxcat(1,i),indxcat(2,i))
+        
+           indices(j) = indices(j) + (indxcat(2,i)-indxcat(1,i)) - intfifc
+
+           !set dummy values for indices defined off of the wavelength grid
+           IF (indxcat(6,i).GT.lambda(nn)) indices(j) = 999.0
+           IF (indxcat(3,i).LT.lambda(1))  indices(j) = 999.0
+
+        ENDDO
+             
+     ENDIF
 
   ENDDO
 

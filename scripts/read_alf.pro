@@ -1,19 +1,33 @@
-FUNCTION READ_ALF_ONE, file, nwalker=nwalker
+FUNCTION READ_ALF_ONE, file, nwalker=nwalker,s07=s07,b14=b14,m11=m11
 
   ;this code is not fully functioning yet with the new rows...
+
+  IF NOT(keyword_set(b14)) AND NOT(keyword_set(s07)) THEN m11=1
 
   ;library correction factors from Schiavon 2007 Table 6
   ;note that I have forced the library corrections factors to
   ;be zero for [Fe/H]=0.0,0.2
   libfeh  = [-1.6,-1.4,-1.2,-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2]
   libofe  = [0.6,0.5,0.5,0.4,0.3,0.2,0.2,0.1,0.0,0.0]
-  ;libmgfe = [0.4,0.4,0.4,0.4,0.29,0.20,0.13,0.08,0.0,0.0]
-  ;libcafe = [0.32,0.3,0.28,0.26,0.20,0.12,0.06,0.02,0.0,0.0]
-
-  ;fitted to Bensby et al. 2014
-  libmgfe = [0.4,0.4,0.4,0.38,0.37,0.27,0.21,0.1,0.00,0.0]
-  libcafe = [0.32,0.3,0.28,0.26,0.26,0.17,0.12,0.06,0.0,0.0]
  
+  IF keyword_set(s07) EQ 1 THEN BEGIN
+     ;Schiavon 2007
+     libmgfe = [0.4,0.4,0.4,0.4,0.29,0.20,0.13,0.08,0.05,0.04]
+     libcafe = [0.32,0.3,0.28,0.26,0.20,0.12,0.06,0.02,0.0,0.0]
+  ENDIF
+
+  IF keyword_set(b14) EQ 1 THEN BEGIN
+     ;fitted to Bensby et al. 2014
+     libmgfe = [0.4,0.4,0.4,0.38,0.37,0.27,0.21,0.1,0.0,0.0]
+     libcafe = [0.32,0.3,0.28,0.26,0.26,0.17,0.12,0.06,0.0,0.0]
+  ENDIF
+
+  IF keyword_set(m11) EQ 1 THEN BEGIN
+     ;fitted to Milone et al. 2011 HR MILES stars
+     libmgfe = [0.4,0.4,0.4,0.4,0.34,0.22,0.14,0.11,0.05,0.04]
+     ;from B14
+     libcafe = [0.32,0.3,0.28,0.26,0.26,0.17,0.12,0.06,0.0,0.0]
+  ENDIF
 
   sdir = getenv('ALF_HOME')
   dir  = sdir+'/results/'
@@ -238,7 +252,7 @@ END
 
 FUNCTION READ_ALF, file,nwalker=nwalker,bestp=bestp,errp=errp,$
                    cl2=cl2,cl16=cl16,cl50=cl50,cl84=cl84,cl97=cl97,$
-                   minp=minp,prlo=prlo,prhi=prhi
+                   minp=minp,prlo=prlo,prhi=prhi,s07=s07,b14=b14,m11=m11
 
   sdir = getenv('ALF_HOME')
   IF sdir EQ '' THEN BEGIN
@@ -261,7 +275,7 @@ FUNCTION READ_ALF, file,nwalker=nwalker,bestp=bestp,errp=errp,$
   FOR i=0,ct-1 DO BEGIN
      tf  = strsplit(ff[i],'/',/extr)
      tf  = tf[n_elements(tf)-1]
-     one = read_alf_one(tf, nwalker=nwalker)
+     one = read_alf_one(tf,nwalker=nwalker,s07=s07,b14=b14,m11=m11)
      none = n_elements(one)
      IF i EQ 0 THEN $
         all = replicate(one[0],n_elements(one),ct)

@@ -1,7 +1,7 @@
 # most of this table is taken directly from the MPA reductions website:
 # http://www.mpa-garching.mpg.de/SDSS/DR4/SDSS_fixedidx.html
-# supplemented with my own indices and those from Spiniello et al. First 20 indices are in AIR
-# feature,  blue continuum,  red continuum, type (1=mag, 2=Ang, 3=flux ratio, 4=mag), name
+# supplemented with my own indices and those from Spiniello et al. First 21 indices are in air, rest in vacuume
+# feature,  blue continuum,  red continuum, type (1=mag, 2=Ang, 3=CaT), name
 4091.000   4112.250 	4057.250   4088.500 	4114.750   4137.250 	2    HdeltaF
 4142.125   4177.125 	4083.875   4096.375 	4244.125   4284.125 	1    CN2
 4222.250   4234.750 	4211.000   4219.750 	4241.000   4251.000 	2    Ca4227
@@ -23,6 +23,7 @@
 5936.625   5994.125 	5816.625   5849.125 	6038.625   6103.625 	1    TiO1
 6189.625   6272.125 	6066.625   6141.625 	6372.625   6415.125 	1    TiO2
 5445.000   5600.000	5420.000   5442.000	5630.000   5655.000	1    aTiO
-8168.500   8234.125	8150.000   8168.400	8235.250   8250.000	1    NaI0.82
-8801.920   8816.920	8777.410   8789.410	8847.430   8857.430	1    MgI0.88
-9910.000   9930.000	9840.000   9860.000	9870.000   9890.000	1    FeH
+8168.500   8234.125	8150.000   8168.400	8235.250   8250.000	2    NaI0.82
+9999.000   9999.000	9999.000   9999.000	9999.000   9999.000	3    CaT
+8801.920   8816.920	8777.410   8789.410	8847.430   8857.430	2    MgI0.88
+9910.000   9930.000	9840.000   9860.000	9870.000   9890.000	2    FeH
