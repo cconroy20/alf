@@ -163,7 +163,8 @@ FUNCTION FUNC(nposarr,spec,funit)
 
         IF (PRESENT(funit)) THEN
            DO j=1,nindx
-              WRITE(funit,'(3F9.4)') data_indx(j)%indx,mindx(j),data_indx(j)%err
+              WRITE(funit,'(F8.2,3F9.4)') (indxdef(1,j)+indxdef(2,j))/2.,&
+                   mindx(j),data_indx(j)%indx,data_indx(j)%err
            ENDDO
         ENDIF
 

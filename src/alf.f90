@@ -1,6 +1,6 @@
 PROGRAM ALF
 
-  !  Master program to fit the absorption line spectrum
+  !  Master program to fit the absorption line spectrum, or indices,
   !  of a quiescent (>1 Gyr) stellar population
 
   ! Some important points to keep in mind:
@@ -656,6 +656,8 @@ PROGRAM ALF
      WRITE(14,'("#  Nwalkers   = ",I6)') nwalkers
      WRITE(14,'("#  Nburn      = ",I6)') nburn
      WRITE(14,'("#  Nchain     = ",I6)') nmcmc
+     WRITE(14,'("#  Nsample    = ",I6)') nsample
+     WRITE(14,'("#  Nwave      = ",I6)') nl
      WRITE(14,'("#  Ncores     = ",I6)') ntasks
      WRITE(14,'("#  Facc: ",F5.2)') REAL(totacc)/REAL(nmcmc*nwalkers)
      WRITE(14,'("#  rows: mean posterior, pos(chi^2_min), 1 sigma errors, '//&
