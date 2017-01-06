@@ -1,6 +1,7 @@
 FUNCTION READ_ALF_ONE, file, nwalker=nwalker,s07=s07,b14=b14,m11=m11
 
-  ;this code is not fully functioning yet with the new rows...
+  ;this code is not fully functioning yet with the new rows
+  ;e.g., error propagation does not work for derived quantities
 
   IF NOT(keyword_set(b14)) AND NOT(keyword_set(s07)) THEN m11=1
 
@@ -110,7 +111,7 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker,s07=s07,b14=b14,m11=m11
   res.chi2 = chi2
   res.zh   = zh
   res.tfeh = feh
-  
+
   ;fold in the [Z/H] result into [Fe/H]
   IF errp EQ -1 THEN BEGIN
      res[sind].feh = res[sind].zh + feh[sind]

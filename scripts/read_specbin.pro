@@ -19,10 +19,10 @@ FUNCTION READ_SPECBIN, file, lam=lam
   ENDIF
 
   arr = read_binary(sdir+'/results/'+file+'.spec',data_type=4,$
-                    data_dims=[nl,nw*nc/ns+1])
+                    data_dims=[nw*nc/ns+1,nl])
 
-  lam = reform(arr[*,0])
-  arr = arr[*,1:*]
+  lam = reform(arr[0,*])
+  arr = arr[1:*,*]
 
   RETURN, arr
 
