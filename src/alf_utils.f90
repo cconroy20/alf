@@ -239,7 +239,7 @@ MODULE ALF_UTILS
        USE alf_vars
        REAL(DP), INTENT(in), DIMENSION(:) :: lambda
        REAL(DP), INTENT(inout), DIMENSION(:) :: spec
-       REAL(DP), INTENT(in) :: sigma,minl,maxl
+       REAL(DP), INTENT(in) :: minl,maxl,sigma
        REAL(DP), INTENT(in), DIMENSION(:), OPTIONAL :: ires
      END SUBROUTINE VELBROAD
   END INTERFACE

@@ -63,7 +63,9 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   pos%logemline_sii  = myran()*2-4
   pos%jitter         = myran()*0.5+0.75
   pos%logsky         = myran()*2-4
-
+  pos%h3             = (myran()-0.5)*0.02
+  pos%h4             = (myran()-0.5)*0.02
+  
   IF (imf_type.LE.3) THEN
      pos%imf1      = myran()*1.0-0.3 + 1.3
      pos%imf3      = myran()*0.1 + 0.1
@@ -158,6 +160,8 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prlo%logemline_nii.EQ.test%logemline_nii) prlo%logemline_nii    = -6.0
   IF (prlo%jitter.EQ.test%jitter) prlo%jitter    = 0.1
   IF (prlo%logsky.EQ.test%logsky) prlo%logsky    = -6.0
+  IF (prlo%h3.EQ.test%h3) prlo%h3    = -0.4
+  IF (prlo%h4.EQ.test%h4) prlo%h4    = -0.4
 
   IF (imf_type.LE.3) THEN
      IF (prlo%imf1.EQ.test%imf1) prlo%imf1       = 0.5
@@ -219,6 +223,8 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prhi%logemline_nii.EQ.test%logemline_nii) prhi%logemline_nii    = 1.0
   IF (prhi%jitter.EQ.test%jitter) prhi%jitter    = 10.0
   IF (prhi%logsky.EQ.test%logsky) prhi%logsky    = 2.0
+  IF (prhi%h3.EQ.test%h3) prhi%h3    = 0.4
+  IF (prhi%h4.EQ.test%h4) prhi%h4    = 0.4
 
   IF (imf_type.LE.3) THEN
      IF (prhi%imf1.EQ.test%imf1) prhi%imf1       = 3.5

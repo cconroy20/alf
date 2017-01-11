@@ -37,11 +37,11 @@ PROGRAM ALF
   !NB: setting this to >1 currently results in errors in the *sum outputs
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=10000
+  INTEGER, PARAMETER :: nburn=50000
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=512
   !save the chain outputs to file and the model spectra
-  INTEGER, PARAMETER :: print_mcmc=0, print_mcmc_spec=0
+  INTEGER, PARAMETER :: print_mcmc=1, print_mcmc_spec=0
 
   !start w/ powell minimization?
   INTEGER, PARAMETER  :: dopowell=0
@@ -95,6 +95,9 @@ PROGRAM ALF
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
   fit_type = 0
 
+  !fit h3 and h4 parameters
+  fit_hermite = 1
+  
   !type of IMF to fit
   !0=1PL, 1=2PL, 2=1PL+cutoff, 3=2PL+cutoff, 4=non-parametric IMF
   imf_type = 1
@@ -350,13 +353,12 @@ PROGRAM ALF
   !this is the master process
   IF (taskid.EQ.masterid) THEN
  
-    !for testing
+     !for testing
      IF (1.EQ.0) THEN
         tpos%logage = 1.0
-        tpos%imf1 = 2.3
-        tpos%imf2 = 2.3
+        tpos%imf1 = 1.3
+        tpos%imf2 = 1.3
         tpos%imf3 = 0.08
-        tpos%imf4 = 0.0
         msto = 10**(msto_t0+msto_t1*tpos%logage) * &
              ( msto_z0 + msto_z1*tpos%zh + msto_z2*tpos%zh**2 )
         CALL GETMODEL(tpos,mspecmw,mw=1)     !get spectrum for MW IMF

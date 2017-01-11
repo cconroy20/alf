@@ -147,8 +147,8 @@ FUNCTION FUNC(nposarr,spec,funit)
                  terr = data%err
               ENDIF
               DO j=i1,i2
-                 WRITE(funit,'(F9.2,4ES12.4)') data(j)%lam,mflx(j),&
-                      data(j)%flx,data(j)%flx/terr(j),poly(j)
+                 WRITE(funit,'(F9.2,8ES12.4)') data(j)%lam,mflx(j),&
+                      data(j)%flx,data(j)%flx/terr(j),poly(j),data(j)%err
               ENDDO
            ENDIF
 

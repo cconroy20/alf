@@ -16,7 +16,8 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   REAL(DP) :: dt,fy,dx1,dx2,dx3,lsig,ve,dr,dm,dm2,dm3,dh,dy,tmps,inorm,mass,msto
   REAL(DP), DIMENSION(nl)   :: tmp_ltrans,tmp_ftrans_h2o,tmp_ftrans_o2
   REAL(DP), DIMENSION(neml) :: emnormall=1.0
-  REAL(DP), DIMENSION(nimfnp) :: imfw=0.0  
+  REAL(DP), DIMENSION(nimfnp) :: imfw=0.0
+  REAL(DP), DIMENSION(2) :: hermite=0.0
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -393,7 +394,15 @@ SUBROUTINE GETMODEL(pos,spec,mw)
 
   !velocity broaden the model
   IF (pos%sigma.GT.5.0.AND.fit_indices.EQ.0) THEN
-     CALL VELBROAD(sspgrid%lam,spec,pos%sigma,l1(1),l2(nlint))
+
+     IF (fit_hermite.EQ.1) THEN
+        hermite(1) = pos%h3
+        hermite(2) = pos%h4
+        CALL VELBROAD(sspgrid%lam,spec,pos%sigma,l1(1),l2(nlint),hermite)
+     ELSE
+        CALL VELBROAD(sspgrid%lam,spec,pos%sigma,l1(1),l2(nlint))
+     ENDIF
+     
   ENDIF
 
   !apply an atmospheric transmission function only in full mode

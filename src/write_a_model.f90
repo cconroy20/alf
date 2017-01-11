@@ -64,11 +64,11 @@ PROGRAM WRITE_A_MODEL
         WRITE(is,'(I2)') j
      ENDIF
 
-     file = 'nmodel_t10.0_sn0030_mc0.08_imf2.3_'//is//'.dat'
-     file = 'tmodel_salp_lris_high.dat'
-     s2n  = 300.  !S/N per A
+     !file = 'nmodel_t10.0_sn0030_mc0.08_imf2.3_'//is//'.dat'
+     file = 'test_gauss_nh_fft.dat'
+     s2n  = 1000.  !S/N per A
  
-     pos%sigma  = 300.
+     pos%sigma  = 250.
      pos%logage = LOG10(10.0)
      pos%zh     = 0.0
      emnorm     = -5.0

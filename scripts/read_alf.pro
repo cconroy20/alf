@@ -44,7 +44,14 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker,s07=s07,b14=b14,m11=m11
   sum    = strpos(file,'.sum')
   simple = strpos(file,'simple')
 
-  IF n_elements(ts) EQ 50 THEN BEGIN
+  IF n_elements(ts) EQ 52 THEN BEGIN
+     readcol,dir+file,chi2,velz,sigma,logage,zh,feh,afe,cfe,$
+             nfe,nafe,mgfe,sife,kfe,cafe,tife,vfe,crfe,mnfe,cofe,nife,$
+             cufe,srfe,bafe,eufe,teff,imf1,imf2,logfy,sigma2,$
+             velz2,logm7g,hotteff,loghot,fy_logage,logtrans,d1,d2,d3,d4,d5,$
+             jitter,imf3,logsky,imf4,h3,h4,m2lr,m2li,m2lk,m2lmwr,$
+             m2lmwi,m2lmwk,/sil
+  ENDIF ELSE IF n_elements(ts) EQ 50 THEN BEGIN
      readcol,dir+file,chi2,velz,sigma,logage,zh,feh,afe,cfe,$
              nfe,nafe,mgfe,sife,kfe,cafe,tife,vfe,crfe,mnfe,cofe,nife,$
              cufe,srfe,bafe,eufe,teff,imf1,imf2,logfy,sigma2,$
@@ -76,7 +83,7 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker,s07=s07,b14=b14,m11=m11
      logsky = findgen(n_elements(chi2))
   ENDIF ELSE BEGIN
      print,'READ_ALF ERROR: file format not recognized, returning...',$
-           n_elements(ts) EQ 47
+           n_elements(ts)
      RETURN,0
   ENDELSE 
 
@@ -89,7 +96,8 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker,s07=s07,b14=b14,m11=m11
          mli_mw:0.0,mlr_mw:0.0,indgb:0.0,emline:fltarr(5),lsig:0.0,ml:0.0,$
          lage:99.0,vmag:99.,fuv:99.,nuv:99.,logemline_h:0.0,logemline_oiii:0.0,$
          logemline_sii:0.0,logemline_ni:0.0,logemline_nii:0.0,delafe:0.0,$
-         delmgfe:0.0,delcafe:0.0,jitter:0.0,logsky:0.0,logm:0.0,imf:fltarr(5)}
+         delmgfe:0.0,delcafe:0.0,jitter:0.0,logsky:0.0,logm:0.0,imf:fltarr(5),$
+         h3:0.0,h4:0.0}
 
   IF errp EQ -1 THEN BEGIN
      tfeh = feh
@@ -197,7 +205,9 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker,s07=s07,b14=b14,m11=m11
   res.logtrans  = logtrans
   res.jitter    = jitter
   res.logsky    = logsky
-
+  res.h3        = h3
+  res.h4        = h4
+  
   res.mlr    = m2lr
   res.mli    = m2li
   res.mlk    = m2lk

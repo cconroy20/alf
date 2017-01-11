@@ -1,7 +1,7 @@
 PROGRAM SPEC_FROM_SUM
 
   !takes a *sum file as input and returns the corresponding 
-  !model spectrum
+  !model spectrum associated with min(chi^2)
 
   USE alf_vars; USE alf_utils
   USE nr, ONLY : gasdev,locate,powell,ran1
@@ -21,7 +21,7 @@ PROGRAM SPEC_FROM_SUM
   !-----------------------------------------------------------!
   !-----------------------------------------------------------!
 
-  imf_type = 1
+  imf_type = 4
   velbroad_simple = 1
   l1(1) = 0.0
   nlint = 1
@@ -76,7 +76,7 @@ PROGRAM SPEC_FROM_SUM
   !here is the place to make changes to the best-fit model,
   !if so desired
 
-
+  pos%loghot = -8.0
 
   !------------------------------------------------------------!
 

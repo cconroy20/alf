@@ -4,8 +4,10 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
   !the PSF kernel has a width of m*sigma, where m=4
   !If optional input ires is present, then the spectrum will be
   !smoothed by a wavelength dependent velocity dispersion in the
-  !'vebroad_simple=1' mode
-
+  !'vebroad_simple=1' mode.
+  !Note that the h3 and h4 coefficients are passed through the ires
+  !array as well, and in this mode the broadening is also in the "simple" mode
+  
   USE alf_vars; USE nr, ONLY : locate
   USE alf_utils, ONLY : linterp,tsum
   IMPLICIT NONE
@@ -15,14 +17,17 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
   REAL(DP), INTENT(in) :: sigma,minl,maxl
   REAL(DP), INTENT(in), DIMENSION(:), OPTIONAL :: ires
   REAL(DP), DIMENSION(40000) :: tspec,nspec,vel,func,psf
-  REAL(DP) :: xmax,fwhm,psig,sigmal
-  INTEGER :: i,il,ih,m=4,grange,nn,n2
+  REAL(DP) :: xmax,fwhm,psig,sigmal,h3,h4
+  INTEGER :: i,il,ih,m=6,grange,nn,n2
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
    
   nn = SIZE(lambda)
 
+  h3 = 0.0
+  h4 = 0.0
+  
   IF (sigma.LE.10.0) RETURN
 
   IF (sigma.GE.1E4) THEN
@@ -46,8 +51,14 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
         ENDIF
         
         IF (PRESENT(ires)) THEN
-           sigmal = ires(i)
-           IF (sigmal.LE.tiny_number) CYCLE
+           IF (SIZE(ires).GT.2) THEN
+              sigmal = ires(i)
+              IF (sigmal.LE.tiny_number) CYCLE
+           ELSE
+              sigmal = sigma
+              h3 = ires(1)
+              h4 = ires(2)
+           ENDIF
         ELSE
            sigmal = sigma
         ENDIF
@@ -59,9 +70,15 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
         IF (il.EQ.ih) THEN
            spec(i) = tspec(i)
         ELSE
+           
            vel(il:ih)  = (lambda(i)/lambda(il:ih)-1)*clight/1E5
+
+           !Gauss-Hermite expansion
            func(il:ih) =  1/SQRT(2*mypi)/sigmal * &
-                EXP(-vel(il:ih)**2/2./sigmal**2)
+                EXP(-vel(il:ih)**2/2./sigmal**2) * &
+                (1 + h3*(2*(vel(il:ih)/sigmal)**3-3*(vel(il:ih)/sigmal))/sqrt(3.) + &
+                h4*(4*(vel(il:ih)/sigmal)**4-12*(vel(il:ih)/sigmal)**2+3)/sqrt(24.) )
+           
            !normalize the weights to integrate to unity
            func(il:ih) = func(il:ih) / TSUM(vel(il:ih),func(il:ih))
            spec(i) = TSUM(vel(il:ih),func(il:ih)*tspec(il:ih))
