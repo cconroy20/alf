@@ -223,6 +223,10 @@ SUBROUTINE SETUP()
               OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v8_'//&
                    chart(t)//'_Z'//charz(z)//'.ssp.imf_nonpara_flat'//&
                    '.s100',STATUS='OLD',iostat=stat,ACTION='READ')
+           ELSE IF (nonpimf_alpha.EQ.1.3) THEN
+              OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v8_'//&
+                   chart(t)//'_Z'//charz(z)//'.ssp.imf_nonpara_krpa'//&
+                   '.s100',STATUS='OLD',iostat=stat,ACTION='READ')
            ELSE IF (nonpimf_alpha.EQ.2.3) THEN
               OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v8_'//&
                    chart(t)//'_Z'//charz(z)//'.ssp.imf_nonpara_x2.3'//&

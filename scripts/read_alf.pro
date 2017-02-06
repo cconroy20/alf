@@ -57,6 +57,8 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker,s07=s07,b14=b14,m11=m11
              cufe,srfe,bafe,eufe,teff,imf1,imf2,logfy,sigma2,$
              velz2,logm7g,hotteff,loghot,fy_logage,logtrans,d1,d2,d3,d4,d5,$
              jitter,imf3,logsky,imf4,m2lr,m2li,m2lk,m2lmwr,m2lmwi,m2lmwk,/sil
+     h3   = findgen(n_elements(chi2))
+     h4   = findgen(n_elements(chi2))
   ENDIF ELSE IF n_elements(ts) EQ 49 THEN BEGIN
      readcol,dir+file,chi2,velz,sigma,logage,zh,feh,afe,cfe,$
              nfe,nafe,mgfe,sife,kfe,cafe,tife,vfe,crfe,mnfe,cofe,nife,$
@@ -64,23 +66,6 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker,s07=s07,b14=b14,m11=m11
              velz2,logm7g,hotteff,loghot,fy_logage,logtrans,d1,d2,d3,d4,d5,$
              jitter,imf3,logsky,m2lr,m2li,m2lk,m2lmwr,m2lmwi,m2lmwk,/sil
      imf4 = findgen(n_elements(chi2))
-  ENDIF ELSE IF n_elements(ts) EQ 48 THEN BEGIN
-     readcol,dir+file,chi2,velz,sigma,logage,zh,feh,afe,cfe,$
-             nfe,nafe,mgfe,sife,kfe,cafe,tife,vfe,crfe,mnfe,cofe,nife,$
-             cufe,srfe,bafe,eufe,teff,imf1,imf2,logfy,sigma2,$
-             velz2,logm7g,hotteff,loghot,fy_logage,logtrans,d1,d2,d3,d4,d5,$
-             jitter,imf3,m2lr,m2li,m2lk,m2lmwr,m2lmwi,m2lmwk,/sil
-     imf4   = findgen(n_elements(chi2))
-     logsky = findgen(n_elements(chi2))
-  ENDIF ELSE IF n_elements(ts) EQ 47 THEN BEGIN
-     readcol,dir+file,chi2,velz,sigma,logage,zh,feh,afe,cfe,$
-             nfe,nafe,mgfe,sife,kfe,cafe,tife,vfe,crfe,mnfe,cofe,nife,$
-             cufe,srfe,bafe,eufe,teff,imf1,imf2,logfy,sigma2,$
-             velz2,logm7g,hotteff,loghot,fy_logage,logtrans,d1,d2,d3,d4,d5,$
-             jitter,m2lr,m2li,m2lk,m2lmwr,m2lmwi,m2lmwk,/sil
-     imf4   = findgen(n_elements(chi2))
-     imf3   = findgen(n_elements(chi2))
-     logsky = findgen(n_elements(chi2))
   ENDIF ELSE BEGIN
      print,'READ_ALF ERROR: file format not recognized, returning...',$
            n_elements(ts)

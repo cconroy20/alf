@@ -27,7 +27,8 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
 
   h3 = 0.0
   h4 = 0.0
-  
+
+  !no broadening for small sigma
   IF (sigma.LE.10.0) RETURN
 
   IF (sigma.GE.1E4) THEN
@@ -53,6 +54,8 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
         IF (PRESENT(ires)) THEN
            IF (SIZE(ires).GT.2) THEN
               sigmal = ires(i)
+              h3 = 0.0
+              h4 = 0.0
               IF (sigmal.LE.tiny_number) CYCLE
            ELSE
               sigmal = sigma
@@ -82,6 +85,7 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
            !normalize the weights to integrate to unity
            func(il:ih) = func(il:ih) / TSUM(vel(il:ih),func(il:ih))
            spec(i) = TSUM(vel(il:ih),func(il:ih)*tspec(il:ih))
+           
         ENDIF
          
      ENDDO
