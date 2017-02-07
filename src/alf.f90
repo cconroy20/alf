@@ -350,7 +350,7 @@ PROGRAM ALF
   IF (taskid.EQ.masterid) THEN
  
      !for testing
-     IF (1.EQ.1) THEN
+     IF (1.EQ.0) THEN
         tpos%logage = 1.0
         tpos%imf1   = 2.3
         tpos%imf2   = 2.3
