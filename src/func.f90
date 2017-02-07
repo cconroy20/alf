@@ -52,12 +52,12 @@ FUNCTION FUNC(nposarr,spec,funit)
   !the IMF cannot be convex (U shaped)
   IF (imf_type.EQ.4.AND.nonpimf_regularize.EQ.1) THEN
 
-     IF ( (npos%imf2-npos%imf1+corr_salp_flat(3)-corr_salp_flat(1)).LT.0.0.AND.&
-          (npos%imf3-npos%imf2+corr_salp_flat(5)-corr_salp_flat(3)).GT.0.0 ) pr=0.0
-     IF ( (npos%imf3-npos%imf2+corr_salp_flat(5)-corr_salp_flat(3)).LT.0.0.AND.&
-          (npos%imf4-npos%imf3+corr_salp_flat(7)-corr_salp_flat(5)).GT.0.0 ) pr=0.0
-     IF ( (npos%imf4-npos%imf3+corr_salp_flat(7)-corr_salp_flat(5)).LT.0.0.AND.&
-          (0.0-npos%imf4+corr_salp_flat(9)-corr_salp_flat(7)).GT.0.0 ) pr=0.0
+     IF ( (npos%imf2-npos%imf1+corr_bin_weight(3)-corr_bin_weight(1)).LT.0.0.AND.&
+          (npos%imf3-npos%imf2+corr_bin_weight(5)-corr_bin_weight(3)).GT.0.0 ) pr=0.0
+     IF ( (npos%imf3-npos%imf2+corr_bin_weight(5)-corr_bin_weight(3)).LT.0.0.AND.&
+          (npos%imf4-npos%imf3+corr_bin_weight(7)-corr_bin_weight(5)).GT.0.0 ) pr=0.0
+     IF ( (npos%imf4-npos%imf3+corr_bin_weight(7)-corr_bin_weight(5)).LT.0.0.AND.&
+          (0.0-npos%imf4+corr_bin_weight(9)-corr_bin_weight(7)).GT.0.0 ) pr=0.0
 
   ENDIF
 

@@ -14,7 +14,7 @@ FUNCTION GETMASS(mlo,mto,imf1,imf2,imfup,imf3,imf4,timfnorm)
   REAL(DP) :: imfnorm, getmass
   REAL(DP), PARAMETER :: bhlim=40.0,nslim=8.5
   REAL(DP) :: m2=0.5,m3=1.0,alpha
-  REAL(DP), DIMENSION(nimfnp) :: imfw=0.0
+  REAL(DP), DIMENSION(nimfnp) :: imfw=0.0, alpha2
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -74,11 +74,12 @@ FUNCTION GETMASS(mlo,mto,imf1,imf2,imfup,imf3,imf4,timfnorm)
   ELSE
 
      !non-parametric IMF
+     
      !mbin_nimf = (/0.2,0.4,0.6,0.8,1.0/)
 
-     alpha = 2.0 - nonpimf_alpha
+     alpha2 = 2.0-npi_alphav
 
-     imfw(1) = 10**imf1
+     imfw(1) = 10**imf1 
      imfw(2) = 10**((imf2+imf1)/2.)
      imfw(3) = 10**imf2
      imfw(4) = 10**((imf3+imf2)/2.)
@@ -88,9 +89,14 @@ FUNCTION GETMASS(mlo,mto,imf1,imf2,imfup,imf3,imf4,timfnorm)
      imfw(8) = 10**((imf5+imf4)/2.)
      imfw(9) = 10**imf5
 
+     DO i=1,nimfnp
+        imfw(i) = imfw(i) * npi_renorm(i)
+     ENDDO
+     
      imfnorm = 0.0
      DO i=1,nimfnp
-        imfnorm = imfnorm + imfw(i)/alpha*(mbin_nimf9(i+1)**alpha-mbin_nimf9(i)**alpha)
+        imfnorm = imfnorm + imfw(i)/alpha2(i) * &
+             (mbin_nimf9(i+1)**alpha2(i)-mbin_nimf9(i)**alpha2(i))
      ENDDO
      imfnorm = imfnorm + imfw(9)/(-imfup+2)/(mbin_nimf9(10)**(-imfup)) * &
           (imfhi**(-imfup+2)-mbin_nimf9(10)**(-imfup+2)) 
@@ -100,8 +106,8 @@ FUNCTION GETMASS(mlo,mto,imf1,imf2,imfup,imf3,imf4,timfnorm)
         ! MSTO > 1.0
         
         DO i=1,nimfnp
-           getmass = getmass + imfw(i)/alpha*(mbin_nimf9(i+1)**alpha - &
-                mbin_nimf9(i)**alpha)
+           getmass = getmass + imfw(i)/alpha2(i)*(mbin_nimf9(i+1)**alpha2(i) - &
+                mbin_nimf9(i)**alpha2(i))
         ENDDO
         getmass = getmass + imfw(9)/(-imfup+2)/(mbin_nimf9(10)**(-imfup)) * &
              (mto**(-imfup+2)-mbin_nimf9(10)**(-imfup+2)) 
@@ -117,10 +123,10 @@ FUNCTION GETMASS(mlo,mto,imf1,imf2,imfup,imf3,imf4,timfnorm)
         ! 0.9 < MSTO < 1.0
 
         DO i=1,nimfnp-1
-           getmass = getmass + imfw(i)/alpha*(mbin_nimf9(i+1)**alpha - &
-                mbin_nimf9(i)**alpha)
+           getmass = getmass + imfw(i)/alpha2(i)*(mbin_nimf9(i+1)**alpha2(i) - &
+                mbin_nimf9(i)**alpha2(i))
         ENDDO
-        getmass = getmass + imfw(9)/alpha*(mto**alpha-mbin_nimf9(9)**alpha) 
+        getmass = getmass + imfw(9)/alpha2(i)*(mto**alpha2(i)-mbin_nimf9(9)**alpha2(i)) 
               
         !WD remnants from 1.0-8.5
         getmass = getmass + 0.48*imfw(9)/(mbin_nimf9(10)**(-imfup))*&
@@ -129,19 +135,19 @@ FUNCTION GETMASS(mlo,mto,imf1,imf2,imfup,imf3,imf4,timfnorm)
              (nslim**(-imfup+2)-mbin_nimf9(10)**(-imfup+2))/(-imfup+2)
         
         !WD remnants from MSTO-1.0
-        getmass = getmass + 0.48*imfw(9)/(1-nonpimf_alpha) * &
-             (mbin_nimf9(10)**(1-nonpimf_alpha)-mto**(1-nonpimf_alpha))
-        getmass = getmass + 0.077*imfw(9)/alpha * (mbin_nimf9(10)**alpha-mto**alpha)
+        getmass = getmass + 0.48*imfw(9)/(1-npi_alphav(i)) * &
+             (mbin_nimf9(10)**(1-npi_alphav(i))-mto**(1-npi_alphav(i)))
+        getmass = getmass + 0.077*imfw(9)/alpha2(i) * (mbin_nimf9(10)**alpha2(i)-mto**alpha2(i))
 
      ELSE IF (mto.GT.mbin_nimf9(8).AND.mto.LE.mbin_nimf9(9)) THEN
 
         ! 0.8 < MSTO < 0.9
 
         DO i=1,nimfnp-2
-           getmass = getmass + imfw(i)/alpha*(mbin_nimf9(i+1)**alpha - &
-                mbin_nimf9(i)**alpha)
+           getmass = getmass + imfw(i)/alpha2(i)*(mbin_nimf9(i+1)**alpha2(i) - &
+                mbin_nimf9(i)**alpha2(i))
         ENDDO
-        getmass = getmass + imfw(8)/alpha*(mto**alpha-mbin_nimf9(8)**alpha) 
+        getmass = getmass + imfw(8)/alpha2(i)*(mto**alpha2(i)-mbin_nimf9(8)**alpha2(i)) 
         
         !WD remnants from 1.0-8.5
         getmass = getmass + 0.48*imfw(9)/(mbin_nimf9(10)**(-imfup))*&
@@ -150,25 +156,25 @@ FUNCTION GETMASS(mlo,mto,imf1,imf2,imfup,imf3,imf4,timfnorm)
              (nslim**(-imfup+2)-mbin_nimf9(10)**(-imfup+2))/(-imfup+2)
 
         !WD remnants from 0.9-1.0
-        getmass = getmass + 0.48*imfw(9)/(1-nonpimf_alpha) * &
-             (mbin_nimf9(10)**(1-nonpimf_alpha)-mbin_nimf9(9)**(1-nonpimf_alpha))
-        getmass = getmass + 0.077*imfw(9)/alpha * &
-             (mbin_nimf9(10)**alpha-mbin_nimf9(9)**alpha)
+        getmass = getmass + 0.48*imfw(9)/(1-npi_alphav(i)) * &
+             (mbin_nimf9(10)**(1-npi_alphav(i))-mbin_nimf9(9)**(1-npi_alphav(i)))
+        getmass = getmass + 0.077*imfw(9)/alpha2(i) * &
+             (mbin_nimf9(10)**alpha2(i)-mbin_nimf9(9)**alpha2(i))
         
         !WD remnants from MSTO-0.9
-        getmass = getmass + 0.48*imfw(8)/(1-nonpimf_alpha) * &
-             (mbin_nimf9(9)**(1-nonpimf_alpha)-mto**(1-nonpimf_alpha))
-        getmass = getmass + 0.077*imfw(8)/alpha * (mbin_nimf9(9)**alpha-mto**alpha)
+        getmass = getmass + 0.48*imfw(8)/(1-npi_alphav(i)) * &
+             (mbin_nimf9(9)**(1-npi_alphav(i))-mto**(1-npi_alphav(i)))
+        getmass = getmass + 0.077*imfw(8)/alpha2(i) * (mbin_nimf9(9)**alpha2(i)-mto**alpha2(i))
 
      ELSE IF (mto.GT.mbin_nimf9(7).AND.mto.LE.mbin_nimf9(8)) THEN
 
         ! 0.7 < MSTO < 0.8
 
         DO i=1,nimfnp-3
-           getmass = getmass + imfw(i)/alpha*(mbin_nimf9(i+1)**alpha - &
-                mbin_nimf9(i)**alpha)
+           getmass = getmass + imfw(i)/alpha2(i)*(mbin_nimf9(i+1)**alpha2(i) - &
+                mbin_nimf9(i)**alpha2(i))
         ENDDO
-        getmass = getmass + imfw(7)/alpha*(mto**alpha-mbin_nimf9(7)**alpha) 
+        getmass = getmass + imfw(7)/alpha2(i)*(mto**alpha2(i)-mbin_nimf9(7)**alpha2(i)) 
         
         !WD remnants from 1.0-8.5
         getmass = getmass + 0.48*imfw(9)/(mbin_nimf9(10)**(-imfup))*&
@@ -177,21 +183,21 @@ FUNCTION GETMASS(mlo,mto,imf1,imf2,imfup,imf3,imf4,timfnorm)
              (nslim**(-imfup+2)-mbin_nimf9(10)**(-imfup+2))/(-imfup+2)
 
         !WD remnants from 0.9-1.0
-        getmass = getmass + 0.48*imfw(9)/(1-nonpimf_alpha) * &
-             (mbin_nimf9(10)**(1-nonpimf_alpha)-mbin_nimf9(9)**(1-nonpimf_alpha))
-        getmass = getmass + 0.077*imfw(9)/alpha * &
-             (mbin_nimf9(10)**alpha-mbin_nimf9(9)**alpha)
+        getmass = getmass + 0.48*imfw(9)/(1-npi_alphav(i)) * &
+             (mbin_nimf9(10)**(1-npi_alphav(i))-mbin_nimf9(9)**(1-npi_alphav(i)))
+        getmass = getmass + 0.077*imfw(9)/alpha2(i) * &
+             (mbin_nimf9(10)**alpha2(i)-mbin_nimf9(9)**alpha2(i))
  
        !WD remnants from 0.8-0.9
-        getmass = getmass + 0.48*imfw(8)/(1-nonpimf_alpha) * &
-             (mbin_nimf9(9)**(1-nonpimf_alpha)-mbin_nimf9(8)**(1-nonpimf_alpha))
-        getmass = getmass + 0.077*imfw(8)/alpha * &
-             (mbin_nimf9(9)**alpha-mbin_nimf9(8)**alpha)
+        getmass = getmass + 0.48*imfw(8)/(1-npi_alphav(i)) * &
+             (mbin_nimf9(9)**(1-npi_alphav(i))-mbin_nimf9(8)**(1-npi_alphav(i)))
+        getmass = getmass + 0.077*imfw(8)/alpha2(i) * &
+             (mbin_nimf9(9)**alpha2(i)-mbin_nimf9(8)**alpha2(i))
         
         !WD remnants from MSTO-0.8
-        getmass = getmass + 0.48*imfw(7)/(1-nonpimf_alpha) * &
-             (mbin_nimf9(8)**(1-nonpimf_alpha)-mto**(1-nonpimf_alpha))
-        getmass = getmass + 0.077*imfw(7)/alpha * (mbin_nimf9(8)**alpha-mto**alpha)
+        getmass = getmass + 0.48*imfw(7)/(1-npi_alphav(i)) * &
+             (mbin_nimf9(8)**(1-npi_alphav(i))-mto**(1-npi_alphav(i)))
+        getmass = getmass + 0.077*imfw(7)/alpha2(i) * (mbin_nimf9(8)**alpha2(i)-mto**alpha2(i))
 
      ELSE
 

@@ -66,7 +66,8 @@ MODULE ALF_VARS
   INTEGER :: powell_fitting = 0
 
   !IMF power-law slope within each bin for non-paramtric IMF
-  REAL(DP) :: nonpimf_alpha = 2.3
+  !0 = flat, 1 = Kroupa, 2 = Salpeter
+  INTEGER :: nonpimf_alpha = 2
 
   !fit two-component SFH. Also requires fit_type=0
   INTEGER :: fit_two_ages=1
@@ -179,7 +180,7 @@ MODULE ALF_VARS
   REAL(DP), DIMENSION(nimfnp+1) :: &
        mbin_nimf9 = (/0.08,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0/)
   REAL(DP), DIMENSION(nimfnp) :: &
-       corr_salp_flat = (/2.12,1.44,1.08,0.82,0.61,0.44,0.30,0.17,0.054/)
+       corr_bin_weight = 0.0
 
   !----------Setup a common block of arrays and vars-------------!
 
@@ -221,6 +222,9 @@ MODULE ALF_VARS
   !index definition for CaT
   REAL(DP), DIMENSION(6,3) :: indxcat=0.0
 
+  !IMF slopes within each bin
+  REAL(DP), DIMENSION(nimfnp) :: npi_alphav=0., npi_renorm=1.0
+  
   !---------------------Physical Constants-----------------------!
   !---------------in cgs units where applicable------------------!
 

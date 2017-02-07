@@ -105,11 +105,15 @@ PROGRAM ALF
   !are the data in the original observed frame?
   observed_frame = 1
 
-  !force MW IMF
-  mwimf    = 0
+  !force a MW (Kroupa) IMF
+  mwimf = 0
 
   !fit two-age SFH or not?
   fit_two_ages = 1
+
+  !IMF slope within the non-parametric IMF bins
+  !0 = flat, 1 = Kroupa, 2 = Salpeter
+  nonpimf_alpha = 2
 
   !change the prior limits to kill off these parameters
   prhi%logm7g = -5.0
@@ -121,16 +125,8 @@ PROGRAM ALF
   !---------------unless you know what you are doing--------------!
   !---------------------------------------------------------------!
 
-  !IMF slope within the non-parametric IMF bins
-  nonpimf_alpha = 2.3
-  !regularize non-parametric IMF
+  !regularize non-parametric IMF (always do this)
   nonpimf_regularize = 1
-
-  !correction factor between Salpeter and flat intrabin weights
-  !for non-parametric IMF
-  IF (nonpimf_alpha.EQ.0.0) THEN
-     corr_salp_flat = 0.0
-  ENDIF
 
   !dont fit transmission function in cases where the input
   !spectrum has already been de-redshifted to ~0.0
@@ -198,7 +194,7 @@ PROGRAM ALF
      WRITE(*,'("   fit_type  =",I2)') fit_type
      WRITE(*,'("   imf_type  =",I2)') imf_type
      IF (imf_type.EQ.4) &
-          WRITE(*,'("   nonpimf   =",F4.1)') nonpimf_alpha
+          WRITE(*,'("   nonpimf   =",I2)') nonpimf_alpha
      WRITE(*,'("  obs_frame  =",I2)') observed_frame 
      WRITE(*,'("      mwimf  =",I2)') mwimf
      WRITE(*,'("  age-dep Rf =",I2)') use_age_dep_resp_fcns
@@ -354,19 +350,21 @@ PROGRAM ALF
   IF (taskid.EQ.masterid) THEN
  
      !for testing
-     IF (1.EQ.0) THEN
+     IF (1.EQ.1) THEN
         tpos%logage = 1.0
-        tpos%imf1 = 3.0
-        tpos%imf2 = 3.0
-        tpos%imf3 = 0.08
+        tpos%imf1   = 2.3
+        tpos%imf2   = 2.3
+        tpos%imf3   = 0.08
         msto = 10**(msto_t0+msto_t1*tpos%logage) * &
              ( msto_z0 + msto_z1*tpos%zh + msto_z2*tpos%zh**2 )
         CALL GETMODEL(tpos,mspecmw,mw=1)     !get spectrum for MW IMF
         CALL GETM2L(msto,lam,mspecmw,tpos,m2lmw,mw=1) !compute M/L_MW
-        write(*,'("M/L(MW)=",2F7.2)') m2lmw(1:2)
+        write(*,'(A10,2F7.2)') 'M/L(MW)=', m2lmw(1:2)
         CALL GETMODEL(tpos,mspec)
         CALL GETM2L(msto,lam,mspec,tpos,m2l)
-        write(*,'("M/L=",2F7.2)') m2l(1:2)
+        write(*,'(A10,2F7.2)') 'M/L=', m2l(1:2)
+        CALL FREE_WORKERS(ntasks-1)
+        CALL MPI_FINALIZE(ierr)
         STOP
      ENDIF
 
@@ -649,7 +647,7 @@ PROGRAM ALF
      WRITE(14,'("#   ssp_type  =",A4)') ssp_type
      WRITE(14,'("#   fit_type  =",I2)') fit_type
      WRITE(14,'("#   imf_type  =",I2)') imf_type
-     WRITE(14,'("#    nonpimf  =",F4.1)') nonpimf_alpha
+     WRITE(14,'("#    nonpimf  =",I2)') nonpimf_alpha
      WRITE(14,'("#  obs_frame  =",I2)') observed_frame 
      WRITE(14,'("#   fit_poly  =",I2)') fit_poly
      WRITE(14,'("#      mwimf  =",I2)') mwimf

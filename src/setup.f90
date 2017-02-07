@@ -27,6 +27,26 @@ SUBROUTINE SETUP()
      STOP
   ENDIF
 
+  !correction factor between Salpeter, Kroupa and flat intrabin weights
+  !for non-parametric IMF
+  IF (nonpimf_alpha.EQ.0) THEN
+     corr_bin_weight = 0.0
+     npi_alphav      = 0.0
+     npi_renorm      = 1.0
+  ELSE IF (nonpimf_alpha.EQ.1) THEN
+     corr_bin_weight = (/1.455,1.093,0.898,0.755,0.602,0.434,0.290,0.164,0.053/)
+     npi_alphav = (/1.3,1.3,1.3,1.3,2.3,2.3,2.3,2.3,2.3/)
+     npi_renorm = (/2.0,2.0,2.0,2.0,1.0,1.0,1.0,1.0,1.0/)
+  ELSE IF (nonpimf_alpha.EQ.2) THEN
+     corr_bin_weight = (/2.122,1.438,1.083,0.822,0.615,0.443,0.296,0.168,0.054/)
+     npi_alphav      = 2.3
+     npi_renorm      = 1.0
+  ELSE
+     WRITE(*,*) 'SETUP ERROR: nonpimf_alpha invalid value: ',nonpimf_alpha
+     STOP
+  ENDIF
+
+  
   charz  = (/'m1.5','m1.0','m0.5','p0.0','p0.2'/)
   charm  = (/'0.08','0.10','0.15','0.20','0.25','0.30','0.35','0.40'/)
   chart  = (/'t01.0','t03.0','t05.0','t07.0','t09.0','t11.0','t13.5'/)
@@ -219,15 +239,15 @@ SUBROUTINE SETUP()
   IF (imf_type.EQ.4) THEN 
      DO z=1,nzmet
         DO t=1,nage
-           IF (nonpimf_alpha.EQ.0.0) THEN
+           IF (nonpimf_alpha.EQ.0) THEN
               OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v8_'//&
                    chart(t)//'_Z'//charz(z)//'.ssp.imf_nonpara_flat'//&
                    '.s100',STATUS='OLD',iostat=stat,ACTION='READ')
-           ELSE IF (nonpimf_alpha.EQ.1.3) THEN
+           ELSE IF (nonpimf_alpha.EQ.1) THEN
               OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v8_'//&
                    chart(t)//'_Z'//charz(z)//'.ssp.imf_nonpara_krpa'//&
                    '.s100',STATUS='OLD',iostat=stat,ACTION='READ')
-           ELSE IF (nonpimf_alpha.EQ.2.3) THEN
+           ELSE IF (nonpimf_alpha.EQ.2) THEN
               OPEN(22,FILE=TRIM(ALF_HOME)//'/infiles/VCJ_v8_'//&
                    chart(t)//'_Z'//charz(z)//'.ssp.imf_nonpara_x2.3'//&
                    '.s100',STATUS='OLD',iostat=stat,ACTION='READ')
