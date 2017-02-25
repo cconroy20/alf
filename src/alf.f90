@@ -351,9 +351,9 @@ PROGRAM ALF
  
      !for testing
      IF (1.EQ.0) THEN
-        tpos%logage = 1.0
-        tpos%imf1   = 2.3
-        tpos%imf2   = 2.3
+        tpos%logage = 1.143
+        tpos%imf1   = 3.32
+        tpos%imf2   = 2.76
         tpos%imf3   = 0.08
         msto = 10**(msto_t0+msto_t1*tpos%logage) * &
              ( msto_z0 + msto_z1*tpos%zh + msto_z2*tpos%zh**2 )

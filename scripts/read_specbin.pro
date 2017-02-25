@@ -2,7 +2,8 @@ FUNCTION READ_SPECBIN, file, lam=lam
 
   sdir = getenv('ALF_HOME')
 
-  readcol,sdir+'/results/'+file+'.sum',s1,name,d2,val,/sil,format='(A,A,A,I)'
+  readcol,sdir+'/results/'+file+'.sum',s1,name,d2,val,/sil,$
+          format='(A,A,A,I)'
 
   wh = where(name EQ 'Nwalkers',ct1)
   nw = long(val[wh])

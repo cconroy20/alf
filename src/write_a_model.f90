@@ -108,8 +108,10 @@ PROGRAM WRITE_A_MODEL
      WRITE(12,'("# 0.800 0.892")')
      WRITE(12,'("# 0.963 1.015")') 
      DO i=1,nl
-        WRITE(12,'(F10.3,2ES12.4,2x,F4.1,2x,F7.2)') &
-             lam(i),gspec(i),err(i),1.0,ires
+        IF (lam(i).GE.lmin.AND.lam(i).LE.lmax) THEN
+           WRITE(12,'(F10.3,2ES12.4,2x,F4.1,2x,F7.2)') &
+                lam(i),gspec(i),err(i),1.0,ires
+        ENDIF
      ENDDO
      CLOSE(12)
 
