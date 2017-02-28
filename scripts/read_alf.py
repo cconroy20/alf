@@ -29,30 +29,32 @@ class Alf(object):
             self.spec = None
         self.mcmc   = None
 
-        self.labels = ['chi2','velz','sigma','logage','zH',
-                  'FeH', 'aH', 'CH', 'NH', 'NaH', 'MgH',
-                  'SiH', 'KH', 'CaH', 'TiH','VH', 'CrH',
-                  'MnH', 'CoH', 'NiH', 'CuH', 'SrH','BaH',
-                  'EuH', 'Teff', 'IMF1', 'IMF2', 'logfy',
-                  'sigma2', 'velz2', 'logm7g', 'hotteff',
-                  'loghot','fy_logage','logtrans', 'logemline_H',
-                  'logemline_Oiii','logemline_Sii', 'logemline_Ni',
-                  'logemline_Nii','jitter','IMF3', 'logsky', 'IMF4',
+        results = ascii.read('{0}.sum'.format(self.path))
+        if len(results.colnames) == 52:
+           self.labels = ['chi2','velz','sigma','logage','zH',
+                      'FeH', 'aH', 'CH', 'NH', 'NaH', 'MgH',
+                      'SiH', 'KH', 'CaH', 'TiH','VH', 'CrH',
+                      'MnH', 'CoH', 'NiH', 'CuH', 'SrH','BaH',
+                      'EuH', 'Teff', 'IMF1', 'IMF2', 'logfy',
+                      'sigma2', 'velz2', 'logm7g', 'hotteff',
+                      'loghot','fy_logage','logtrans', 'logemline_H',
+                      'logemline_Oiii','logemline_Sii', 'logemline_Ni',
+                      'logemline_Nii','jitter','IMF3', 'logsky', 'IMF4',
+                      'h3', 'h4', 'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k']
+        elif len(results.colnames) == 50:
+            print "HELLO"
+            self.labels = ['chi2','velz','sigma','logage','zH',
+                      'FeH', 'aH', 'CH', 'NH', 'NaH', 'MgH',
+                      'SiH', 'KH', 'CaH', 'TiH','VH', 'CrH',
+                      'MnH', 'CoH', 'NiH', 'CuH', 'SrH','BaH',
+                      'EuH', 'Teff', 'IMF1', 'IMF2', 'logfy',
+                      'sigma2', 'velz2', 'logm7g', 'hotteff',
+                      'loghot','fy_logage','logtrans', 'logemline_H',
+                      'logemline_Oiii','logemline_Sii', 'logemline_Ni',
+                      'logemline_Nii','jitter','IMF3', 'logsky', 'IMF4',
+                      'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k']
 
-                  #'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k']
-                  'h3', 'h4', 'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k']
-
-
-
-        #results = ascii.read('{0}.sum'.format(self.path))
-        #print len(results.colnames), len(self.labels)
-        #sys.exit()
         results = ascii.read('{0}.sum'.format(self.path), names=self.labels)
-
-        if len(self.labels) != len(results.colnames):
-            error = ('Label array and parameter array '
-                     'have different lengths.')
-            raise ValueError(error)
 
         """
         0:   Mean of the posterior
@@ -92,7 +94,7 @@ class Alf(object):
         #self.nwalks = 1024
         #self.nchain = 100
 
-    def abundance_correct(self):
+    def abundance_correct(self, s07=False, b14=False, m11=True):
         """
         Need to correct the raw abundance values given
         by ALF.
@@ -105,12 +107,29 @@ class Alf(object):
             Correct other parameters later.
         """
 
-        # Schiavon 2008, Table 6
+        if not b14 and s07:
+            m11 = True
+
+        # Correction factros from Schiavon 2007, Table 6
+        # NOTE: Forcing factors to be 0 for [Fe/H]=0.0,0.2
         lib_feh = [-1.6,-1.4,-1.2,-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2]
         lib_ofe = [0.6, 0.5, 0.5, 0.4, 0.3, 0.2, 0.2, 0.1, 0.0, 0.0]
-        # Bensby+ 2014
-        lib_mgfe = [0.4,0.4,0.4,0.38,0.37,0.27,0.21,0.12,0.05,0.0]
-        lib_cafe = [0.32, 0.3, 0.28, 0.26, 0.26, 0.17, 0.12, 0.06, 0.0, 0.0]
+
+        if s07:
+            #Schiavon 2007
+            lib_mgfe = [0.4,0.4,0.4,0.4,0.29,0.20,0.13,0.08,0.05,0.04]
+            lib_cafe = [0.32,0.3,0.28,0.26,0.20,0.12,0.06,0.02,0.0,0.0]
+
+        if b14:
+            # Fitted from Bensby+ 2014
+            lib_mgfe = [0.4,0.4,0.4,0.38,0.37,0.27,0.21,0.12,0.05,0.0]
+            lib_cafe = [0.32, 0.3, 0.28, 0.26, 0.26, 0.17, 0.12, 0.06, 0.0, 0.0]
+
+        if m11 or (b14 is False and s07 is False):
+            # Fitted to Milone+ 2011 HR MILES stars
+            lib_mgfe = [0.4,0.4,0.4,0.4,0.34,0.22,0.14,0.11,0.05,0.04]
+            # from B14
+            lib_cafe = [0.32,0.3,0.28,0.26,0.26,0.17,0.12,0.06,0.0,0.0]
 
         # In ALF the oxygen abundance is used a proxy for alpha abundance
         del_alfe = interpolate.UnivariateSpline(lib_feh, lib_ofe, s=1, k=1)
