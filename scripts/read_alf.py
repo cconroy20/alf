@@ -29,10 +29,10 @@ class Alf(object):
         results = ascii.read('{0}.sum'.format(self.path))
         if len(results.colnames) == 52:
            self.labels = ['chi2','velz','sigma','logage','zH',
-                      'FeH', 'aH', 'CH', 'NH', 'NaH', 'MgH',
-                      'SiH', 'KH', 'CaH', 'TiH','VH', 'CrH',
-                      'MnH', 'CoH', 'NiH', 'CuH', 'SrH','BaH',
-                      'EuH', 'Teff', 'IMF1', 'IMF2', 'logfy',
+                      'FeH', 'a', 'C', 'N', 'Na', 'Mg',
+                      'Si', 'K', 'Ca', 'Ti','V', 'Cr',
+                      'Mn', 'Co', 'Ni', 'Cu', 'Sr','Ba',
+                      'Eu', 'Teff', 'IMF1', 'IMF2', 'logfy',
                       'sigma2', 'velz2', 'logm7g', 'hotteff',
                       'loghot','fy_logage','logtrans', 'logemline_H',
                       'logemline_Oiii','logemline_Sii', 'logemline_Ni',
@@ -174,6 +174,7 @@ class Alf(object):
         # Have to treat the error col differently
         err = (self.xH['Type'] == 'error')
 
+        print self.basic['zH'][0] +  self.basic['FeH'][0]
         al_corr = del_alfe(self.basic['zH'][~err])
         mg_corr = del_mgfe(self.basic['zH'][~err])
         ca_corr = del_cafe(self.basic['zH'][~err])
@@ -195,14 +196,17 @@ class Alf(object):
             if col=='Type':
                 continue
             elif col=='a':
+                print al_corr[0]
                 self.xFe[col] = (self.xH[col][~err] -
                                  self.basic['FeH'][~err] +
                                  al_corr)
             elif col=='Mg':
+                print mg_corr[i]
                 self.xFe[col] = (self.xH[col][~err] -
                                  self.basic['FeH'][~err] +
                                  mg_corr)
             elif col in group1:
+                print ca_corr[0]
                 self.xFe[col] = (self.xH[col][~err] -
                                  self.basic['FeH'][~err] +
                                  ca_corr)
@@ -218,10 +222,10 @@ class Alf(object):
                                self.basic['FeH'][err]**2)
 
         self.xFe.add_row(error)
-        types = Column(['mean', 'chi2', 'error',
+        types = Column(['mean', 'chi2',
                         'cl25', 'cl16', 'cl50',
                         'cl84', 'cl98', 'lo_prior',
-                        'hi_prior'],
+                        'hi_prior', 'error'],
                         name='Type')
         self.xFe.add_column(types, index=0)
 
