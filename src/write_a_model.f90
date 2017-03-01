@@ -68,8 +68,8 @@ PROGRAM WRITE_A_MODEL
      file = 'test_velz2_m6.0_500_s2n300.dat'
      s2n  = 300.  !S/N per A
 
-     pos%velz3 = 500.
-     pos%logfrac_velz3=-6.0
+     !pos%velz3 = 500.
+     !pos%logfrac_velz3=-6.0
      
      pos%sigma  = 250.
      pos%logage = LOG10(10.0)

@@ -37,7 +37,7 @@ PROGRAM ALF
   !NB: setting this to >1 currently results in errors in the *sum outputs
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=10000
+  INTEGER, PARAMETER :: nburn=4000
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=512
   !save the chain outputs to file and the model spectra
