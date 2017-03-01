@@ -1,7 +1,3 @@
-"""
-Routines to read the output files of the
-Absorption Line Fitter (ALF) code.
-"""
 
 import sys
 import warnings
@@ -44,18 +40,17 @@ class Alf(object):
                       'h3', 'h4', 'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k']
         elif len(results.colnames) == 50:
             self.labels = ['chi2','velz','sigma','logage','zH',
-                      'FeH', 'aH', 'CH', 'NH', 'NaH', 'MgH',
-                      'SiH', 'KH', 'CaH', 'TiH','VH', 'CrH',
-                      'MnH', 'CoH', 'NiH', 'CuH', 'SrH','BaH',
-                      'EuH', 'Teff', 'IMF1', 'IMF2', 'logfy',
+                      'FeH', 'a', 'C', 'N', 'Na', 'Mg',
+                      'Si', 'K', 'Ca', 'Ti','V', 'Cr',
+                      'Mn', 'Co', 'Ni', 'Cu', 'Sr','Ba',
+                      'Eu', 'Teff', 'IMF1', 'IMF2', 'logfy',
                       'sigma2', 'velz2', 'logm7g', 'hotteff',
                       'loghot','fy_logage','logtrans', 'logemline_H',
                       'logemline_Oiii','logemline_Sii', 'logemline_Ni',
                       'logemline_Nii','jitter','IMF3', 'logsky', 'IMF4',
                       'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k']
 
-        self.results = ascii.read('{0}.sum'.format(self.path),
-                                  names=self.labels)
+        results = Table(results, names=self.labels)
         """
         0:   Mean of the posterior
         1:   Parameter at chi^2 minimum
@@ -63,11 +58,43 @@ class Alf(object):
         3-7: 2.5%, 16%, 50%, 84%, 97.5% CLs
         8-9: lower and upper priors
         """
-        types = Column(['mean', 'chi2', 'error', 'cl25', 'cl16', 'cl50',
-                  'cl84', 'cl98', 'lo_prior', 'hi_prior'], name='Type')
 
-        self.results.add_column(types, index=0)
-        mean = self.results['Type'] == 'mean'
+        types = Column(['mean', 'chi2', 'error',
+                        'cl25', 'cl16', 'cl50',
+                        'cl84', 'cl98', 'lo_prior',
+                        'hi_prior'],
+                        name='Type')
+
+        results.add_column(types, index=0)
+
+        """
+        Split the big table up
+        """
+
+        self.basic = results['Type', 'chi2',
+                             'velz', 'sigma',
+                             'logage', 'zH',
+                             'FeH']
+
+        self.xH = results['Type','a', 'C', 'N', 'Na', 'Mg',
+                          'Si', 'K', 'Ca', 'Ti','V', 'Cr',
+                          'Mn', 'Co', 'Ni', 'Cu', 'Sr','Ba',
+                          'Eu']
+
+        # Creating an empty table that has
+        # the same columns as xH.
+        # Is filled in abundance_correct()
+        self.xFe = self.xH[:0].copy()
+
+        self.results = results['Type', 'Teff', 'IMF1',
+                               'IMF2', 'logfy', 'sigma2',
+                               'velz2', 'logm7g', 'hotteff',
+                               'loghot','fy_logage', 'logtrans',
+                               'logemline_H', 'logemline_Oiii',
+                               'logemline_Sii', 'logemline_Ni',
+                               'logemline_Nii','jitter','IMF3',
+                               'logsky', 'IMF4', 'ML_r','ML_i',
+                               'ML_k',' MW_r', 'MW_i', 'MW_k']
 
         """
         Check the values of the nuisance parameters
@@ -124,58 +151,58 @@ class Alf(object):
         # Only abundance correct these columns
         err = (self.results['Type'] == 'error')
 
-        alpha_corr = del_alfe(self.results['zH'][~err])
-        self.results['aH'][~err] = (self.results['aH'][~err] -
-                                    self.results['FeH'][~err] +
+        alpha_corr = del_alfe(self.basic['zH'][~err])
+        self.xH['a'][~err] = (self.basic['aH'][~err] -
+                                    self.basic['FeH'][~err] +
                                     alpha_corr)
 
-        mg_corr = del_mgfe(self.results['zH'][~err])
-        self.results['MgH'][~err] = (self.results['MgH'][~err] -
-                                     self.results['FeH'][~err] +
+        mg_corr = del_mgfe(self.basic['zH'][~err])
+        self.xH['Mg'][~err] = (self.xH['Mg'][~err] -
+                                     self.basic['FeH'][~err] +
                                      mg_corr)
 
         # Assuming that Ca~Ti~Si
-        ca_corr = del_cafe(self.results['zH'][~err])
-        self.results['CaH'][~err] = (self.results['CaH'][~err] -
-                                     self.results['FeH'][~err] +
+        ca_corr = del_cafe(self.xH['zH'][~err])
+        self.xH['Ca'][~err] = (self.xH['Ca'][~err] -
+                                     self.basic['FeH'][~err] +
                                      ca_corr)
-        self.results['TiH'][~err] = (self.results['TiH'][~err] -
-                                     self.results['FeH'][~err] +
+        self.xH['Ti'][~err] = (self.xH['Ti'][~err] -
+                                     self.basic['FeH'][~err] +
                                      ca_corr)
-        self.results['SiH'][~err] = (self.results['SiH'][~err] -
-                                     self.results['FeH'][~err] +
+        self.xH['Si'][~err] = (self.xH['Si'][~err] -
+                                     self.basic['FeH'][~err] +
                                      ca_corr)
 
         # These elements seem to show no net enhancemnt
         # at low metallicity
-        self.results['CaH'][~err] = (self.results['CaH'][~err] -
-                                     self.results['FeH'][~err])
-        self.results['NH'][~err]  = (self.results['NH'][~err]  -
-                                     self.results['FeH'][~err])
-        self.results['CrH'][~err] = (self.results['CrH'][~err] -
-                                     self.results['FeH'][~err])
-        self.results['NiH'][~err] = (self.results['NiH'][~err] -
-                                     self.results['FeH'][~err])
-        self.results['NaH'][~err] = (self.results['NaH'][~err] -
-                                     self.results['FeH'][~err])
+        self.xH['Ca'][~err] = (self.xH['Ca'][~err] -
+                                     self.basic['FeH'][~err])
+        self.xH['N'][~err]  = (self.xH['N'][~err]  -
+                                     self.basic['FeH'][~err])
+        self.xH['Cr'][~err] = (self.xH['Cr'][~err] -
+                                     self.basic['FeH'][~err])
+        self.xH['Ni'][~err] = (self.xH['Ni'][~err] -
+                                     self.basic'FeH'][~err])
+        self.xH['Na'][~err] = (self.xH['Na'][~err] -
+                                     self.basic['FeH'][~err])
 
         # These elements we haven't yet quantified
-        self.results['BaH'][~err] = (self.results['BaH'][~err] -
-                                     self.results['FeH'][~err])
-        self.results['EuH'][~err] = (self.results['EuH'][~err] -
-                                     self.results['FeH'][~err])
-        self.results['SrH'][~err] = (self.results['SrH'][~err] -
-                                     self.results['FeH'][~err])
-        self.results['CuH'][~err] = (self.results['CuH'][~err] -
-                                     self.results['FeH'][~err])
-        self.results['CoH'][~err] = (self.results['CoH'][~err] -
-                                     self.results['FeH'][~err])
-        self.results['KH'][~err]  = (self.results['KH'][~err]  -
-                                     self.results['FeH'][~err])
-        self.results['VH'][~err]  = (self.results['VH'][~err]  -
-                                     self.results['FeH'][~err])
-        self.results['MnH'][~err] = (self.results['MnH'][~err] -
-                                     self.results['FeH'][~err])
+        self.xH['Ba'][~err] = (self.xH['Ba'][~err] -
+                                     self.basic['FeH'][~err])
+        self.xH['Eu'][~err] = (self.xH['Eu'][~err] -
+                                     self.basic['FeH'][~err])
+        self.xH['Sr'][~err] = (self.xH['Sr'][~err] -
+                                     self.basic['FeH'][~err])
+        self.xH['Cu'][~err] = (self.xH['Cu'][~err] -
+                                     self.basic['FeH'][~err])
+        self.xH['Co'][~err] = (self.xH['Co'][~err] -
+                                     self.basic['FeH'][~err])
+        self.xH['K'][~err]  = (self.xH['K'][~err]  -
+                                     self.basic['FeH'][~err])
+        self.xH['V'][~err]  = (self.xH['V'][~err]  -
+                                     self.basic['FeH'][~err])
+        self.xH['Mn'][~err] = (self.xH['Mn'][~err] -
+                                     self.basic['FeH'][~err])
 
     def plot_model(self, outpath, info, mock=False):
         velz = self.params['velz']
