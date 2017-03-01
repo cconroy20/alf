@@ -74,9 +74,23 @@ class Alf(object):
                              'velz', 'sigma',
                              'logage', 'zH',
                              'FeH']
+
+        # Have to treat the error col differently
+        #...but I don't want to deal with that now
+        err = (self.basic['Type'] == 'error')
+
         total_met = Column(self.basic['FeH']+self.basic['zH'],
                         name='total_met')
         self.basic.add_column(total_met)
+
+        mass_age = Column(
+                    ((1-10**results['logfy']) *
+                    (10**self.basic['logage']) +
+                    (10**results['fy_logage'] *
+                     10**results['logfy'])),
+                     name='mass_age')
+        self.basic.add_column(mass_age)
+        self.basic['mass_age'].format = '.6f'
 
         self.xH = results['Type','a', 'C', 'N', 'Na', 'Mg',
                           'Si', 'K', 'Ca', 'Ti','V', 'Cr',
