@@ -171,28 +171,25 @@ class Alf(object):
             if col=='Type':
                 continue
             elif col=='a':
-                tmp = col
                 self.xFe[col] = (self.xH[col][~err] -
                                  self.basic['FeH'][~err] +
                                  al_corr)
             elif col=='Mg':
-                tmp = col
                 self.xFe[col] = (self.xH[col][~err] -
                                  self.basic['FeH'][~err] +
                                  mg_corr)
             elif col in group1:
-                tmp = col
                 self.xFe[col] = (self.xH[col][~err] -
                                  self.basic['FeH'][~err] +
                                  ca_corr)
             elif col in group2:
-                tmp = col
                 self.xFe[col] = (self.xH[col][~err] -
                                  self.basic['FeH'][~err])
             elif col in group3:
-                tmp = col
                 self.xFe[col] = (self.xH[col][~err] -
                                  self.basic['FeH'][~err])
+
+            self.xFe[col].format = '.6f'
             error[i-1] = np.sqrt(self.xH[col][err]**2 -
                                self.basic['FeH'][err]**2)
 
@@ -204,7 +201,7 @@ class Alf(object):
                         name='Type')
         self.xFe.add_column(types, index=0)
 
-def plot_model(self, outpath, info, mock=False):
+    def plot_model(self, outpath, info, mock=False):
         velz = self.params['velz']
         in_wave = self.indata[:,0]/(1.+velz*1e3/constants.c)
         mod_wave = self.spec[:,0]/(1.+velz*1e3/constants.c)
@@ -303,7 +300,6 @@ def plot_model(self, outpath, info, mock=False):
 
         plt.tight_layout()
         plt.savefig('{0}/{1}_corner.pdf'.format(outpath, self.legend))
-
 
     def plot_traces(self, outpath, info, mock=False):
         if not mock:
