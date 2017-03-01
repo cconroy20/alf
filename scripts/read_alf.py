@@ -10,6 +10,7 @@ from scipy import constants, interpolate
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from astropy.io import ascii
+from astropy.table import Table, Column
 
 class Alf(object):
     def __init__(self, path, legend):
@@ -54,8 +55,8 @@ class Alf(object):
                       'logemline_Nii','jitter','IMF3', 'logsky', 'IMF4',
                       'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k']
 
-        results = ascii.read('{0}.sum'.format(self.path), names=self.labels)
-
+        self.results = ascii.read('{0}.sum'.format(self.path),
+                                  names=self.labels)
         """
         0:   Mean of the posterior
         1:   Parameter at chi^2 minimum
@@ -63,16 +64,11 @@ class Alf(object):
         3-7: 2.5%, 16%, 50%, 84%, 97.5% CLs
         8-9: lower and upper priors
         """
-        self.params = dict(zip(self.labels, results[0]))
-        self.params_chi2 = dict(zip(self.labels, results[1]))
-        self.errors = dict(zip(self.labels, results[2]))
-        self.cl25 = dict(zip(self.labels, results[3]))
-        self.cl16 = dict(zip(self.labels, results[4]))
-        self.cl50 = dict(zip(self.labels, results[5]))
-        self.cl84 = dict(zip(self.labels, results[6]))
-        self.cl98 = dict(zip(self.labels, results[7]))
-        self.lo_prior = dict(zip(self.labels, results[8]))
-        self.lo_prior = dict(zip(self.labels, results[9]))
+        types = Column(['mean', 'chi2', 'error', 'cl25', 'cl16', 'cl50',
+                  'cl84', 'cl98', 'lo_prior', 'hi_prior'], name='Type')
+
+        self.results.add_column(types, index=0)
+        mean = self.results['Type'] == 'mean'
 
         """
         Check the values of the nuisance parameters
