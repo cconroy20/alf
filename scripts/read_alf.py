@@ -43,7 +43,6 @@ class Alf(object):
                       'logemline_Nii','jitter','IMF3', 'logsky', 'IMF4',
                       'h3', 'h4', 'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k']
         elif len(results.colnames) == 50:
-            print "HELLO"
             self.labels = ['chi2','velz','sigma','logage','zH',
                       'FeH', 'aH', 'CH', 'NH', 'NaH', 'MgH',
                       'SiH', 'KH', 'CaH', 'TiH','VH', 'CrH',
@@ -97,24 +96,16 @@ class Alf(object):
 
         Use the metallicity-dependent correction factors
         from the literature.
-
-        To-Do:
-            Only correcting the mean of the posterior values for now.
-            Correct other parameters later.
         """
-
-        if not b14 and s07:
-            m11 = True
-
         # Correction factros from Schiavon 2007, Table 6
         # NOTE: Forcing factors to be 0 for [Fe/H]=0.0,0.2
-        lib_feh = [-1.6,-1.4,-1.2,-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2]
+        lib_feh = [-1.6, -1.4, -1.2, -1.0, -0.8, -0.6, -0.4, -0.2, 0.0, 0.2]
         lib_ofe = [0.6, 0.5, 0.5, 0.4, 0.3, 0.2, 0.2, 0.1, 0.0, 0.0]
 
         if s07:
             #Schiavon 2007
-            lib_mgfe = [0.4,0.4,0.4,0.4,0.29,0.20,0.13,0.08,0.05,0.04]
-            lib_cafe = [0.32,0.3,0.28,0.26,0.20,0.12,0.06,0.02,0.0,0.0]
+            lib_mgfe = [0.4, 0.4, 0.4, 0.4, 0.29, 0.20, 0.13, 0.08, 0.05, 0.04]
+            lib_cafe = [0.32, 0.3, 0.28, 0.26, 0.20, 0.12, 0.06, 0.02, 0.0, 0.0]
         elif b14:
             # Fitted from Bensby+ 2014
             lib_mgfe = [0.4,0.4,0.4,0.38,0.37,0.27,0.21,0.12,0.05,0.0]
@@ -130,17 +121,61 @@ class Alf(object):
         del_mgfe = interpolate.UnivariateSpline(lib_feh, lib_mgfe, s=1, k=1)
         del_cafe = interpolate.UnivariateSpline(lib_feh, lib_cafe, s=1, k=1)
 
-        #
-        alpha_correction = del_alfe(self.params['zH'])
-        self.params['aH'] = self.params['aH'] - self.params['FeH'] + alpha_correction
+        # Only abundance correct these columns
+        err = (self.results['Type'] == 'error')
 
-        mg_correction = del_alfe(self.params['zH'])
-        self.params['MgH'] = self.params['MgH'] - self.params['FeH'] + mg_correction
+        alpha_corr = del_alfe(self.results['zH'][~err])
+        self.results['aH'][~err] = (self.results['aH'][~err] -
+                                    self.results['FeH'][~err] +
+                                    alpha_corr)
 
-        ca_correction = del_alfe(self.params['zH'])
-        self.params['CaH'] = self.params['CaH'] - self.params['FeH'] + ca_correction
-        self.params['SiH'] = self.params['SiH'] - self.params['FeH'] + ca_correction
-        self.params['TiH'] = self.params['TiH'] - self.params['FeH'] + ca_correction
+        mg_corr = del_mgfe(self.results['zH'][~err])
+        self.results['MgH'][~err] = (self.results['MgH'][~err] -
+                                     self.results['FeH'][~err] +
+                                     mg_corr)
+
+        # Assuming that Ca~Ti~Si
+        ca_corr = del_cafe(self.results['zH'][~err])
+        self.results['CaH'][~err] = (self.results['CaH'][~err] -
+                                     self.results['FeH'][~err] +
+                                     ca_corr)
+        self.results['TiH'][~err] = (self.results['TiH'][~err] -
+                                     self.results['FeH'][~err] +
+                                     ca_corr)
+        self.results['SiH'][~err] = (self.results['SiH'][~err] -
+                                     self.results['FeH'][~err] +
+                                     ca_corr)
+
+        # These elements seem to show no net enhancemnt
+        # at low metallicity
+        self.results['CaH'][~err] = (self.results['CaH'][~err] -
+                                     self.results['FeH'][~err])
+        self.results['NH'][~err]  = (self.results['NH'][~err]  -
+                                     self.results['FeH'][~err])
+        self.results['CrH'][~err] = (self.results['CrH'][~err] -
+                                     self.results['FeH'][~err])
+        self.results['NiH'][~err] = (self.results['NiH'][~err] -
+                                     self.results['FeH'][~err])
+        self.results['NaH'][~err] = (self.results['NaH'][~err] -
+                                     self.results['FeH'][~err])
+
+        # These elements we haven't yet quantified
+        self.results['BaH'][~err] = (self.results['BaH'][~err] -
+                                     self.results['FeH'][~err])
+        self.results['EuH'][~err] = (self.results['EuH'][~err] -
+                                     self.results['FeH'][~err])
+        self.results['SrH'][~err] = (self.results['SrH'][~err] -
+                                     self.results['FeH'][~err])
+        self.results['CuH'][~err] = (self.results['CuH'][~err] -
+                                     self.results['FeH'][~err])
+        self.results['CoH'][~err] = (self.results['CoH'][~err] -
+                                     self.results['FeH'][~err])
+        self.results['KH'][~err]  = (self.results['KH'][~err]  -
+                                     self.results['FeH'][~err])
+        self.results['VH'][~err]  = (self.results['VH'][~err]  -
+                                     self.results['FeH'][~err])
+        self.results['MnH'][~err] = (self.results['MnH'][~err] -
+                                     self.results['FeH'][~err])
 
     def plot_model(self, outpath, info, mock=False):
         velz = self.params['velz']
