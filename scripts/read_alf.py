@@ -119,13 +119,11 @@ class Alf(object):
             #Schiavon 2007
             lib_mgfe = [0.4,0.4,0.4,0.4,0.29,0.20,0.13,0.08,0.05,0.04]
             lib_cafe = [0.32,0.3,0.28,0.26,0.20,0.12,0.06,0.02,0.0,0.0]
-
-        if b14:
+        elif b14:
             # Fitted from Bensby+ 2014
             lib_mgfe = [0.4,0.4,0.4,0.38,0.37,0.27,0.21,0.12,0.05,0.0]
             lib_cafe = [0.32, 0.3, 0.28, 0.26, 0.26, 0.17, 0.12, 0.06, 0.0, 0.0]
-
-        if m11 or (b14 is False and s07 is False):
+        elif m11 or (b14 is False and s07 is False):
             # Fitted to Milone+ 2011 HR MILES stars
             lib_mgfe = [0.4,0.4,0.4,0.4,0.34,0.22,0.14,0.11,0.05,0.04]
             # from B14
@@ -138,58 +136,15 @@ class Alf(object):
 
         #
         alpha_correction = del_alfe(self.params['zH'])
-        self.params['aH'] = self.params['aH'] + alpha_correction
+        self.params['aH'] = self.params['aH'] - self.params['FeH'] + alpha_correction
 
         mg_correction = del_alfe(self.params['zH'])
-        self.params['MgH'] = self.params['MgH'] + mg_correction
+        self.params['MgH'] = self.params['MgH'] - self.params['FeH'] + mg_correction
 
         ca_correction = del_alfe(self.params['zH'])
-        self.params['CaH'] = self.params['CaH'] + ca_correction
-        self.params['SiH'] = self.params['SiH'] + ca_correction
-        self.params['TiH'] = self.params['TiH'] + ca_correction
-
-        #
-        alpha_correction = del_alfe(self.params_chi2['zH'])
-        self.params_chi2['aH'] = self.params_chi2['aH'] + alpha_correction
-
-        mg_correction = del_alfe(self.params_chi2['zH'])
-        self.params_chi2['MgH'] = self.params_chi2['MgH'] + mg_correction
-
-        ca_correction = del_alfe(self.params_chi2['zH'])
-        self.params_chi2['CaH'] = self.params_chi2['CaH'] + ca_correction
-        self.params_chi2['SiH'] = self.params_chi2['SiH'] + ca_correction
-        self.params_chi2['TiH'] = self.params_chi2['TiH'] + ca_correction
-
-    def convert_abundances(self, chi2=False):
-        """
-        Abundances from ALF are over H, sometimes helpful to be
-        over Fe.
-
-        Need to always run abundance_correct first.
-        """
-
-        labels = ['aH', 'CH', 'NH', 'NaH', 'MgH',
-        'SiH', 'KH', 'CaH', 'TiH','VH', 'CrH', 'MnH',
-        'CoH', 'NiH', 'CuH', 'SrH','BaH', 'EuH']
-
-        abundances = np.zeros((len(labels)))
-        if chi2:
-            for i, label in enumerate(labels):
-                abundances[i] = self.params_chi2[label] - self.params_chi2['FeH']
-        else:
-            for i, label in enumerate(labels):
-                abundances[i] = self.params[label] - self.params['FeH']
-
-        errors = np.zeros((len(labels)))
-        for i, label in enumerate(labels):
-            errors[i] = np.sqrt(self.errors[label]**2 + self.errors['FeH']**2)
-
-        new_labels = ['a', 'C', 'N', 'Na', 'Mg',
-        'Si', 'K', 'Ca', 'Ti','V', 'Cr', 'Mn',
-        'Co', 'Ni', 'Cu', 'Sr','Ba', 'Eu']
-
-        self.params_fe = dict(zip(new_labels, abundances))
-        self.errors_fe = dict(zip(new_labels, errors))
+        self.params['CaH'] = self.params['CaH'] - self.params['FeH'] + ca_correction
+        self.params['SiH'] = self.params['SiH'] - self.params['FeH'] + ca_correction
+        self.params['TiH'] = self.params['TiH'] - self.params['FeH'] + ca_correction
 
     def plot_model(self, outpath, info, mock=False):
         velz = self.params['velz']
