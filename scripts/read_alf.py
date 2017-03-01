@@ -81,10 +81,9 @@ class Alf(object):
                           'Mn', 'Co', 'Ni', 'Cu', 'Sr','Ba',
                           'Eu']
 
-        # Creating an empty table that has
-        # the same columns as xH.
-        # Is filled in abundance_correct()
-        self.xFe = self.xH[:0].copy()
+        # Creating an empty table that
+        # is filled in abundance_correct()
+        self.xFe = Table()
 
         self.results = results['Type', 'Teff', 'IMF1',
                                'IMF2', 'logfy', 'sigma2',
@@ -94,7 +93,7 @@ class Alf(object):
                                'logemline_Sii', 'logemline_Ni',
                                'logemline_Nii','jitter','IMF3',
                                'logsky', 'IMF4', 'ML_r','ML_i',
-                               'ML_k',' MW_r', 'MW_i', 'MW_k']
+                               'ML_k', 'MW_r', 'MW_i', 'MW_k']
 
         """
         Check the values of the nuisance parameters
@@ -148,63 +147,64 @@ class Alf(object):
         del_mgfe = interpolate.UnivariateSpline(lib_feh, lib_mgfe, s=1, k=1)
         del_cafe = interpolate.UnivariateSpline(lib_feh, lib_cafe, s=1, k=1)
 
-        # Only abundance correct these columns
-        err = (self.results['Type'] == 'error')
+        # Have to treat the error col differently
+        err = (self.xH['Type'] == 'error')
 
-        alpha_corr = del_alfe(self.basic['zH'][~err])
-        self.xH['a'][~err] = (self.basic['aH'][~err] -
-                                    self.basic['FeH'][~err] +
-                                    alpha_corr)
-
+        al_corr = del_alfe(self.basic['zH'][~err])
         mg_corr = del_mgfe(self.basic['zH'][~err])
-        self.xH['Mg'][~err] = (self.xH['Mg'][~err] -
-                                     self.basic['FeH'][~err] +
-                                     mg_corr)
+        ca_corr = del_cafe(self.basic['zH'][~err])
 
-        # Assuming that Ca~Ti~Si
-        ca_corr = del_cafe(self.xH['zH'][~err])
-        self.xH['Ca'][~err] = (self.xH['Ca'][~err] -
-                                     self.basic['FeH'][~err] +
-                                     ca_corr)
-        self.xH['Ti'][~err] = (self.xH['Ti'][~err] -
-                                     self.basic['FeH'][~err] +
-                                     ca_corr)
-        self.xH['Si'][~err] = (self.xH['Si'][~err] -
-                                     self.basic['FeH'][~err] +
-                                     ca_corr)
+        # Assuming Ca~Ti~Si
+        group1 = {'Ca', 'Ti', 'Si'}
 
         # These elements seem to show no net enhancemnt
         # at low metallicity
-        self.xH['Ca'][~err] = (self.xH['Ca'][~err] -
-                                     self.basic['FeH'][~err])
-        self.xH['N'][~err]  = (self.xH['N'][~err]  -
-                                     self.basic['FeH'][~err])
-        self.xH['Cr'][~err] = (self.xH['Cr'][~err] -
-                                     self.basic['FeH'][~err])
-        self.xH['Ni'][~err] = (self.xH['Ni'][~err] -
-                                     self.basic'FeH'][~err])
-        self.xH['Na'][~err] = (self.xH['Na'][~err] -
-                                     self.basic['FeH'][~err])
+        group2 = {'C', 'Ca', 'N', 'Cr', 'Ni', 'Na'}
 
         # These elements we haven't yet quantified
-        self.xH['Ba'][~err] = (self.xH['Ba'][~err] -
-                                     self.basic['FeH'][~err])
-        self.xH['Eu'][~err] = (self.xH['Eu'][~err] -
-                                     self.basic['FeH'][~err])
-        self.xH['Sr'][~err] = (self.xH['Sr'][~err] -
-                                     self.basic['FeH'][~err])
-        self.xH['Cu'][~err] = (self.xH['Cu'][~err] -
-                                     self.basic['FeH'][~err])
-        self.xH['Co'][~err] = (self.xH['Co'][~err] -
-                                     self.basic['FeH'][~err])
-        self.xH['K'][~err]  = (self.xH['K'][~err]  -
-                                     self.basic['FeH'][~err])
-        self.xH['V'][~err]  = (self.xH['V'][~err]  -
-                                     self.basic['FeH'][~err])
-        self.xH['Mn'][~err] = (self.xH['Mn'][~err] -
-                                     self.basic['FeH'][~err])
+        group3 = {'Ba', 'Eu', 'Sr', 'Cu', 'Co',
+                  'K', 'V', 'Mn'}
 
-    def plot_model(self, outpath, info, mock=False):
+        # The errors are rows, not columns
+        error = np.zeros((len(self.xH.colnames)-1))
+        for i, col in enumerate(self.xH.colnames):
+            if col=='Type':
+                continue
+            elif col=='a':
+                tmp = col
+                self.xFe[col] = (self.xH[col][~err] -
+                                 self.basic['FeH'][~err] +
+                                 al_corr)
+            elif col=='Mg':
+                tmp = col
+                self.xFe[col] = (self.xH[col][~err] -
+                                 self.basic['FeH'][~err] +
+                                 mg_corr)
+            elif col in group1:
+                tmp = col
+                self.xFe[col] = (self.xH[col][~err] -
+                                 self.basic['FeH'][~err] +
+                                 ca_corr)
+            elif col in group2:
+                tmp = col
+                self.xFe[col] = (self.xH[col][~err] -
+                                 self.basic['FeH'][~err])
+            elif col in group3:
+                tmp = col
+                self.xFe[col] = (self.xH[col][~err] -
+                                 self.basic['FeH'][~err])
+            error[i-1] = np.sqrt(self.xH[col][err]**2 -
+                               self.basic['FeH'][err]**2)
+
+        self.xFe.add_row(error)
+        types = Column(['mean', 'chi2', 'error',
+                        'cl25', 'cl16', 'cl50',
+                        'cl84', 'cl98', 'lo_prior',
+                        'hi_prior'],
+                        name='Type')
+        self.xFe.add_column(types, index=0)
+
+def plot_model(self, outpath, info, mock=False):
         velz = self.params['velz']
         in_wave = self.indata[:,0]/(1.+velz*1e3/constants.c)
         mod_wave = self.spec[:,0]/(1.+velz*1e3/constants.c)
