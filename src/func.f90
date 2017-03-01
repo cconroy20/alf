@@ -48,6 +48,12 @@ FUNCTION FUNC(nposarr,spec,funit)
      IF ( (nposarr(i).GT.prhiarr(i)).OR.(nposarr(i).LT.prloarr(i)) ) pr=0.0
   ENDDO
 
+  !explicitly include the priors here for the velz2 model
+  DO i=npar-2,npar
+     IF ( (nposarr(i).GT.prhiarr(i)).OR.(nposarr(i).LT.prloarr(i)) ) pr=0.0
+  ENDDO
+
+  
   !regularize the non-parametric IMF
   !the IMF cannot be convex (U shaped)
   IF (imf_type.EQ.4.AND.nonpimf_regularize.EQ.1) THEN

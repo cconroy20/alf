@@ -72,6 +72,8 @@ SUBROUTINE STR2ARR(switch,str,arr)
      arr(43) = str%imf4
      arr(44) = str%h3
      arr(45) = str%h4
+     arr(46) = str%velz3
+     arr(47) = str%logfrac_velz3
 
   ELSE
 
@@ -127,6 +129,8 @@ SUBROUTINE STR2ARR(switch,str,arr)
      str%imf4   = arr(43)
      str%h3     = arr(44)
      str%h4     = arr(45)
+     str%velz3  = arr(46)
+     str%logfrac_velz3 =  arr(47) 
      
   ENDIF
 

@@ -14,7 +14,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   REAL(DP), DIMENSION(nl) :: tmp,tmpr,yspec,tmp1,tmp2,tmp3,tmp4
   INTEGER  :: vt,vy,vv1,vv2,vv3,i,vr,vm,vh,vm2,vm3
   REAL(DP) :: dt,fy,dx1,dx2,dx3,lsig,ve,dr,dm,dm2,dm3,dh,dy,tmps,inorm,mass,msto
-  REAL(DP), DIMENSION(nl)   :: tmp_ltrans,tmp_ftrans_h2o,tmp_ftrans_o2
+  REAL(DP), DIMENSION(nl)   :: tmp_ltrans,tmp_ftrans_h2o,tmp_ftrans_o2,tmpz2
   REAL(DP), DIMENSION(neml) :: emnormall=1.0
   REAL(DP), DIMENSION(nimfnp) :: imfw=0.0
   REAL(DP), DIMENSION(2) :: hermite=0.0
@@ -392,6 +392,13 @@ SUBROUTINE GETMODEL(pos,spec,mw)
 
   ENDIF
 
+  !add a second velocity component to the model
+  IF (pos%logfrac_velz3.GT.-6.0) THEN
+     tmpz2 = 0.0
+     tmpz2 = LINTERP(sspgrid%lam*(1+pos%velz3/clight*1E5),spec,sspgrid%lam)
+     spec  = (1-10**pos%logfrac_velz3)*spec + 10**pos%logfrac_velz3*tmpz2
+  ENDIF
+  
   !velocity broaden the model
   IF (pos%sigma.GT.5.0.AND.fit_indices.EQ.0) THEN
 

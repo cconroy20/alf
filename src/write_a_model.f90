@@ -65,15 +65,18 @@ PROGRAM WRITE_A_MODEL
      ENDIF
 
      !file = 'nmodel_t10.0_sn0030_mc0.08_imf2.3_'//is//'.dat'
-     file = 'test_gauss_nh_fft.dat'
-     s2n  = 1000.  !S/N per A
- 
+     file = 'test_velz2_m6.0_500_s2n300.dat'
+     s2n  = 300.  !S/N per A
+
+     pos%velz3 = 500.
+     pos%logfrac_velz3=-6.0
+     
      pos%sigma  = 250.
      pos%logage = LOG10(10.0)
      pos%zh     = 0.0
      emnorm     = -5.0
 
-     pos%imf1   = 2.3
+     pos%imf1   = 1.3
      pos%imf2   = 2.3
      pos%imf3   = 0.08
 
@@ -103,10 +106,10 @@ PROGRAM WRITE_A_MODEL
      OPEN(12,FILE=TRIM(ALF_HOME)//'models/'//TRIM(file),STATUS='REPLACE')
      WRITE(12,'("# 0.400 0.470")') 
      WRITE(12,'("# 0.470 0.570")')
-     WRITE(12,'("# 0.570 0.640")')
-     WRITE(12,'("# 0.640 0.800")')
-     WRITE(12,'("# 0.800 0.892")')
-     WRITE(12,'("# 0.963 1.015")') 
+  !   WRITE(12,'("# 0.570 0.640")')
+  !   WRITE(12,'("# 0.640 0.800")')
+  !   WRITE(12,'("# 0.800 0.892")')
+  !   WRITE(12,'("# 0.963 1.015")') 
      DO i=1,nl
         IF (lam(i).GE.lmin.AND.lam(i).LE.lmax) THEN
            WRITE(12,'(F10.3,2ES12.4,2x,F4.1,2x,F7.2)') &

@@ -37,7 +37,7 @@ PROGRAM ALF
   !NB: setting this to >1 currently results in errors in the *sum outputs
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=60000
+  INTEGER, PARAMETER :: nburn=10000
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=512
   !save the chain outputs to file and the model spectra
@@ -93,7 +93,7 @@ PROGRAM ALF
 
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
-  fit_type = 0
+  fit_type = 2
 
   !fit h3 and h4 parameters
   fit_hermite = 0
@@ -565,9 +565,9 @@ PROGRAM ALF
               pos_emcee_in(2,j) = sigma_indx
            ENDIF
            IF (fit_type.EQ.1) THEN
-              pos_emcee_in(nparsimp+1:,j) = 0.0
+              pos_emcee_in(nparsimp+1:npar-2,j) = 0.0
            ELSE IF (fit_type.EQ.2) THEN
-              pos_emcee_in(npowell+1:,j) = 0.0 
+              pos_emcee_in(npowell+1:npar-2,j) = 0.0 
            ENDIF
            
            IF (print_mcmc.EQ.1) THEN

@@ -44,7 +44,14 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker,s07=s07,b14=b14,m11=m11
   sum    = strpos(file,'.sum')
   simple = strpos(file,'simple')
 
-  IF n_elements(ts) EQ 52 THEN BEGIN
+  IF n_elements(ts) EQ 54 THEN BEGIN
+     readcol,dir+file,chi2,velz,sigma,logage,zh,feh,afe,cfe,$
+             nfe,nafe,mgfe,sife,kfe,cafe,tife,vfe,crfe,mnfe,cofe,nife,$
+             cufe,srfe,bafe,eufe,teff,imf1,imf2,logfy,sigma2,$
+             velz2,logm7g,hotteff,loghot,fy_logage,logtrans,d1,$
+             d2,d3,d4,d5,jitter,imf3,logsky,imf4,h3,h4,velz3,$
+             logfrac_velz3,m2lr,m2li,m2lk,m2lmwr,m2lmwi,m2lmwk,/sil
+  ENDIF ELSE IF n_elements(ts) EQ 52 THEN BEGIN
      readcol,dir+file,chi2,velz,sigma,logage,zh,feh,afe,cfe,$
              nfe,nafe,mgfe,sife,kfe,cafe,tife,vfe,crfe,mnfe,cofe,nife,$
              cufe,srfe,bafe,eufe,teff,imf1,imf2,logfy,sigma2,$
@@ -82,7 +89,7 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker,s07=s07,b14=b14,m11=m11
          lage:99.0,vmag:99.,fuv:99.,nuv:99.,logemline_h:0.0,logemline_oiii:0.0,$
          logemline_sii:0.0,logemline_ni:0.0,logemline_nii:0.0,delafe:0.0,$
          delmgfe:0.0,delcafe:0.0,jitter:0.0,logsky:0.0,logm:0.0,imf:fltarr(5),$
-         h3:0.0,h4:0.0}
+         h3:0.0,h4:0.0,velz3:0.0,logfrac_velz3:0.0}
 
   IF errp EQ -1 THEN BEGIN
      tfeh = feh
@@ -208,6 +215,11 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker,s07=s07,b14=b14,m11=m11
   res.logemline_ni   = res.emline[3]
   res.logemline_nii  = res.emline[4]
 
+  IF n_elements(ts) EQ 54 THEN BEGIN
+     res.velz3 = velz3
+     res.logfrac_velz3 = logfrac_velz3
+  ENDIF
+  
   IF errp EQ -1 THEN BEGIN
      res[sind].lsig = alog10(res[sind].sigma)
      ;this is not quite right below!  I think we need the actual
