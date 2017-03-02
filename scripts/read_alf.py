@@ -123,11 +123,11 @@ class Alf(object):
         Check the values of the nuisance parameters
         and raise a warning if they are too large.
         """
-        #warning = ('\n For {0} {1}={2}, which is '
-        #           'larger than acceptable. \n')
-        #if self.params['loghot'] > -1.0:
-        #    warnings.warn(warning.format(self.path, 'loghot',
-        #                  self.params['loghot']))
+        warning = ('\n For {0} {1}={2}, which is '
+                   'larger than acceptable. \n')
+        if self.results['loghot'][0] > -1.0:
+            warnings.warn(warning.format(self.path, 'loghot',
+                          self.results['loghot'][0]))
 
         ## Change to read in from *.bestp
         #self.nwalks = 1024
@@ -184,7 +184,6 @@ class Alf(object):
                                         fill_value='extrapolate')
 
         # Have to treat the error col differently
-        # and don't want to include the priors
         err = (self.xH['Type'] == 'error')
 
         al_corr = del_alfe(self.basic['zH'][~err])
