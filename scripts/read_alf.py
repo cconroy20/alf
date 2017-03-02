@@ -74,13 +74,14 @@ class Alf(object):
                              'logage', 'zH',
                              'FeH']
 
-        # Have to treat the error col differently
-        #...but I don't want to deal with that now
-        err = (self.basic['Type'] == 'error')
-
         total_met = Column(self.basic['FeH']+self.basic['zH'],
-                        name='total_met')
+                           name='total_met')
         self.basic.add_column(total_met)
+        # Have to treat the error col differently
+        err = (self.basic['Type'] == 'error')
+        self.basic['total_met'][err] = (
+                np.sqrt(self.basic['FeH'][err]**2 +
+                self.basic['zH'][err]**2))
 
         mass_age = Column(
                     ((1-10**results['logfy']) *
@@ -89,7 +90,15 @@ class Alf(object):
                      10**results['logfy'])),
                      name='mass_age')
         self.basic.add_column(mass_age)
+        # Have to treat the error col differently
         self.basic['mass_age'].format = '.6f'
+        be = (self.basic['Type'] == 'error')
+        re = (results['Type'] == 'error')
+        self.basic['mass_age'][be] = (
+                np.sqrt(results[re]['logfy']**2 +
+                        self.basic['logage'][be]**2 +
+                        results['fy_logage'][re]**2 +
+                        results['logfy'][re]**2))
 
         self.xH = results['Type','a', 'C', 'N', 'Na', 'Mg',
                           'Si', 'K', 'Ca', 'Ti','V', 'Cr',
@@ -116,13 +125,7 @@ class Alf(object):
         """
         #warning = ('\n For {0} {1}={2}, which is '
         #           'larger than acceptable. \n')
-        #if self.params['logm7g'] > -1.0:
-        #    warnings.warn(warning.format(self.path, 'logm7g',
-        #                  self.params['logm7g']))
-        #elif self.params['Teff'] > -1.0:
-        #    warnings.warn(warning.format(self.path, 'Teff',
-        #                  self.params['Teff']))
-        #elif self.params['loghot'] > -1.0:
+        #if self.params['loghot'] > -1.0:
         #    warnings.warn(warning.format(self.path, 'loghot',
         #                  self.params['loghot']))
 
