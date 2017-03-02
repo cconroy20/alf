@@ -226,7 +226,7 @@ class Alf(object):
                                  self.basic['FeH'][~err])
 
             self.xFe[col].format = '.6f'
-            error[i-1] = np.sqrt(self.xH[col][err]**2 -
+            error[i-1] = np.sqrt(self.xH[col][err]**2 +
                                self.basic['FeH'][err]**2)
 
         self.xFe.add_row(error)
