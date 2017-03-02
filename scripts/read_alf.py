@@ -1,4 +1,3 @@
-
 import sys
 import warnings
 import numpy as np
@@ -166,15 +165,18 @@ class Alf(object):
             lib_cafe = [0.32, 0.3, 0.28, 0.26, 0.26,
                         0.17, 0.12, 0.06, 0.0, 0.0]
 
-        # In ALF the oxygen abundance is used a proxy for alpha abundance
-        del_alfe = interpolate.UnivariateSpline(lib_feh, lib_ofe, s=1, k=1)
-        del_mgfe = interpolate.UnivariateSpline(lib_feh, lib_mgfe, s=1, k=1)
-        del_cafe = interpolate.UnivariateSpline(lib_feh, lib_cafe, s=1, k=1)
+        # In ALF the oxygen abundance is used
+        # a proxy for alpha abundance
+        del_alfe = interpolate.interp1d(lib_feh, lib_ofe,
+                                        kind='linear')
+        del_mgfe = interpolate.interp1d(lib_feh, lib_mgfe,
+                                        kind='linear')
+        del_cafe = interpolate.interp1d(lib_feh, lib_cafe,
+                                        kind='linear')
 
         # Have to treat the error col differently
         err = (self.xH['Type'] == 'error')
 
-        print self.basic['zH'][0] +  self.basic['FeH'][0]
         al_corr = del_alfe(self.basic['zH'][~err])
         mg_corr = del_mgfe(self.basic['zH'][~err])
         ca_corr = del_cafe(self.basic['zH'][~err])
