@@ -1,8 +1,3 @@
-"""
-Routines to read the output files of the
-Absorption Line Fitter (ALF) code.
-"""
-
 import sys
 import warnings
 import numpy as np
@@ -10,6 +5,7 @@ from scipy import constants, interpolate
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from astropy.io import ascii
+from astropy.table import Table, Column
 
 class Alf(object):
     def __init__(self, path, legend):
@@ -29,31 +25,31 @@ class Alf(object):
             self.spec = None
         self.mcmc   = None
 
-        self.labels = ['chi2','velz','sigma','logage','zH',
-                  'FeH', 'aH', 'CH', 'NH', 'NaH', 'MgH',
-                  'SiH', 'KH', 'CaH', 'TiH','VH', 'CrH',
-                  'MnH', 'CoH', 'NiH', 'CuH', 'SrH','BaH',
-                  'EuH', 'Teff', 'IMF1', 'IMF2', 'logfy',
-                  'sigma2', 'velz2', 'logm7g', 'hotteff',
-                  'loghot','fy_logage','logtrans', 'logemline_H',
-                  'logemline_Oiii','logemline_Sii', 'logemline_Ni',
-                  'logemline_Nii','jitter','IMF3', 'logsky', 'IMF4',
+        results = ascii.read('{0}.sum'.format(self.path))
+        if len(results.colnames) == 52:
+           self.labels = ['chi2','velz','sigma','logage','zH',
+                      'FeH', 'a', 'C', 'N', 'Na', 'Mg',
+                      'Si', 'K', 'Ca', 'Ti','V', 'Cr',
+                      'Mn', 'Co', 'Ni', 'Cu', 'Sr','Ba',
+                      'Eu', 'Teff', 'IMF1', 'IMF2', 'logfy',
+                      'sigma2', 'velz2', 'logm7g', 'hotteff',
+                      'loghot','fy_logage','logtrans', 'logemline_H',
+                      'logemline_Oiii','logemline_Sii', 'logemline_Ni',
+                      'logemline_Nii','jitter','IMF3', 'logsky', 'IMF4',
+                      'h3', 'h4', 'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k']
+        elif len(results.colnames) == 50:
+            self.labels = ['chi2','velz','sigma','logage','zH',
+                      'FeH', 'a', 'C', 'N', 'Na', 'Mg',
+                      'Si', 'K', 'Ca', 'Ti','V', 'Cr',
+                      'Mn', 'Co', 'Ni', 'Cu', 'Sr','Ba',
+                      'Eu', 'Teff', 'IMF1', 'IMF2', 'logfy',
+                      'sigma2', 'velz2', 'logm7g', 'hotteff',
+                      'loghot','fy_logage','logtrans', 'logemline_H',
+                      'logemline_Oiii','logemline_Sii', 'logemline_Ni',
+                      'logemline_Nii','jitter','IMF3', 'logsky', 'IMF4',
+                      'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k']
 
-                  #'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k']
-                  'h3', 'h4', 'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k']
-
-
-
-        #results = ascii.read('{0}.sum'.format(self.path))
-        #print len(results.colnames), len(self.labels)
-        #sys.exit()
-        results = ascii.read('{0}.sum'.format(self.path), names=self.labels)
-
-        if len(self.labels) != len(results.colnames):
-            error = ('Label array and parameter array '
-                     'have different lengths.')
-            raise ValueError(error)
-
+        results = Table(results, names=self.labels)
         """
         0:   Mean of the posterior
         1:   Parameter at chi^2 minimum
@@ -61,16 +57,58 @@ class Alf(object):
         3-7: 2.5%, 16%, 50%, 84%, 97.5% CLs
         8-9: lower and upper priors
         """
-        self.params = dict(zip(self.labels, results[0]))
-        self.params_chi2 = dict(zip(self.labels, results[1]))
-        self.errors = dict(zip(self.labels, results[2]))
-        self.cl25 = dict(zip(self.labels, results[3]))
-        self.cl16 = dict(zip(self.labels, results[4]))
-        self.cl50 = dict(zip(self.labels, results[5]))
-        self.cl84 = dict(zip(self.labels, results[6]))
-        self.cl98 = dict(zip(self.labels, results[7]))
-        self.lo_prior = dict(zip(self.labels, results[8]))
-        self.lo_prior = dict(zip(self.labels, results[9]))
+
+        types = Column(['mean', 'chi2', 'error',
+                        'cl25', 'cl16', 'cl50',
+                        'cl84', 'cl98', 'lo_prior',
+                        'hi_prior'],
+                        name='Type')
+        results.add_column(types, index=0)
+
+        """
+        Split the big table up
+        """
+
+        self.basic = results['Type', 'chi2',
+                             'velz', 'sigma',
+                             'logage', 'zH',
+                             'FeH']
+
+        # Have to treat the error col differently
+        #...but I don't want to deal with that now
+        err = (self.basic['Type'] == 'error')
+
+        total_met = Column(self.basic['FeH']+self.basic['zH'],
+                        name='total_met')
+        self.basic.add_column(total_met)
+
+        mass_age = Column(
+                    ((1-10**results['logfy']) *
+                    (10**self.basic['logage']) +
+                    (10**results['fy_logage'] *
+                     10**results['logfy'])),
+                     name='mass_age')
+        self.basic.add_column(mass_age)
+        self.basic['mass_age'].format = '.6f'
+
+        self.xH = results['Type','a', 'C', 'N', 'Na', 'Mg',
+                          'Si', 'K', 'Ca', 'Ti','V', 'Cr',
+                          'Mn', 'Co', 'Ni', 'Cu', 'Sr','Ba',
+                          'Eu']
+
+        # Creating an empty table that
+        # is filled in abundance_correct()
+        self.xFe = Table()
+
+        self.results = results['Type', 'Teff', 'IMF1',
+                               'IMF2', 'logfy', 'sigma2',
+                               'velz2', 'logm7g', 'hotteff',
+                               'loghot','fy_logage', 'logtrans',
+                               'logemline_H', 'logemline_Oiii',
+                               'logemline_Sii', 'logemline_Ni',
+                               'logemline_Nii','jitter','IMF3',
+                               'logsky', 'IMF4', 'ML_r','ML_i',
+                               'ML_k', 'MW_r', 'MW_i', 'MW_k']
 
         """
         Check the values of the nuisance parameters
@@ -92,85 +130,110 @@ class Alf(object):
         #self.nwalks = 1024
         #self.nchain = 100
 
-    def abundance_correct(self):
+    def abundance_correct(self, s07=False, b14=False, m11=True):
         """
-        Need to correct the raw abundance values given
+        Convert abundances from X/H to X/Fe.
+
+        Correct the raw abundance values given
         by ALF.
-
-        Use the metallicity-dependent correction factors
-        from the literature.
-
-        To-Do:
-            Only correcting the mean of the posterior values for now.
-            Correct other parameters later.
         """
 
-        # Schiavon 2008, Table 6
-        lib_feh = [-1.6,-1.4,-1.2,-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2]
-        lib_ofe = [0.6, 0.5, 0.5, 0.4, 0.3, 0.2, 0.2, 0.1, 0.0, 0.0]
-        # Bensby+ 2014
-        lib_mgfe = [0.4,0.4,0.4,0.38,0.37,0.27,0.21,0.12,0.05,0.0]
-        lib_cafe = [0.32, 0.3, 0.28, 0.26, 0.26, 0.17, 0.12, 0.06, 0.0, 0.0]
+        # Correction factros from Schiavon 2007, Table 6
+        # NOTE: Forcing factors to be 0 for [Fe/H]=0.0,0.2
+        lib_feh = [-1.6, -1.4, -1.2, -1.0, -0.8,
+                   -0.6, -0.4, -0.2, 0.0, 0.2]
+        lib_ofe = [0.6, 0.5, 0.5, 0.4, 0.3, 0.2,
+                   0.2, 0.1, 0.0, 0.0]
 
-        # In ALF the oxygen abundance is used a proxy for alpha abundance
-        del_alfe = interpolate.UnivariateSpline(lib_feh, lib_ofe, s=1, k=1)
-        del_mgfe = interpolate.UnivariateSpline(lib_feh, lib_mgfe, s=1, k=1)
-        del_cafe = interpolate.UnivariateSpline(lib_feh, lib_cafe, s=1, k=1)
+        if s07:
+            #Schiavon 2007
+            lib_mgfe = [0.4, 0.4, 0.4, 0.4, 0.29,
+                        0.20, 0.13, 0.08, 0.05, 0.04]
+            lib_cafe = [0.32, 0.3, 0.28, 0.26, 0.20,
+                        0.12, 0.06, 0.02, 0.0, 0.0]
+        elif b14:
+            # Fitted from Bensby+ 2014
+            lib_mgfe = [0.4 , 0.4, 0.4, 0.38, 0.37,
+                        0.27, 0.21, 0.12, 0.05, 0.0]
+            lib_cafe = [0.32, 0.3, 0.28, 0.26, 0.26,
+                        0.17, 0.12, 0.06, 0.0, 0.0]
+        elif m11 or (b14 is False and s07 is False):
+            # Fitted to Milone+ 2011 HR MILES stars
+            lib_mgfe = [0.4, 0.4, 0.4, 0.4, 0.34, 0.22,
+                        0.14, 0.11, 0.05, 0.04]
+            # from B14
+            lib_cafe = [0.32, 0.3, 0.28, 0.26, 0.26,
+                        0.17, 0.12, 0.06, 0.0, 0.0]
 
-        #
-        alpha_correction = del_alfe(self.params['zH'])
-        self.params['aH'] = self.params['aH'] + alpha_correction
+        # In ALF the oxygen abundance is used
+        # a proxy for alpha abundance
+        del_alfe = interpolate.interp1d(lib_feh, lib_ofe,
+                                        kind='linear',
+                                        bounds_error=False,
+                                        fill_value='extrapolate')
+        del_mgfe = interpolate.interp1d(lib_feh, lib_mgfe,
+                                        kind='linear',
+                                        bounds_error=False,
+                                        fill_value='extrapolate')
+        del_cafe = interpolate.interp1d(lib_feh, lib_cafe,
+                                        kind='linear',
+                                        bounds_error=False,
+                                        fill_value='extrapolate')
 
-        mg_correction = del_alfe(self.params['zH'])
-        self.params['MgH'] = self.params['MgH'] + mg_correction
+        # Have to treat the error col differently
+        # and don't want to include the priors
+        err = (self.xH['Type'] == 'error')
 
-        ca_correction = del_alfe(self.params['zH'])
-        self.params['CaH'] = self.params['CaH'] + ca_correction
-        self.params['SiH'] = self.params['SiH'] + ca_correction
-        self.params['TiH'] = self.params['TiH'] + ca_correction
+        al_corr = del_alfe(self.basic['zH'][~err])
+        mg_corr = del_mgfe(self.basic['zH'][~err])
+        ca_corr = del_cafe(self.basic['zH'][~err])
 
-        #
-        alpha_correction = del_alfe(self.params_chi2['zH'])
-        self.params_chi2['aH'] = self.params_chi2['aH'] + alpha_correction
+        # Assuming Ca~Ti~Si
+        group1 = {'Ca', 'Ti', 'Si'}
 
-        mg_correction = del_alfe(self.params_chi2['zH'])
-        self.params_chi2['MgH'] = self.params_chi2['MgH'] + mg_correction
+        # These elements seem to show no net enhancemnt
+        # at low metallicity
+        group2 = {'C', 'Ca', 'N', 'Cr', 'Ni', 'Na'}
 
-        ca_correction = del_alfe(self.params_chi2['zH'])
-        self.params_chi2['CaH'] = self.params_chi2['CaH'] + ca_correction
-        self.params_chi2['SiH'] = self.params_chi2['SiH'] + ca_correction
-        self.params_chi2['TiH'] = self.params_chi2['TiH'] + ca_correction
+        # These elements we haven't yet quantified
+        group3 = {'Ba', 'Eu', 'Sr', 'Cu', 'Co',
+                  'K', 'V', 'Mn'}
 
-    def convert_abundances(self, chi2=False):
-        """
-        Abundances from ALF are over H, sometimes helpful to be
-        over Fe.
+        # The errors are rows, not columns
+        error = np.zeros((len(self.xH.colnames)-1))
+        for i, col in enumerate(self.xH.colnames):
+            if col=='Type':
+                continue
+            elif col=='a':
+                self.xFe[col] = (self.xH[col][~err] -
+                                 self.basic['FeH'][~err] +
+                                 al_corr)
+            elif col=='Mg':
+                self.xFe[col] = (self.xH[col][~err] -
+                                 self.basic['FeH'][~err] +
+                                 mg_corr)
+            elif col in group1:
+                self.xFe[col] = (self.xH[col][~err] -
+                                 self.basic['FeH'][~err] +
+                                 ca_corr)
+            elif col in group2:
+                self.xFe[col] = (self.xH[col][~err] -
+                                 self.basic['FeH'][~err])
+            elif col in group3:
+                self.xFe[col] = (self.xH[col][~err] -
+                                 self.basic['FeH'][~err])
 
-        Need to always run abundance_correct first.
-        """
+            self.xFe[col].format = '.6f'
+            error[i-1] = np.sqrt(self.xH[col][err]**2 -
+                               self.basic['FeH'][err]**2)
 
-        labels = ['aH', 'CH', 'NH', 'NaH', 'MgH',
-        'SiH', 'KH', 'CaH', 'TiH','VH', 'CrH', 'MnH',
-        'CoH', 'NiH', 'CuH', 'SrH','BaH', 'EuH']
-
-        abundances = np.zeros((len(labels)))
-        if chi2:
-            for i, label in enumerate(labels):
-                abundances[i] = self.params_chi2[label] - self.params_chi2['FeH']
-        else:
-            for i, label in enumerate(labels):
-                abundances[i] = self.params[label] - self.params['FeH']
-
-        errors = np.zeros((len(labels)))
-        for i, label in enumerate(labels):
-            errors[i] = np.sqrt(self.errors[label]**2 + self.errors['FeH']**2)
-
-        new_labels = ['a', 'C', 'N', 'Na', 'Mg',
-        'Si', 'K', 'Ca', 'Ti','V', 'Cr', 'Mn',
-        'Co', 'Ni', 'Cu', 'Sr','Ba', 'Eu']
-
-        self.params_fe = dict(zip(new_labels, abundances))
-        self.errors_fe = dict(zip(new_labels, errors))
+        self.xFe.add_row(error)
+        types = Column(['mean', 'chi2',
+                        'cl25', 'cl16', 'cl50',
+                        'cl84', 'cl98', 'lo_prior',
+                        'hi_prior', 'error'],
+                        name='Type')
+        self.xFe.add_column(types, index=0)
 
     def plot_model(self, outpath, info, mock=False):
         velz = self.params['velz']
@@ -271,7 +334,6 @@ class Alf(object):
 
         plt.tight_layout()
         plt.savefig('{0}/{1}_corner.pdf'.format(outpath, self.legend))
-
 
     def plot_traces(self, outpath, info, mock=False):
         if not mock:
