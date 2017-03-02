@@ -168,13 +168,20 @@ class Alf(object):
         # In ALF the oxygen abundance is used
         # a proxy for alpha abundance
         del_alfe = interpolate.interp1d(lib_feh, lib_ofe,
-                                        kind='linear')
+                                        kind='linear',
+                                        bounds_error=False,
+                                        fill_value='extrapolate')
         del_mgfe = interpolate.interp1d(lib_feh, lib_mgfe,
-                                        kind='linear')
+                                        kind='linear',
+                                        bounds_error=False,
+                                        fill_value='extrapolate')
         del_cafe = interpolate.interp1d(lib_feh, lib_cafe,
-                                        kind='linear')
+                                        kind='linear',
+                                        bounds_error=False,
+                                        fill_value='extrapolate')
 
         # Have to treat the error col differently
+        # and don't want to include the priors
         err = (self.xH['Type'] == 'error')
 
         al_corr = del_alfe(self.basic['zH'][~err])
@@ -198,17 +205,14 @@ class Alf(object):
             if col=='Type':
                 continue
             elif col=='a':
-                print al_corr[0]
                 self.xFe[col] = (self.xH[col][~err] -
                                  self.basic['FeH'][~err] +
                                  al_corr)
             elif col=='Mg':
-                print mg_corr[i]
                 self.xFe[col] = (self.xH[col][~err] -
                                  self.basic['FeH'][~err] +
                                  mg_corr)
             elif col in group1:
-                print ca_corr[0]
                 self.xFe[col] = (self.xH[col][~err] -
                                  self.basic['FeH'][~err] +
                                  ca_corr)
