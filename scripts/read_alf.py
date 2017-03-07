@@ -246,7 +246,8 @@ class Alf(object):
         self.xFe.add_column(types, index=0)
 
     def plot_model(self, outpath, info, mock=False):
-        velz = self.params['velz']
+        val = (self.basic['Type'] == 'mean')
+        velz = self.basic['velz'][val]
         in_wave = self.indata[:,0]/(1.+velz*1e3/constants.c)
         mod_wave = self.spec[:,0]/(1.+velz*1e3/constants.c)
 
