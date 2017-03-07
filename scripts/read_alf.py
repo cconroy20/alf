@@ -5,7 +5,7 @@ from scipy import constants, interpolate
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from astropy.io import ascii
-from astropy.table import Table, Column
+from astropy.table import Table, Column, hstack
 
 class Alf(object):
     def __init__(self, path, legend):
@@ -370,12 +370,14 @@ class Alf(object):
         self.nchain = 100
         self.nwalks = 510
 
-        num = len(self.params)
+        num = len(self.labels)
         data = np.zeros((self.nchain, self.nwalks, num))
         for i in range(0, self.nchain):
             for j in range(0,self.nwalks):
                 data[i,j] = self.mcmc[i*510+j]
 
+        full = hstack((self.basic, self.xH, self.results))
+        val = (full['Type_1'] == 'chi2')
         with PdfPages(outname) as pdf:
             for i, (label, trace) in enumerate(zip(self.labels, data.T)):
                 fig = plt.figure(figsize=(8,6), facecolor='white')
@@ -383,7 +385,7 @@ class Alf(object):
                 #    continue
                 plt.plot(np.arange(0, self.nchain),
                          data[:,:,i], color='k', alpha=0.1)
-                plt.axhline(self.params[label], color='#3399ff')
+                plt.axhline(full[label][val], color='#3399ff')
                 plt.xlabel('Step')
                 plt.ylabel(label)
                 pdf.savefig()
@@ -403,7 +405,6 @@ class Alf(object):
         plt.tick_params(axis='both', which='major', labelsize=15)
         plt.tick_params(axis='both', which='minor', labelsize=10)
 
-        from astropy.table import hstack
         full = hstack((self.basic, self.xH, self.results))
         val = (full['Type_1'] == 'chi2')
         for i, label in enumerate(self.labels):
