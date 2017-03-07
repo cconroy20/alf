@@ -26,6 +26,7 @@ class Alf(object):
         self.mcmc   = None
 
         results = ascii.read('{0}.sum'.format(self.path))
+        old = False
         if len(results.colnames) == 52:
            self.labels = ['chi2','velz','sigma','logage','zH',
                       'FeH', 'a', 'C', 'N', 'Na', 'Mg',
@@ -48,8 +49,14 @@ class Alf(object):
                       'logemline_Oiii','logemline_Sii', 'logemline_Ni',
                       'logemline_Nii','jitter','IMF3', 'logsky', 'IMF4',
                       'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k']
+            old = True
 
         results = Table(results, names=self.labels)
+        if old:
+            h3 = Column(np.zeros(len(results['chi2'])), name='h3')
+            h4 = Column(np.zeros(len(results['chi2'])), name='h4')
+            results.add_column(h3, index=43)
+            results.add_column(h4, index=44)
         """
         0:   Mean of the posterior
         1:   Parameter at chi^2 minimum
@@ -116,8 +123,9 @@ class Alf(object):
                                'logemline_H', 'logemline_Oiii',
                                'logemline_Sii', 'logemline_Ni',
                                'logemline_Nii','jitter','IMF3',
-                               'logsky', 'IMF4', 'ML_r','ML_i',
-                               'ML_k', 'MW_r', 'MW_i', 'MW_k']
+                               'logsky', 'IMF4', 'h3', 'h4',
+                               'ML_r','ML_i', 'ML_k', 'MW_r',
+                               'MW_i', 'MW_k']
 
         """
         Check the values of the nuisance parameters
@@ -368,8 +376,6 @@ class Alf(object):
             for j in range(0,self.nwalks):
                 data[i,j] = self.mcmc[i*510+j]
 
-
-
         with PdfPages(outname) as pdf:
             for i, (label, trace) in enumerate(zip(self.labels, data.T)):
                 fig = plt.figure(figsize=(8,6), facecolor='white')
@@ -397,16 +403,19 @@ class Alf(object):
         plt.tick_params(axis='both', which='major', labelsize=15)
         plt.tick_params(axis='both', which='minor', labelsize=10)
 
+        from astropy.table import hstack
+        full = hstack((self.basic, self.xH, self.results))
+        val = (full['Type_1'] == 'chi2')
         for i, label in enumerate(self.labels):
             if (label=='ML_k' or label == 'MW_k' or
-                np.isnan(self.params[label])==True):
+                np.isnan(full[label][val])==True):
                 continue
             axarr[i-1][0].set_ylabel(label, fontsize=16, labelpad=30)
 
             axarr[i-1][0].hist(self.mcmc[:,i], bins=30,
                               histtype='step', color='k',
                               lw=2, alpha=0.9)
-            axarr[i-1][0].axvline(self.params[label], color='#E32017',
+            axarr[i-1][0].axvline(full[label][val], color='#E32017',
                                    alpha=0.85)
             #axarr[i-1][0].autoscale(tight=True)
 
