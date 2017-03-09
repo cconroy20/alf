@@ -23,12 +23,17 @@ class Alf(object):
             warning = ('Do not have the *.bestspec file')
             warnings.warn(warning)
             self.spec = None
-        self.mcmc   = None
+        try:
+            self.mcmc = np.loadtxt('{0}.mcmc'.format(self.path))
+        except:
+            warning = ('Do not have the *.mcmc file')
+            warnings.warn(warning)
+            self.mcmc = None
 
         results = ascii.read('{0}.sum'.format(self.path))
         old = False
         if len(results.colnames) == 52:
-           self.labels = ['chi2','velz','sigma','logage','zH',
+           self.labels = np.array(['chi2','velz','sigma','logage','zH',
                       'FeH', 'a', 'C', 'N', 'Na', 'Mg',
                       'Si', 'K', 'Ca', 'Ti','V', 'Cr',
                       'Mn', 'Co', 'Ni', 'Cu', 'Sr','Ba',
@@ -37,9 +42,9 @@ class Alf(object):
                       'loghot','fy_logage','logtrans', 'logemline_H',
                       'logemline_Oiii','logemline_Sii', 'logemline_Ni',
                       'logemline_Nii','jitter','IMF3', 'logsky', 'IMF4',
-                      'h3', 'h4', 'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k']
+                      'h3', 'h4', 'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k'])
         elif len(results.colnames) == 50:
-            self.labels = ['chi2','velz','sigma','logage','zH',
+            self.labels = np.array(['chi2','velz','sigma','logage','zH',
                       'FeH', 'a', 'C', 'N', 'Na', 'Mg',
                       'Si', 'K', 'Ca', 'Ti','V', 'Cr',
                       'Mn', 'Co', 'Ni', 'Cu', 'Sr','Ba',
@@ -48,7 +53,7 @@ class Alf(object):
                       'loghot','fy_logage','logtrans', 'logemline_H',
                       'logemline_Oiii','logemline_Sii', 'logemline_Ni',
                       'logemline_Nii','jitter','IMF3', 'logsky', 'IMF4',
-                      'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k']
+                      'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k'])
             old = True
 
         results = Table(results, names=self.labels)
@@ -131,11 +136,11 @@ class Alf(object):
         Check the values of the nuisance parameters
         and raise a warning if they are too large.
         """
-        warning = ('\n For {0} {1}={2}, which is '
-                   'larger than acceptable. \n')
-        if self.results['loghot'][0] > -1.0:
-            warnings.warn(warning.format(self.path, 'loghot',
-                          self.results['loghot'][0]))
+        #warning = ('\n For {0} {1}={2}, which is '
+        #           'larger than acceptable. \n')
+        #if self.results['loghot'][0] > -1.0:
+        #    warnings.warn(warning.format(self.path, 'loghot',
+        #                  self.results['loghot'][0]))
 
         ## Change to read in from *.bestp
         #self.nwalks = 1024
@@ -235,7 +240,7 @@ class Alf(object):
 
             self.xFe[col].format = '.6f'
             error[i-1] = np.sqrt(self.xH[col][err]**2 +
-                               self.basic['FeH'][err]**2)
+                               self.basic['zH'][err]**2)
 
         self.xFe.add_row(error)
         types = Column(['mean', 'chi2',
@@ -436,6 +441,48 @@ class Alf(object):
         else:
             fname = '{0}/{1}_posterior.pdf'.format(path, info['in_sigma'])
         plt.savefig(fname)
+
+    def pdf_stats(self, value_distribution, interp=False):
+        """
+        Compute the 1-sigma confidence values for an asymmetrical PDF.
+        """
+        pdf, bin_edges = np.histogram(value_distribution, bins=100, density=True)
+        x_axis = bin_edges[:-1]+(bin_edges[1] - bin_edges[0])/2.
+
+        if interp == True:
+            x_interp = np.arange(np.min(x_axis), np.max(x_axis), 1.)
+            pdf_interp = interp1d(x_axis, pdf, kind='cubic')
+            x_axis = x_interp
+            pdf = pdf_interp(x_axis)
+
+        cum_distro = np.cumsum(pdf)*100
+        cum_distro = cum_distro/np.max(cum_distro)*100.
+        peak_i = np.where(pdf==np.max(pdf))
+        peak = x_axis[peak_i]
+        if len(peak) > 1:
+            peak = np.array([np.average(peak)])
+
+        max_cum_distro = cum_distro[peak_i]
+
+        lower_i = np.where(x_axis<=peak)
+        x_low = x_axis[lower_i]
+
+        upper_i = np.where(x_axis>peak)
+        x_up = x_axis[upper_i]
+
+        low_cum_distro = np.cumsum(pdf[lower_i])
+        low_cum_distro = low_cum_distro/np.max(low_cum_distro)*100.
+        lower = x_low[np.where(np.abs(low_cum_distro-32.)==np.min(np.abs(low_cum_distro-32.)))]
+        if len(lower) > 1:
+            lower = np.array([np.average(lower)])
+
+        up_cum_distro = np.cumsum(pdf[upper_i])
+        up_cum_distro = up_cum_distro/np.max(up_cum_distro)*100
+        upper = x_up[np.where(np.abs(up_cum_distro-68.)==np.min(np.abs(up_cum_distro-68.)))]
+        if len(upper) > 1:
+            upper = np.array([np.average(upper)])
+
+        return {'peak': peak, 'upper':  upper, 'lower': lower}
 
     def write_params(self):
         fname = '{0}_parameter_values.txt'.format(self.path)
