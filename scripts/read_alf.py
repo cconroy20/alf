@@ -454,14 +454,14 @@ class Alf(object):
         plt.savefig(fname)
 
     def get_cls(self, distribution):
-        distribution = np.sort(distribution)
+        distribution = np.sort(np.squeeze(distribution))
 
         num = self.nwalkers*self.nchain/self.nsample
         lower = distribution[int(0.160*num)]
         median = distribution[int(0.500*num)]
         upper = distribution[int(0.840*num)]
 
-        return {'peak': median, 'upper':  upper, 'lower': lower}
+        return {'cl50': median, 'cl84':  upper, 'cl16': lower}
 
 
     def pdf_stats(self, value_distribution, interp=False):
