@@ -5,7 +5,7 @@ from scipy import constants, interpolate
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from astropy.io import ascii
-from astropy.table import Table, Column
+from astropy.table import Table, Column, hstack
 
 class Alf(object):
     def __init__(self, path, legend):
@@ -23,11 +23,28 @@ class Alf(object):
             warning = ('Do not have the *.bestspec file')
             warnings.warn(warning)
             self.spec = None
-        self.mcmc   = None
+        try:
+            self.mcmc = np.loadtxt('{0}.mcmc'.format(self.path))
+        except:
+            warning = ('Do not have the *.mcmc file')
+            warnings.warn(warning)
+            self.mcmc = None
 
         results = ascii.read('{0}.sum'.format(self.path))
+
+        with open('{0}.sum'.format(self.path)) as f:
+                for line in f:
+                    if line[0] == '#':
+                        if 'Nwalkers' in line:
+                            self.nwalkers = float(line.split('=')[1].strip())
+                        elif 'Nchain' in line:
+                            self.nchain = float(line.split('=')[1].strip())
+                        elif 'Nsample' in line:
+                            self.nsample = float(line.split('=')[1].strip())
+
+        old = False
         if len(results.colnames) == 52:
-           self.labels = ['chi2','velz','sigma','logage','zH',
+           self.labels = np.array(['chi2','velz','sigma','logage','zH',
                       'FeH', 'a', 'C', 'N', 'Na', 'Mg',
                       'Si', 'K', 'Ca', 'Ti','V', 'Cr',
                       'Mn', 'Co', 'Ni', 'Cu', 'Sr','Ba',
@@ -36,9 +53,9 @@ class Alf(object):
                       'loghot','fy_logage','logtrans', 'logemline_H',
                       'logemline_Oiii','logemline_Sii', 'logemline_Ni',
                       'logemline_Nii','jitter','IMF3', 'logsky', 'IMF4',
-                      'h3', 'h4', 'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k']
+                      'h3', 'h4', 'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k'])
         elif len(results.colnames) == 50:
-            self.labels = ['chi2','velz','sigma','logage','zH',
+            self.labels = np.array(['chi2','velz','sigma','logage','zH',
                       'FeH', 'a', 'C', 'N', 'Na', 'Mg',
                       'Si', 'K', 'Ca', 'Ti','V', 'Cr',
                       'Mn', 'Co', 'Ni', 'Cu', 'Sr','Ba',
@@ -47,9 +64,15 @@ class Alf(object):
                       'loghot','fy_logage','logtrans', 'logemline_H',
                       'logemline_Oiii','logemline_Sii', 'logemline_Ni',
                       'logemline_Nii','jitter','IMF3', 'logsky', 'IMF4',
-                      'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k']
+                      'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k'])
+            old = True
 
         results = Table(results, names=self.labels)
+        if old:
+            h3 = Column(np.zeros(len(results['chi2'])), name='h3')
+            h4 = Column(np.zeros(len(results['chi2'])), name='h4')
+            results.add_column(h3, index=43)
+            results.add_column(h4, index=44)
         """
         0:   Mean of the posterior
         1:   Parameter at chi^2 minimum
@@ -74,13 +97,14 @@ class Alf(object):
                              'logage', 'zH',
                              'FeH']
 
-        # Have to treat the error col differently
-        #...but I don't want to deal with that now
-        err = (self.basic['Type'] == 'error')
-
         total_met = Column(self.basic['FeH']+self.basic['zH'],
-                        name='total_met')
+                           name='total_met')
         self.basic.add_column(total_met)
+        # Have to treat the error col differently
+        err = (self.basic['Type'] == 'error')
+        self.basic['total_met'][err] = (
+                np.sqrt(self.basic['FeH'][err]**2 +
+                self.basic['zH'][err]**2))
 
         mass_age = Column(
                     ((1-10**results['logfy']) *
@@ -89,7 +113,15 @@ class Alf(object):
                      10**results['logfy'])),
                      name='mass_age')
         self.basic.add_column(mass_age)
+        # Have to treat the error col differently
         self.basic['mass_age'].format = '.6f'
+        be = (self.basic['Type'] == 'error')
+        re = (results['Type'] == 'error')
+        self.basic['mass_age'][be] = (
+                np.sqrt(results[re]['logfy']**2 +
+                        self.basic['logage'][be]**2 +
+                        results['fy_logage'][re]**2 +
+                        results['logfy'][re]**2))
 
         self.xH = results['Type','a', 'C', 'N', 'Na', 'Mg',
                           'Si', 'K', 'Ca', 'Ti','V', 'Cr',
@@ -107,8 +139,9 @@ class Alf(object):
                                'logemline_H', 'logemline_Oiii',
                                'logemline_Sii', 'logemline_Ni',
                                'logemline_Nii','jitter','IMF3',
-                               'logsky', 'IMF4', 'ML_r','ML_i',
-                               'ML_k', 'MW_r', 'MW_i', 'MW_k']
+                               'logsky', 'IMF4', 'h3', 'h4',
+                               'ML_r','ML_i', 'ML_k', 'MW_r',
+                               'MW_i', 'MW_k']
 
         """
         Check the values of the nuisance parameters
@@ -116,15 +149,9 @@ class Alf(object):
         """
         #warning = ('\n For {0} {1}={2}, which is '
         #           'larger than acceptable. \n')
-        #if self.params['logm7g'] > -1.0:
-        #    warnings.warn(warning.format(self.path, 'logm7g',
-        #                  self.params['logm7g']))
-        #elif self.params['Teff'] > -1.0:
-        #    warnings.warn(warning.format(self.path, 'Teff',
-        #                  self.params['Teff']))
-        #elif self.params['loghot'] > -1.0:
+        #if self.results['loghot'][0] > -1.0:
         #    warnings.warn(warning.format(self.path, 'loghot',
-        #                  self.params['loghot']))
+        #                  self.results['loghot'][0]))
 
         ## Change to read in from *.bestp
         #self.nwalks = 1024
@@ -181,7 +208,6 @@ class Alf(object):
                                         fill_value='extrapolate')
 
         # Have to treat the error col differently
-        # and don't want to include the priors
         err = (self.xH['Type'] == 'error')
 
         al_corr = del_alfe(self.basic['zH'][~err])
@@ -224,8 +250,22 @@ class Alf(object):
                                  self.basic['FeH'][~err])
 
             self.xFe[col].format = '.6f'
-            error[i-1] = np.sqrt(self.xH[col][err]**2 -
-                               self.basic['FeH'][err]**2)
+
+            feh = np.where(self.labels == 'FeH')
+            xh = np.where(self.labels == col)
+            xfe = (self.mcmc[:,xh] - self.mcmc[:,feh])
+            xfe_vals = self.get_cls(xfe)
+            ## This is not working:
+            ## This thing with appending to a list is
+            ## just a weird hack to make plt.errorbar()
+            ## happy
+            #l, u = [], []
+            #l.append((xfe_vals['cl50'] - xfe_vals['cl16']))
+            #u.append((xfe_vals['cl84'] - xfe_vals['cl50']))
+            #error[i-1, :] = (l, u)
+            l = xfe_vals['cl50'] - xfe_vals['cl16']
+            u = xfe_vals['cl84'] - xfe_vals['cl50']
+            error[i-1] = np.mean([l, u])
 
         self.xFe.add_row(error)
         types = Column(['mean', 'chi2',
@@ -236,7 +276,8 @@ class Alf(object):
         self.xFe.add_column(types, index=0)
 
     def plot_model(self, outpath, info, mock=False):
-        velz = self.params['velz']
+        val = (self.basic['Type'] == 'mean')
+        velz = self.basic['velz'][val]
         in_wave = self.indata[:,0]/(1.+velz*1e3/constants.c)
         mod_wave = self.spec[:,0]/(1.+velz*1e3/constants.c)
 
@@ -360,14 +401,14 @@ class Alf(object):
         self.nchain = 100
         self.nwalks = 510
 
-        num = len(self.params)
+        num = len(self.labels)
         data = np.zeros((self.nchain, self.nwalks, num))
         for i in range(0, self.nchain):
             for j in range(0,self.nwalks):
                 data[i,j] = self.mcmc[i*510+j]
 
-
-
+        full = hstack((self.basic, self.xH, self.results))
+        val = (full['Type_1'] == 'chi2')
         with PdfPages(outname) as pdf:
             for i, (label, trace) in enumerate(zip(self.labels, data.T)):
                 fig = plt.figure(figsize=(8,6), facecolor='white')
@@ -375,7 +416,7 @@ class Alf(object):
                 #    continue
                 plt.plot(np.arange(0, self.nchain),
                          data[:,:,i], color='k', alpha=0.1)
-                plt.axhline(self.params[label], color='#3399ff')
+                plt.axhline(full[label][val], color='#3399ff')
                 plt.xlabel('Step')
                 plt.ylabel(label)
                 pdf.savefig()
@@ -395,16 +436,18 @@ class Alf(object):
         plt.tick_params(axis='both', which='major', labelsize=15)
         plt.tick_params(axis='both', which='minor', labelsize=10)
 
+        full = hstack((self.basic, self.xH, self.results))
+        val = (full['Type_1'] == 'chi2')
         for i, label in enumerate(self.labels):
             if (label=='ML_k' or label == 'MW_k' or
-                np.isnan(self.params[label])==True):
+                np.isnan(full[label][val])==True):
                 continue
             axarr[i-1][0].set_ylabel(label, fontsize=16, labelpad=30)
 
             axarr[i-1][0].hist(self.mcmc[:,i], bins=30,
                               histtype='step', color='k',
                               lw=2, alpha=0.9)
-            axarr[i-1][0].axvline(self.params[label], color='#E32017',
+            axarr[i-1][0].axvline(full[label][val], color='#E32017',
                                    alpha=0.85)
             #axarr[i-1][0].autoscale(tight=True)
 
@@ -423,6 +466,16 @@ class Alf(object):
         else:
             fname = '{0}/{1}_posterior.pdf'.format(path, info['in_sigma'])
         plt.savefig(fname)
+
+    def get_cls(self, distribution):
+        distribution = np.sort(np.squeeze(distribution))
+
+        num = self.nwalkers*self.nchain/self.nsample
+        lower = distribution[int(0.160*num)]
+        median = distribution[int(0.500*num)]
+        upper = distribution[int(0.840*num)]
+
+        return {'cl50': median, 'cl84':  upper, 'cl16': lower}
 
     def write_params(self):
         fname = '{0}_parameter_values.txt'.format(self.path)
