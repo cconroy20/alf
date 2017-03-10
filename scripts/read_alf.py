@@ -31,6 +31,17 @@ class Alf(object):
             self.mcmc = None
 
         results = ascii.read('{0}.sum'.format(self.path))
+
+        with open('{0}.sum'.format(self.path)) as f:
+                for line in f:
+                    if line[0] == '#':
+                        if 'Nwalkers' in line:
+                            self.nwalkers = float(line.split('=')[1].strip())
+                        elif 'Nchain' in line:
+                            self.nchain = float(line.split('=')[1].strip())
+                        elif 'Nsample' in line:
+                            self.nsample = float(line.split('=')[1].strip())
+
         old = False
         if len(results.colnames) == 52:
            self.labels = np.array(['chi2','velz','sigma','logage','zH',
@@ -441,6 +452,17 @@ class Alf(object):
         else:
             fname = '{0}/{1}_posterior.pdf'.format(path, info['in_sigma'])
         plt.savefig(fname)
+
+    def get_cls(self, distribution):
+        distribution = np.sort(distribution)
+
+        num = self.nwalkers*self.nchain/self.nsample
+        lower = distribution[int(0.160*num)]
+        median = distribution[int(0.500*num)]
+        upper = distribution[int(0.840*num)]
+
+        return {'peak': median, 'upper':  upper, 'lower': lower}
+
 
     def pdf_stats(self, value_distribution, interp=False):
         """
