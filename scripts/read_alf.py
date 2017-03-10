@@ -250,8 +250,22 @@ class Alf(object):
                                  self.basic['FeH'][~err])
 
             self.xFe[col].format = '.6f'
-            error[i-1] = np.sqrt(self.xH[col][err]**2 +
-                               self.basic['zH'][err]**2)
+
+            feh = np.where(self.labels == 'FeH')
+            xh = np.where(self.labels == col)
+            xfe = (self.mcmc[:,xh] - self.mcmc[:,feh])
+            xfe_vals = self.get_cls(xfe)
+            ## This is not working:
+            ## This thing with appending to a list is
+            ## just a weird hack to make plt.errorbar()
+            ## happy
+            #l, u = [], []
+            #l.append((xfe_vals['cl50'] - xfe_vals['cl16']))
+            #u.append((xfe_vals['cl84'] - xfe_vals['cl50']))
+            #error[i-1, :] = (l, u)
+            l = xfe_vals['cl50'] - xfe_vals['cl16']
+            u = xfe_vals['cl84'] - xfe_vals['cl50']
+            error[i-1] = np.mean([l, u])
 
         self.xFe.add_row(error)
         types = Column(['mean', 'chi2',
