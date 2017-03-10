@@ -463,49 +463,6 @@ class Alf(object):
 
         return {'cl50': median, 'cl84':  upper, 'cl16': lower}
 
-
-    def pdf_stats(self, value_distribution, interp=False):
-        """
-        Compute the 1-sigma confidence values for an asymmetrical PDF.
-        """
-        pdf, bin_edges = np.histogram(value_distribution, bins=100, density=True)
-        x_axis = bin_edges[:-1]+(bin_edges[1] - bin_edges[0])/2.
-
-        if interp == True:
-            x_interp = np.arange(np.min(x_axis), np.max(x_axis), 1.)
-            pdf_interp = interp1d(x_axis, pdf, kind='cubic')
-            x_axis = x_interp
-            pdf = pdf_interp(x_axis)
-
-        cum_distro = np.cumsum(pdf)*100
-        cum_distro = cum_distro/np.max(cum_distro)*100.
-        peak_i = np.where(pdf==np.max(pdf))
-        peak = x_axis[peak_i]
-        if len(peak) > 1:
-            peak = np.array([np.average(peak)])
-
-        max_cum_distro = cum_distro[peak_i]
-
-        lower_i = np.where(x_axis<=peak)
-        x_low = x_axis[lower_i]
-
-        upper_i = np.where(x_axis>peak)
-        x_up = x_axis[upper_i]
-
-        low_cum_distro = np.cumsum(pdf[lower_i])
-        low_cum_distro = low_cum_distro/np.max(low_cum_distro)*100.
-        lower = x_low[np.where(np.abs(low_cum_distro-32.)==np.min(np.abs(low_cum_distro-32.)))]
-        if len(lower) > 1:
-            lower = np.array([np.average(lower)])
-
-        up_cum_distro = np.cumsum(pdf[upper_i])
-        up_cum_distro = up_cum_distro/np.max(up_cum_distro)*100
-        upper = x_up[np.where(np.abs(up_cum_distro-68.)==np.min(np.abs(up_cum_distro-68.)))]
-        if len(upper) > 1:
-            upper = np.array([np.average(upper)])
-
-        return {'peak': peak, 'upper':  upper, 'lower': lower}
-
     def write_params(self):
         fname = '{0}_parameter_values.txt'.format(self.path)
         with open(fname, 'w') as f:
