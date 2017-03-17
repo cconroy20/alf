@@ -97,32 +97,6 @@ class Alf(object):
                              'logage', 'zH',
                              'FeH']
 
-        total_met = Column(self.basic['FeH']+self.basic['zH'],
-                           name='total_met')
-        self.basic.add_column(total_met)
-        # Have to treat the error col differently
-        err = (self.basic['Type'] == 'error')
-        self.basic['total_met'][err] = (
-                np.sqrt(self.basic['FeH'][err]**2 +
-                self.basic['zH'][err]**2))
-
-        mass_age = Column(
-                    ((1-10**results['logfy']) *
-                    (10**self.basic['logage']) +
-                    (10**results['fy_logage'] *
-                     10**results['logfy'])),
-                     name='mass_age')
-        self.basic.add_column(mass_age)
-        # Have to treat the error col differently
-        self.basic['mass_age'].format = '.6f'
-        be = (self.basic['Type'] == 'error')
-        re = (results['Type'] == 'error')
-        self.basic['mass_age'][be] = (
-                np.sqrt(results[re]['logfy']**2 +
-                        self.basic['logage'][be]**2 +
-                        results['fy_logage'][re]**2 +
-                        results['logfy'][re]**2))
-
         self.xH = results['Type','a', 'C', 'N', 'Na', 'Mg',
                           'Si', 'K', 'Ca', 'Ti','V', 'Cr',
                           'Mn', 'Co', 'Ni', 'Cu', 'Sr','Ba',
