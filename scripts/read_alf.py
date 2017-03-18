@@ -199,55 +199,67 @@ class Alf(object):
         group3 = {'Ba', 'Eu', 'Sr', 'Cu', 'Co',
                   'K', 'V', 'Mn'}
 
-        # The errors are rows, not columns
-        error = np.zeros((len(self.xH.colnames)-1))
+        feh = np.where(self.labels == 'FeH')
+        xh = np.where(self.labels == col)
+        xfe = (self.mcmc[:,xh] - self.mcmc[:,feh])
+        xfe_vals = self.get_cls(xfe)
         for i, col in enumerate(self.xH.colnames):
             if col=='Type':
                 continue
             elif col=='a':
-                self.xFe[col] = (self.xH[col][~err] -
-                                 self.basic['FeH'][~err] +
-                                 al_corr)
+                xfe_vals = xfe_vals + al_corr
             elif col=='Mg':
-                self.xFe[col] = (self.xH[col][~err] -
-                                 self.basic['FeH'][~err] +
-                                 mg_corr)
+                xfe_vals = xfe_vals + mg_corr
             elif col in group1:
-                self.xFe[col] = (self.xH[col][~err] -
-                                 self.basic['FeH'][~err] +
-                                 ca_corr)
-            elif col in group2:
-                self.xFe[col] = (self.xH[col][~err] -
-                                 self.basic['FeH'][~err])
-            elif col in group3:
-                self.xFe[col] = (self.xH[col][~err] -
-                                 self.basic['FeH'][~err])
+                xfe_vals = xfe_vals + ca_corr
 
-            self.xFe[col].format = '.6f'
+            self.xFe[col] = self.get_cls(xfe_vals)
 
-            feh = np.where(self.labels == 'FeH')
-            xh = np.where(self.labels == col)
-            xfe = (self.mcmc[:,xh] - self.mcmc[:,feh])
-            xfe_vals = self.get_cls(xfe)
-            ## This is not working:
-            ## This thing with appending to a list is
-            ## just a weird hack to make plt.errorbar()
-            ## happy
-            #l, u = [], []
-            #l.append((xfe_vals['cl50'] - xfe_vals['cl16']))
-            #u.append((xfe_vals['cl84'] - xfe_vals['cl50']))
-            #error[i-1, :] = (l, u)
-            l = xfe_vals['cl50'] - xfe_vals['cl16']
-            u = xfe_vals['cl84'] - xfe_vals['cl50']
-            error[i-1] = np.mean([l, u])
+        ## The errors are rows, not columns
+        #error = np.zeros((len(self.xH.colnames)-1))
+        #for i, col in enumerate(self.xH.colnames):
+        #    if col=='Type':
+        #        continue
+        #    elif col=='a':
+        #        self.xFe[col] = (self.xH[col][~err] -
+        #                         self.basic['FeH'][~err] +
+        #                         al_corr)
+        #    elif col=='Mg':
+        #        self.xFe[col] = (self.xH[col][~err] -
+        #                         self.basic['FeH'][~err] +
+        #                         mg_corr)
+        #    elif col in group1:
+        #        self.xFe[col] = (self.xH[col][~err] -
+        #                         self.basic['FeH'][~err] +
+        #                         ca_corr)
+        #    elif col in group2:
+        #        self.xFe[col] = (self.xH[col][~err] -
+        #                         self.basic['FeH'][~err])
+        #    elif col in group3:
+        #        self.xFe[col] = (self.xH[col][~err] -
+        #                         self.basic['FeH'][~err])
 
-        self.xFe.add_row(error)
-        types = Column(['mean', 'chi2',
-                        'cl25', 'cl16', 'cl50',
-                        'cl84', 'cl98', 'lo_prior',
-                        'hi_prior', 'error'],
-                        name='Type')
-        self.xFe.add_column(types, index=0)
+        #    self.xFe[col].format = '.6f'
+
+        #    ## This is not working:
+        #    ## This thing with appending to a list is
+        #    ## just a weird hack to make plt.errorbar()
+        #    ## happy
+        #    #l, u = [], []
+        #    #l.append((xfe_vals['cl50'] - xfe_vals['cl16']))
+        #    #u.append((xfe_vals['cl84'] - xfe_vals['cl50']))
+        #    #error[i-1, :] = (l, u)
+        #    l = xfe_vals['cl50'] - xfe_vals['cl16']
+        #    u = xfe_vals['cl84'] - xfe_vals['cl50']
+        #    error[i-1] = np.mean([l, u])
+
+        #self.xFe.add_row(error)
+        #types = Column(['mean', 'chi2',
+        #                'cl25', 'cl16', 'cl50',
+        #                'cl84', 'cl98', 'lo_prior',
+        #                'hi_prior', 'error'],
+        #                name='Type')
+        #self.xFe.add_column(types, index=0)
 
     def plot_model(self, outpath, info, mock=False):
         val = (self.basic['Type'] == 'mean')
