@@ -199,11 +199,11 @@ class Alf(object):
         group3 = {'Ba', 'Eu', 'Sr', 'Cu', 'Co',
                   'K', 'V', 'Mn'}
 
-        feh = np.where(self.labels == 'FeH')
-        xh = np.where(self.labels == col)
-        xfe = (self.mcmc[:,xh] - self.mcmc[:,feh])
-        xfe_vals = self.get_cls(xfe)
         for i, col in enumerate(self.xH.colnames):
+            feh = np.where(self.labels == 'FeH')
+            xh = np.where(self.labels == col)
+            xfe = (self.mcmc[:,xh] - self.mcmc[:,feh])
+            xfe_vals = self.get_cls(xfe)
             if col=='Type':
                 continue
             elif col=='a':
