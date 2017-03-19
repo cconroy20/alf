@@ -181,12 +181,10 @@ class Alf(object):
                                         bounds_error=False,
                                         fill_value='extrapolate')
 
-        # Have to treat the error col differently
-        err = (self.xH['Type'] == 'error')
-
-        al_corr = del_alfe(self.basic['zH'][~err])
-        mg_corr = del_mgfe(self.basic['zH'][~err])
-        ca_corr = del_cafe(self.basic['zH'][~err])
+        zh = np.where(self.labels == 'zH')
+        al_corr = del_alfe(self.mcmc[:,zh])
+        mg_corr = del_mgfe(self.mcmc[:,zh])
+        ca_corr = del_cafe(self.mcmc[:,zh])
 
         # Assuming Ca~Ti~Si
         group1 = {'Ca', 'Ti', 'Si'}
@@ -457,11 +455,11 @@ class Alf(object):
     def get_cls(self, distribution):
         distribution = np.sort(np.squeeze(distribution))
 
+
         num = self.nwalkers*self.nchain/self.nsample
         lower = distribution[int(0.160*num)]
         median = distribution[int(0.500*num)]
         upper = distribution[int(0.840*num)]
-
         return {'cl50': median, 'cl84':  upper, 'cl16': lower}
 
     def write_params(self):
