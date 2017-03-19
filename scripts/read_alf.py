@@ -102,9 +102,9 @@ class Alf(object):
                           'Mn', 'Co', 'Ni', 'Cu', 'Sr','Ba',
                           'Eu']
 
-        # Creating an empty table that
+        # Creating an empty dict
         # is filled in abundance_correct()
-        self.xFe = Table()
+        self.xFe = {}
 
         self.results = results['Type', 'Teff', 'IMF1',
                                'IMF2', 'logfy', 'sigma2',
@@ -203,15 +203,16 @@ class Alf(object):
             feh = np.where(self.labels == 'FeH')
             xh = np.where(self.labels == col)
             xfe = (self.mcmc[:,xh] - self.mcmc[:,feh])
-            xfe_vals = self.get_cls(xfe)
             if col=='Type':
                 continue
             elif col=='a':
-                xfe_vals = xfe_vals + al_corr
+                xfe_vals = xfe + al_corr
             elif col=='Mg':
-                xfe_vals = xfe_vals + mg_corr
+                xfe_vals = xfe + mg_corr
             elif col in group1:
-                xfe_vals = xfe_vals + ca_corr
+                xfe_vals = xfe + ca_corr
+            elif col in group2 or col in group3:
+                xfe_vals = xfe
 
             self.xFe[col] = self.get_cls(xfe_vals)
 
