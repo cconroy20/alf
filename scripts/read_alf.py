@@ -97,40 +97,14 @@ class Alf(object):
                              'logage', 'zH',
                              'FeH']
 
-        total_met = Column(self.basic['FeH']+self.basic['zH'],
-                           name='total_met')
-        self.basic.add_column(total_met)
-        # Have to treat the error col differently
-        err = (self.basic['Type'] == 'error')
-        self.basic['total_met'][err] = (
-                np.sqrt(self.basic['FeH'][err]**2 +
-                self.basic['zH'][err]**2))
-
-        mass_age = Column(
-                    ((1-10**results['logfy']) *
-                    (10**self.basic['logage']) +
-                    (10**results['fy_logage'] *
-                     10**results['logfy'])),
-                     name='mass_age')
-        self.basic.add_column(mass_age)
-        # Have to treat the error col differently
-        self.basic['mass_age'].format = '.6f'
-        be = (self.basic['Type'] == 'error')
-        re = (results['Type'] == 'error')
-        self.basic['mass_age'][be] = (
-                np.sqrt(results[re]['logfy']**2 +
-                        self.basic['logage'][be]**2 +
-                        results['fy_logage'][re]**2 +
-                        results['logfy'][re]**2))
-
         self.xH = results['Type','a', 'C', 'N', 'Na', 'Mg',
                           'Si', 'K', 'Ca', 'Ti','V', 'Cr',
                           'Mn', 'Co', 'Ni', 'Cu', 'Sr','Ba',
                           'Eu']
 
-        # Creating an empty table that
+        # Creating an empty dict
         # is filled in abundance_correct()
-        self.xFe = Table()
+        self.xFe = {}
 
         self.results = results['Type', 'Teff', 'IMF1',
                                'IMF2', 'logfy', 'sigma2',
@@ -207,12 +181,10 @@ class Alf(object):
                                         bounds_error=False,
                                         fill_value='extrapolate')
 
-        # Have to treat the error col differently
-        err = (self.xH['Type'] == 'error')
-
-        al_corr = del_alfe(self.basic['zH'][~err])
-        mg_corr = del_mgfe(self.basic['zH'][~err])
-        ca_corr = del_cafe(self.basic['zH'][~err])
+        zh = np.where(self.labels == 'zH')
+        al_corr = del_alfe(self.mcmc[:,zh])
+        mg_corr = del_mgfe(self.mcmc[:,zh])
+        ca_corr = del_cafe(self.mcmc[:,zh])
 
         # Assuming Ca~Ti~Si
         group1 = {'Ca', 'Ti', 'Si'}
@@ -225,55 +197,22 @@ class Alf(object):
         group3 = {'Ba', 'Eu', 'Sr', 'Cu', 'Co',
                   'K', 'V', 'Mn'}
 
-        # The errors are rows, not columns
-        error = np.zeros((len(self.xH.colnames)-1))
         for i, col in enumerate(self.xH.colnames):
-            if col=='Type':
-                continue
-            elif col=='a':
-                self.xFe[col] = (self.xH[col][~err] -
-                                 self.basic['FeH'][~err] +
-                                 al_corr)
-            elif col=='Mg':
-                self.xFe[col] = (self.xH[col][~err] -
-                                 self.basic['FeH'][~err] +
-                                 mg_corr)
-            elif col in group1:
-                self.xFe[col] = (self.xH[col][~err] -
-                                 self.basic['FeH'][~err] +
-                                 ca_corr)
-            elif col in group2:
-                self.xFe[col] = (self.xH[col][~err] -
-                                 self.basic['FeH'][~err])
-            elif col in group3:
-                self.xFe[col] = (self.xH[col][~err] -
-                                 self.basic['FeH'][~err])
-
-            self.xFe[col].format = '.6f'
-
             feh = np.where(self.labels == 'FeH')
             xh = np.where(self.labels == col)
             xfe = (self.mcmc[:,xh] - self.mcmc[:,feh])
-            xfe_vals = self.get_cls(xfe)
-            ## This is not working:
-            ## This thing with appending to a list is
-            ## just a weird hack to make plt.errorbar()
-            ## happy
-            #l, u = [], []
-            #l.append((xfe_vals['cl50'] - xfe_vals['cl16']))
-            #u.append((xfe_vals['cl84'] - xfe_vals['cl50']))
-            #error[i-1, :] = (l, u)
-            l = xfe_vals['cl50'] - xfe_vals['cl16']
-            u = xfe_vals['cl84'] - xfe_vals['cl50']
-            error[i-1] = np.mean([l, u])
+            if col=='Type':
+                continue
+            elif col=='a':
+                xfe_vals = xfe + al_corr
+            elif col=='Mg':
+                xfe_vals = xfe + mg_corr
+            elif col in group1:
+                xfe_vals = xfe + ca_corr
+            elif col in group2 or col in group3:
+                xfe_vals = xfe
 
-        self.xFe.add_row(error)
-        types = Column(['mean', 'chi2',
-                        'cl25', 'cl16', 'cl50',
-                        'cl84', 'cl98', 'lo_prior',
-                        'hi_prior', 'error'],
-                        name='Type')
-        self.xFe.add_column(types, index=0)
+            self.xFe[col] = self.get_cls(xfe_vals)
 
     def plot_model(self, outpath, info, mock=False):
         val = (self.basic['Type'] == 'mean')
@@ -470,11 +409,11 @@ class Alf(object):
     def get_cls(self, distribution):
         distribution = np.sort(np.squeeze(distribution))
 
+
         num = self.nwalkers*self.nchain/self.nsample
         lower = distribution[int(0.160*num)]
         median = distribution[int(0.500*num)]
         upper = distribution[int(0.840*num)]
-
         return {'cl50': median, 'cl84':  upper, 'cl16': lower}
 
     def write_params(self):
