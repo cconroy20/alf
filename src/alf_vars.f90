@@ -24,7 +24,6 @@ MODULE ALF_VARS
   !2: only fit velz, sigma, SSP age, Z
   INTEGER :: fit_type=0
 
-
   !turn on the use of age-dependent response functions
   INTEGER :: use_age_dep_resp_fcns=1
   !if above is set to 0, fix the response functions to this age (Gyr)
