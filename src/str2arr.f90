@@ -72,6 +72,7 @@ SUBROUTINE STR2ARR(switch,str,arr)
      arr(43) = str%imf4
      arr(44) = str%h3
      arr(45) = str%h4
+     arr(46) = str%yzh
 
   ELSE
 
@@ -127,6 +128,7 @@ SUBROUTINE STR2ARR(switch,str,arr)
      str%imf4   = arr(43)
      str%h3     = arr(44)
      str%h4     = arr(45)
+     str%yzh    = arr(46)
      
   ENDIF
 

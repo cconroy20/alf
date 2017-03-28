@@ -65,6 +65,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   pos%logsky         = myran()*2-4
   pos%h3             = (myran()-0.5)*0.02
   pos%h4             = (myran()-0.5)*0.02
+  pos%yzh            = myran()*1.0-1.0
   
   IF (imf_type.LE.3) THEN
      pos%imf1      = myran()*1.0-0.3 + 1.3
@@ -155,7 +156,8 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prlo%logsky.EQ.test%logsky) prlo%logsky    = -6.0
   IF (prlo%h3.EQ.test%h3) prlo%h3    = -0.4
   IF (prlo%h4.EQ.test%h4) prlo%h4    = -0.4
-
+  IF (prlo%yzh.EQ.test%yzh) prlo%yzh = -1.0
+  
   IF (imf_type.LE.3) THEN
      IF (prlo%imf1.EQ.test%imf1) prlo%imf1       = 0.5
      IF (prlo%imf3.EQ.test%imf3) prlo%imf3       = 0.08
@@ -218,6 +220,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prhi%logsky.EQ.test%logsky) prhi%logsky    = 2.0
   IF (prhi%h3.EQ.test%h3) prhi%h3    = 0.4
   IF (prhi%h4.EQ.test%h4) prhi%h4    = 0.4
+  IF (prhi%yzh.EQ.test%yzh) prhi%yzh = 0.3
 
   IF (imf_type.LE.3) THEN
      IF (prhi%imf1.EQ.test%imf1) prhi%imf1       = 3.5

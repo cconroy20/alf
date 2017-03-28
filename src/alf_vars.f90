@@ -131,7 +131,7 @@ MODULE ALF_VARS
   !total number of emission lines
   INTEGER, PARAMETER :: neml = 11
   !number of parameters
-  INTEGER, PARAMETER :: npar = 45
+  INTEGER, PARAMETER :: npar = 46
   !number of ages in the empirical SSP grid
   INTEGER, PARAMETER :: nage = 7
   !number of metallicities in the empirical SSP grid
@@ -254,7 +254,7 @@ MODULE ALF_VARS
           loghot=-4.0,fy_logage=0.3,logtrans=-4.0,logemline_h=-4.0,&
           logemline_oiii=-4.0,logemline_sii=-4.0,logemline_ni=-4.0,&
           logemline_nii=-4.0,jitter=1.0,imf3=2.0,logsky=-4.0,imf4=0.0,&
-          h3=0.0,h4=0.0
+          h3=0.0,h4=0.0,yzh=0.0
      REAL(DP) :: chi2=huge_number
   END TYPE PARAMS
   

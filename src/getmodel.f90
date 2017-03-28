@@ -12,8 +12,9 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   REAL(DP), DIMENSION(nl), INTENT(out) :: spec
   INTEGER, OPTIONAL :: mw
   REAL(DP), DIMENSION(nl) :: tmp,tmpr,yspec,tmp1,tmp2,tmp3,tmp4
-  INTEGER  :: vt,vy,vv1,vv2,vv3,i,vr,vm,vh,vm2,vm3
-  REAL(DP) :: dt,fy,dx1,dx2,dx3,lsig,ve,dr,dm,dm2,dm3,dh,dy,tmps,inorm,mass,msto
+  INTEGER  :: vt,vy,vv1,vv2,vv3,i,vr,vm,vh,vm2,vm3,vmy
+  REAL(DP) :: dt,fy,dx1,dx2,dx3,lsig,ve,dr,dm,dm2,dm3
+  REAL(DP) :: dh,dy,tmps,inorm,mass,msto,dmy
   REAL(DP), DIMENSION(nl)   :: tmp_ltrans,tmp_ftrans_h2o,tmp_ftrans_o2
   REAL(DP), DIMENSION(neml) :: emnormall=1.0
   REAL(DP), DIMENSION(nimfnp) :: imfw=0.0
@@ -205,17 +206,25 @@ SUBROUTINE GETMODEL(pos,spec,mw)
   !vary young population - both fraction and age
   !only include these parameters in the "full" model
   IF (fit_type.EQ.0.AND.powell_fitting.EQ.0.AND.fit_two_ages.EQ.1) THEN
+     
      fy    = MAX(MIN(10**pos%logfy,1.0),0.0)
      vy    = MAX(MIN(locate(sspgrid%logagegrid,pos%fy_logage),nage-1),1)
      dy    = (pos%fy_logage-sspgrid%logagegrid(vy))/&
           (sspgrid%logagegrid(vy+1)-sspgrid%logagegrid(vy))
      dy    = MAX(MIN(dy,1.0),-0.3) !0.5<age<13.5 Gyr
+     !set up interpolants for metallicity
+     vmy   = MAX(MIN(locate(sspgrid%logzgrid,pos%yzh),nzmet-1),1)
+     dmy   = (pos%yzh-sspgrid%logzgrid(vmy)) / &
+             (sspgrid%logzgrid(vmy+1)-sspgrid%logzgrid(vmy))
+     dmy   = MAX(MIN(dmy,1.0),-1.0) ! -2.0<[Z/H]<0.25
+
      yspec = &
-          dy*dm*sspgrid%logssp(:,imfr1,imfr2,vy+1,vm+1) + &
-          (1-dy)*dm*sspgrid%logssp(:,imfr1,imfr2,vy,vm+1) + & 
-          dy*(1-dm)*sspgrid%logssp(:,imfr1,imfr2,vy+1,vm) + & 
-          (1-dy)*(1-dm)*sspgrid%logssp(:,imfr1,imfr2,vy,vm)
-      spec  = (1-fy)*spec + fy*10**yspec
+          dy*dmy*sspgrid%logssp(:,imfr1,imfr2,vy+1,vmy+1) + &
+          (1-dy)*dmy*sspgrid%logssp(:,imfr1,imfr2,vy,vmy+1) + & 
+          dy*(1-dmy)*sspgrid%logssp(:,imfr1,imfr2,vy+1,vmy) + & 
+          (1-dy)*(1-dmy)*sspgrid%logssp(:,imfr1,imfr2,vy,vmy)
+     spec  = (1-fy)*spec + fy*10**yspec
+     
   ENDIF
 
   !vary age in the response functions
