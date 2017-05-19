@@ -1,46 +1,51 @@
 import sys
 import warnings
 import numpy as np
+from numpy.polynomial.chebyshev import chebfit, chebval
 from scipy import constants, interpolate
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from astropy.io import ascii
 from astropy.table import Table, Column, hstack
 
+"""
+class Spec(Alf):
+    def __init__():
+        self.data = {}
+        self.model = {}
+
+        self.residual = None
+        self.num = None
+        self.chunk = None
+"""
+
 class Alf(object):
     def __init__(self, infile, outfiles, legend):
         self.outfiles = outfiles
         self.legend = legend
+        self.data = {}
+        self.model = {}
+        self.residual = None
         try:
-            self.indata = np.loadtxt('{0}.dat'.format(infile))
-        except:
-            warning = ('Do not have the input data file')
-            warnings.warn(warning)
-            self.indata = None
-        try:
-            self.spec   = np.loadtxt('{0}.bestspec'.format(self.outfiles))
-        except:
-            warning = ('Do not have the *.bestspec file')
-            warnings.warn(warning)
-            self.spec = None
-        try:
-            self.mcmc = np.loadtxt('{0}.mcmc'.format(self.outfiles))
+            pass
+            #self.mcmc = np.loadtxt('{0}.mcmc'.format(self.outfiles))
         except:
             warning = ('Do not have the *.mcmc file')
             warnings.warn(warning)
             self.mcmc = None
 
+
         results = ascii.read('{0}.sum'.format(self.outfiles))
 
         with open('{0}.sum'.format(self.outfiles)) as f:
-                for line in f:
-                    if line[0] == '#':
-                        if 'Nwalkers' in line:
-                            self.nwalkers = float(line.split('=')[1].strip())
-                        elif 'Nchain' in line:
-                            self.nchain = float(line.split('=')[1].strip())
-                        elif 'Nsample' in line:
-                            self.nsample = float(line.split('=')[1].strip())
+            for line in f:
+                if line[0] == '#':
+                    if 'Nwalkers' in line:
+                        self.nwalkers = float(line.split('=')[1].strip())
+                    elif 'Nchain' in line:
+                        self.nchain = float(line.split('=')[1].strip())
+                    elif 'Nsample' in line:
+                        self.nsample = float(line.split('=')[1].strip())
 
         old = False
         if len(results.colnames) == 52:
@@ -117,6 +122,8 @@ class Alf(object):
                                'ML_r','ML_i', 'ML_k', 'MW_r',
                                'MW_i', 'MW_k']
 
+        self.process_model_data(infile)
+
         """
         Check the values of the nuisance parameters
         and raise a warning if they are too large.
@@ -126,6 +133,52 @@ class Alf(object):
         #if self.results['loghot'][0] > -1.0:
         #    warnings.warn(warning.format(self.path, 'loghot',
         #                  self.results['loghot'][0]))
+
+    def process_model_data(self, infile):
+        """
+        """
+
+        # NOTE: Use the posteriors for the velocity
+        try:
+            d = np.loadtxt('{0}.dat'.format(infile))
+            d_wave = d[:,0]/(1.+self.basic['velz'][0]*1e3/constants.c)
+            d_flux = d[:,1]
+            d_erro = d[:,2]
+        except:
+            warning = ('Do not have the input data file')
+            warnings.warn(warning)
+            self.data = None
+            # Bail out of this function
+        try:
+            m = np.loadtxt('{0}.bestspec'.format(self.outfiles))
+            m_wave = m[:,0]/(1.+self.basic['velz'][0]*1e3/constants.c)
+            m_flux = m[:,1]
+        except:
+            warning = ('Do not have the *.bestspec file')
+            warnings.warn(warning)
+            self.model = None
+            # Bail out of this function
+
+        self.compare = {}
+        # Find overlapping wavelength range
+        self.compare['min'] = max([d_wave[0], m_wave[0]])
+        self.compare['max'] = min([d_wave[-1], m_wave[-1]])
+
+        i = ((d_wave >= self.compare['min']) & (d_wave <= self.compare['max']))
+        self.data['wave'] = d_wave[i]
+        self.data['spec'] = d_flux[i]
+        self.data['erro'] = d_erro[i]
+
+        i = ((m_wave >= self.compare['min']) & (m_wave <= self.compare['max']))
+        self.model['wave'] = m_wave[i]
+        self.model['spec'] = m_flux[i]
+
+        self.model['interp_spec'] = np.interp(self.data['wave'], self.model['wave'], self.model['spec'])
+
+        self.compare['chunk'] = 1000
+        self.compare['num'] = int(self.compare['max'] - self.compare['min'])/self.compare['chunk'] + 1
+
+        self.residual = (self.model['interp_spec']-self.data['spec'])/self.model['interp_spec']*1e2
 
     def abundance_correct(self, s07=False, b14=False, m11=True):
         """
@@ -211,29 +264,6 @@ class Alf(object):
             self.xFe[col] = self.get_cls(xfe_vals)
 
     def plot_model(self, outpath, info, mock=False):
-        val = (self.basic['Type'] == 'mean')
-        velz = self.basic['velz'][val]
-        in_wave = self.indata[:,0]/(1.+velz*1e3/constants.c)
-        mod_wave = self.spec[:,0]/(1.+velz*1e3/constants.c)
-
-        # Find overlapping wavelength range
-        min_ = max([in_wave[0], mod_wave[0]])
-        max_ = min([in_wave[-1], mod_wave[-1]])
-
-        i = ((in_wave >= min_) & (in_wave <= max_))
-        in_wave = in_wave[i]
-        in_spec = self.indata[:,1][i]
-        in_erro = self.indata[:,2][i]
-
-        i = ((mod_wave >= min_) & (mod_wave <= max_))
-        mod_wave = mod_wave[i]
-        mod_spec = self.spec[:,1][i]
-
-        model = np.interp(in_wave, mod_wave, mod_spec)
-
-        chunk = 1000
-        num = int(max_ - min_)/chunk + 1
-
         if not mock:
             fstring = (
                        '{0}/{1}_{2}_ssp{3}_fit{4}_imf{5}_'
@@ -247,46 +277,51 @@ class Alf(object):
                     info['ns_remnants'], info['wd_remnants'])
         else:
             fname = '{0}/{1}_model_compare.pdf'.format(outpath, info['in_sigma'])
-        print fname
         with PdfPages(fname) as pdf:
-            for i in range(0, num):
-                k = ((mod_wave >= min_+chunk*i) & (mod_wave <= min_+chunk*(i+1)))
-                if not np.any(k) or len(mod_wave[k]) <= 10:
-                    continue
-
-                j = ((in_wave >= min(mod_wave[k])) & (in_wave <= max(mod_wave[k])))
-
+            for i in range(0, self.compare['num']):
                 fig = plt.figure(figsize=(14,9), facecolor='white')
                 ax1 = plt.subplot2grid((3,2), (0,0), rowspan=2, colspan=2)
                 ax2 = plt.subplot2grid((3,2), (2,0), rowspan=1, colspan=2)
 
-                coeffs = np.polynomial.chebyshev.chebfit(in_wave[j],
-                            in_spec[j], 2)
-                poly = np.polynomial.chebyshev.chebval(in_wave[j],
-                            coeffs)
-                ax1.plot(in_wave[j], in_spec[j]/poly, 'k-', lw=2,
-                            label='Data')
+                k = ((self.model['wave'] >= self.compare['min']+self.compare['chunk']*i) &
+                     (self.model['wave'] <= self.compare['min']+self.compare['chunk']*(i+1)))
+                if not np.any(k) or len(self.model['wave'][k]) <= 10:
+                    continue
 
-                coeffs = np.polynomial.chebyshev.chebfit(mod_wave[k],
-                            mod_spec[k], 2)
-                poly = np.polynomial.chebyshev.chebval(mod_wave[k],
-                            coeffs)
-                ax1.plot(mod_wave[k], mod_spec[k]/poly, color='#E32017',
-                            lw=2, label='Model')
+                j = ((self.data['wave'] >= min(self.model['wave'][k])) &
+                     (self.data['wave'] <= max(self.model['wave'][k])))
+
+                coeffs = chebfit(self.data['wave'][j],
+                                 self.data['spec'][j], 2)
+                poly = chebval(self.data['wave'][j], coeffs)
+                ax1.plot(self.data['wave'][j],
+                         self.data['spec'][j]/poly,
+                         'k-', lw=2, label='Data')
+
+                coeffs = chebfit(self.model['wave'][k],
+                                 self.model['spec'][k], 2)
+                poly = chebval(self.model['wave'][k], coeffs)
+
+                ax1.plot(self.model['wave'][k],
+                         self.model['spec'][k]/poly,
+                         color='#E32017', lw=2, label='Model')
                 ax1.legend(frameon=False)
 
-                ax2.plot(in_wave[j], (model[j]-in_spec[j])/model[j]*1e2,
+                ax2.plot(self.data['wave'][j], self.residual[j],
                             color='#7156A5', lw=2, alpha=0.7)
-                ax2.fill_between(in_wave[j],
-                        -in_erro[j]/in_spec[j]*1e2,
-                        in_erro[j]/in_spec[j]*1e2,
+                ax2.fill_between(self.data['wave'][j],
+                        -self.data['erro'][j]/self.data['spec'][j]*1e2,
+                        self.data['erro'][j]/self.data['spec'][j]*1e2,
                         color='#CCCCCC')
                 ax2.set_ylim(-4.9, 4.9)
 
-                ax1.set_ylabel(r'Flux (arbitrary units)',fontsize=22)
-                ax2.set_ylabel(r'Residual $\rm \%$',fontsize=22)
+                ax1.set_ylabel(r'Flux (arbitrary units)',
+                               fontsize=22)
+                ax2.set_ylabel(r'Residual $\rm \%$',
+                               fontsize=22)
 
-                ax2.set_xlabel(r'Wavelength $(\AA)$',fontsize=22, labelpad=10)
+                ax2.set_xlabel(r'Wavelength $(\AA)$',
+                               fontsize=22, labelpad=10)
 
                 pdf.savefig()
 
@@ -297,7 +332,9 @@ class Alf(object):
         params = ['zH', 'logage', 'ML_r']
         use = np.in1d(labels, params)
 
-        figure = corner.corner(self.mcmc[:,use], labels=labels[use], plot_contours=False)
+        figure = corner.corner(self.mcmc[:,use],
+                               labels=labels[use],
+                               plot_contours=False)
 
         plt.tight_layout()
         plt.show()
