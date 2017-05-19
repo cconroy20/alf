@@ -8,31 +8,31 @@ from astropy.io import ascii
 from astropy.table import Table, Column, hstack
 
 class Alf(object):
-    def __init__(self, path, legend):
-        self.path = path
+    def __init__(self, infile, outfiles, legend):
+        self.outfiles = outfiles
         self.legend = legend
         try:
-            self.indata = np.loadtxt('{0}.dat'.format(self.path))
+            self.indata = np.loadtxt('{0}.dat'.format(infile))
         except:
             warning = ('Do not have the input data file')
             warnings.warn(warning)
             self.indata = None
         try:
-            self.spec   = np.loadtxt('{0}.bestspec'.format(self.path))
+            self.spec   = np.loadtxt('{0}.bestspec'.format(self.outfiles))
         except:
             warning = ('Do not have the *.bestspec file')
             warnings.warn(warning)
             self.spec = None
         try:
-            self.mcmc = np.loadtxt('{0}.mcmc'.format(self.path))
+            self.mcmc = np.loadtxt('{0}.mcmc'.format(self.outfiles))
         except:
             warning = ('Do not have the *.mcmc file')
             warnings.warn(warning)
             self.mcmc = None
 
-        results = ascii.read('{0}.sum'.format(self.path))
+        results = ascii.read('{0}.sum'.format(self.outfiles))
 
-        with open('{0}.sum'.format(self.path)) as f:
+        with open('{0}.sum'.format(self.outfiles)) as f:
                 for line in f:
                     if line[0] == '#':
                         if 'Nwalkers' in line:
@@ -126,10 +126,6 @@ class Alf(object):
         #if self.results['loghot'][0] > -1.0:
         #    warnings.warn(warning.format(self.path, 'loghot',
         #                  self.results['loghot'][0]))
-
-        ## Change to read in from *.bestp
-        #self.nwalks = 1024
-        #self.nchain = 100
 
     def abundance_correct(self, s07=False, b14=False, m11=True):
         """
@@ -294,26 +290,18 @@ class Alf(object):
 
                 pdf.savefig()
 
-    def plot_corner(self, outpath):
+    def plot_corner(self, outpath, params=None):
         import corner
 
-        if self.mcmc is None:
-            fname = '{0}.mcmc'.format(self.path)
-            self.mcmc = np.loadtxt(fname)
-
         labels = np.array(self.labels)
-        use = np.where((labels=='ML_r') |
-                        (labels=='ML_i') |
-                        (labels=='IMF1') |
-                        (labels=='IMF2')
-                        )
-        #print self.labels
-        #sys.exit()
+        params = ['zH', 'logage', 'ML_r']
+        use = np.in1d(labels, params)
 
-        figure = corner.corner(self.mcmc[:,use[0]], labels=labels[use[0]])
+        figure = corner.corner(self.mcmc[:,use], labels=labels[use], plot_contours=False)
 
         plt.tight_layout()
-        plt.savefig('{0}/{1}_corner.pdf'.format(outpath, self.legend))
+        plt.show()
+        #plt.savefig('{0}/{1}_corner.pdf'.format(outpath, self.legend))
 
     def plot_traces(self, outpath, info, mock=False):
         if not mock:
@@ -332,10 +320,6 @@ class Alf(object):
             outname = '{0}/{1}_traces.pdf'.format(outpath, info['in_sigma'])
         plt.cla()
         plt.clf()
-
-        if self.mcmc is None:
-            fname = '{0}.mcmc'.format(self.path)
-            self.mcmc = np.loadtxt(fname)
 
         self.nchain = 100
         self.nwalks = 510
@@ -365,10 +349,6 @@ class Alf(object):
     def plot_posterior(self, path, info, mock=False):
         plt.cla()
         plt.clf()
-
-        if self.mcmc is None:
-            fname = '{0}.mcmc'.format(self.path)
-            self.mcmc = np.loadtxt(fname)
 
         fig, axarr = plt.subplots(7, 8, figsize=(40,40),facecolor='white')
         axarr = axarr.reshape(axarr.size,1).copy()
@@ -409,15 +389,15 @@ class Alf(object):
     def get_cls(self, distribution):
         distribution = np.sort(np.squeeze(distribution))
 
-
         num = self.nwalkers*self.nchain/self.nsample
         lower = distribution[int(0.160*num)]
         median = distribution[int(0.500*num)]
         upper = distribution[int(0.840*num)]
+
         return {'cl50': median, 'cl84':  upper, 'cl16': lower}
 
     def write_params(self):
-        fname = '{0}_parameter_values.txt'.format(self.path)
+        fname = '{0}_parameter_values.txt'.format(self.outfiles)
         with open(fname, 'w') as f:
             for a in self.params.keys():
                 f.write('{0:5}: {1:5.5} \n'.format(a, self.params[a]))
