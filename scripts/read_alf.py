@@ -7,17 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from astropy.io import ascii
 from astropy.table import Table, Column, hstack
-
-"""
-class Spec(Alf):
-    def __init__():
-        self.data = {}
-        self.model = {}
-
-        self.residual = None
-        self.num = None
-        self.chunk = None
-"""
+from sedpy import observate
 
 class Alf(object):
     def __init__(self, infile, outfiles, legend):
@@ -27,16 +17,15 @@ class Alf(object):
         self.model = {}
         self.residual = None
         try:
-            pass
-            #self.mcmc = np.loadtxt('{0}.mcmc'.format(self.outfiles))
+            self.mcmc = np.loadtxt('{0}.mcmc'.format(self.outfiles))
         except:
             warning = ('Do not have the *.mcmc file')
             warnings.warn(warning)
             self.mcmc = None
 
-
         results = ascii.read('{0}.sum'.format(self.outfiles))
 
+        self.nsample = None
         with open('{0}.sum'.format(self.outfiles)) as f:
             for line in f:
                 if line[0] == '#':
@@ -46,6 +35,12 @@ class Alf(object):
                         self.nchain = float(line.split('=')[1].strip())
                     elif 'Nsample' in line:
                         self.nsample = float(line.split('=')[1].strip())
+        if not self.nsample:
+            # The old files don't have this
+            # in the header. This is just a
+            # guess at the default. Might
+            # need to change.
+            self.nsample = 1
 
         old = False
         if len(results.colnames) == 52:
@@ -78,6 +73,7 @@ class Alf(object):
             h4 = Column(np.zeros(len(results['chi2'])), name='h4')
             results.add_column(h3, index=43)
             results.add_column(h4, index=44)
+
         """
         0:   Mean of the posterior
         1:   Parameter at chi^2 minimum
@@ -122,7 +118,8 @@ class Alf(object):
                                'ML_r','ML_i', 'ML_k', 'MW_r',
                                'MW_i', 'MW_k']
 
-        self.process_model_data(infile)
+        if infile is not '':
+            self.process_model_data(infile)
 
         """
         Check the values of the nuisance parameters
@@ -159,8 +156,10 @@ class Alf(object):
             self.model = None
             # Bail out of this function
 
+
         self.compare = {}
         # Find overlapping wavelength range
+        """
         self.compare['min'] = max([d_wave[0], m_wave[0]])
         self.compare['max'] = min([d_wave[-1], m_wave[-1]])
 
@@ -168,17 +167,119 @@ class Alf(object):
         self.data['wave'] = d_wave[i]
         self.data['spec'] = d_flux[i]
         self.data['erro'] = d_erro[i]
+        """
 
+        self.model['wave'] = m_wave
+        self.model['spec'] = m_flux
+        """
         i = ((m_wave >= self.compare['min']) & (m_wave <= self.compare['max']))
         self.model['wave'] = m_wave[i]
         self.model['spec'] = m_flux[i]
+        """
 
+        """
         self.model['interp_spec'] = np.interp(self.data['wave'], self.model['wave'], self.model['spec'])
 
         self.compare['chunk'] = 1000
         self.compare['num'] = int(self.compare['max'] - self.compare['min'])/self.compare['chunk'] + 1
 
+
         self.residual = (self.model['interp_spec']-self.data['spec'])/self.model['interp_spec']*1e2
+        """
+
+
+    def get_m2l(self, info, in_=False, mw=0):
+
+        # Taken from alf_vars.f90
+        imflo = 0.08
+        imfhi = 100.0
+
+        msto_t0=0.33250847
+        msto_t1=-0.29560944
+        msto_z0=0.95402521
+        msto_z1=0.21944863
+        msto_z2=0.070565820
+
+        krpa_imf1 = 1.3
+        krpa_imf2 = 2.3
+        krpa_imf3 = 2.3
+
+        val = (self.basic['Type'] == 'cl50')
+        age = self.basic['logage'][val][0]
+        zh = self.basic['zH'][val][0]
+
+        # line 546 in alf.f90
+        msto = max(min((10**(msto_t0+msto_t1*age)*\
+                        msto_z0+msto_z1*zh+msto_z2*zh**2), 3.0), 0.75)
+
+        if mw == 1:
+            mass = get_mass(imflo, msto, krpa_imf1, krpa_imf2, krpa_imf3)
+        else:
+            if info['imf_type'] == 0:
+                pass
+            elif info['imf_type'] == 1:
+                # Double power-law IMF with a fixed low-mass cutoff
+                if in_ == False:
+                    val = np.where(self.labels == 'IMF1')
+                    imf1 = self.mcmc[:,val]
+                    val = np.where(self.labels == 'IMF2')
+                    imf2 = self.mcmc[:,val]
+                else:
+                    imf1 = info['in_imf1']
+                    imf2 = info['in_imf2']
+
+                mass = get_mass(imflo, msto, imf1, imf2, krpa_imf3)
+
+            elif info['imf_type'] == 2:
+                pass
+            elif info['imf_type'] == 3:
+                # Double power-law IMF with a variable low-mass cutoff
+                if in_ == False:
+                    val = np.where(self.labels == 'IMF1')
+                    imf1 = self.mcmc[:,val]
+                    val = np.where(self.labels == 'IMF2')
+                    imf2 = self.mcmc[:,val]
+                    val = np.where(self.labels == 'IMF3')
+                    imf3 = self.mcmc[:,val]
+                else:
+                    imf1 = info['in_imf1']
+                    imf2 = info['in_imf2']
+                    imf3 = info['in_mcut']
+                    print "Input: "
+                    print imf1, imf2, imf3
+
+                mass = get_mass(imf3, msto, imf1, imf2, krpa_imf3)
+            elif info['imf_type'] == 4:
+                print "Not implemented yet"
+
+        # Covert units of spectrum
+        mypi   = 3.14159265
+        lsun = 3.839e33
+        clight = 2.9979E10
+        pc2cm  = 3.08568E18
+        aspec = self.model['spec']*lsun/1e6*self.model['wave']**2/clight/1e8/4/mypi/pc2cm**2
+
+        wave, trans = np.loadtxt('/Users/alexa/alf/scripts/sdss_r.dat', usecols=(0,1), unpack=True)
+        interptrans = np.interp(self.model['wave'], wave, trans, left=0, right=0)
+
+        tot_flux = np.trapz(aspec*interptrans, np.log(self.model['wave']))/np.trapz(interptrans, np.log(self.model['wave']))
+        mag = -2.5*np.log10(tot_flux) - 48.60
+
+        # Getting a slightly different value than the alf getm2l.f90 code.
+        # Could be a difference in the transmission curve
+
+        return mass/10**(2./5 * (4.64 - mag))
+
+
+        # NOTE: Not sure if observate is going to work, need to understand units better
+        # For observate the assumed input units are erg/s/cm^2/AA and AA
+        # Might be in correct units already?
+
+        # Get luminosity over filters
+        #print observate.list_available_filters()
+        #filts = observate.load_filters(['sdss_r0'])
+        #tmp = observate.getSED(self.data['wave'], aspec, filterlist=filts)
+
 
     def abundance_correct(self, s07=False, b14=False, m11=True):
         """
@@ -325,19 +426,26 @@ class Alf(object):
 
                 pdf.savefig()
 
-    def plot_corner(self, outpath, params=None):
+    def plot_corner(self, outpath, info, params=None):
         import corner
 
         labels = np.array(self.labels)
-        params = ['zH', 'logage', 'ML_r']
+        if info['imf_type'] == 1:
+            params = ['chi2', 'velz', 'sigma',
+                      'zH', 'logage', 'IMF1', 'IMF2',
+                      'ML_r', 'MW_r']
+        elif info['imf_type'] == 3:
+            params = ['chi2', 'velz', 'sigma',
+                      'zH', 'logage', 'IMF1', 'IMF2',
+                      'IMF3', 'ML_r', 'MW_r']
         use = np.in1d(labels, params)
 
         figure = corner.corner(self.mcmc[:,use],
-                               labels=labels[use],
-                               plot_contours=False)
+                               labels=labels[use])#,
+                               #plot_contours=True)
 
         plt.tight_layout()
-        plt.show()
+        #plt.show()
         #plt.savefig('{0}/{1}_corner.pdf'.format(outpath, self.legend))
 
     def plot_traces(self, outpath, info, mock=False):
@@ -438,6 +546,59 @@ class Alf(object):
         with open(fname, 'w') as f:
             for a in self.params.keys():
                 f.write('{0:5}: {1:5.5} \n'.format(a, self.params[a]))
+
+def get_mass(mlo, mto, imf1, imf2, imfup):#, imf3, imf4, timfnorm):
+
+    # Taken from alf_vars.f90
+    imflo = 0.08
+    imfhi = 100.0
+
+    # From getmass.f90
+    # What are these?
+    bhlim=40.0
+    nslim=8.5
+    m2 = 0.5
+    m3 = 1.0
+
+    # For IMF type NOT 4
+
+    # Normalize the weights so that 1 Msun formed at t=0
+    imfnorm = ((m2**(-imf1+2)-mlo**(-imf1+2))/(-imf1+2) +
+               m2**(-imf1+imf2)*(m3**(-imf2+2)-m2**(-imf2+2))/(-imf2+2) +
+               m2**(-imf1+imf2)*(imfhi**(-imfup+2)-m3**(-imfup+2))/(-imfup+2))
+
+    # Stars still alive
+    getmass = (m2**(-imf1+2)-mlo**(-imf1+2))/(-imf1+2)
+    if mto < m3:
+        getmass = getmass + m2**(-imf1+imf2)*(mto**(-imf2+2)-m2**(-imf2+2))/(-imf2+2)
+    else:
+        getmass = getmass + (m2**(-imf1+imf2)*(m3**(-imf2+2)-m2**(-imf2+2))/(-imf2+2) +
+                             m2**(-imf1+imf2)*(mto**(-imfup+2)-m3**(-imfup+2))/(-imfup+2))
+
+    getmass = getmass/imfnorm
+
+    # BH remnants
+    # 40<M<imf_up leave behidn a 0.5*M BH
+    getmass = getmass + 0.5*m2**(-imf1+imf2)*(imfhi**(-imfup+2)-bhlim**(-imfup+2))/(-imfup+2)/imfnorm
+
+    # NS remnants
+    # 8.5<M<40 leave behind a 1.4 Msun NS
+    getmass = getmass +  1.4*m2**(-imf1+imf2)*(bhlim**(-imfup+1)-nslim**(-imfup+1))/(-imfup+1)/imfnorm
+
+    # WD remnants
+    # M<8.5 leave beind a 0.077*M+0.48 WD
+    if mto < m3:
+        getmass = getmass + 0.48*m2**(-imf1+imf2)*(nslim**(-imfup+1)-m3**(-imfup+1))/(-imfup+1)/imfnorm
+        getmass = getmass + 0.48*m2**(-imf1+imf2)*(m3**(-imf2+1)-mto**(-imf2+1))/(-imf2+1)/imfnorm
+        getmass = getmass + 0.077*m2**(-imf1+imf2)*(nslim**(-imfup+2)-m3**(-imfup+2))/(-imfup+2)/imfnorm
+        getmass = getmass + 0.077*m2**(-imf1+imf2)*(m3**(-imf2+2)-mto**(-imf2+2))/(-imf2+2)/imfnorm
+    else:
+        getmass = getmass + 0.48*m2**(-imf1+imf2)*(nslim**(-imfup+1)-mto**(-imfup+1))/(-imfup+1)/imfnorm
+        getmass = getmass + 0.077*m2**(-imf1+imf2)*(nslim**(-imfup+2)-mto**(-imfup+2))/(-imfup+2)/imfnorm
+
+        # What's going on lines 221-223 of getmass.f90?
+
+    return getmass
 
 if __name__=='__main__':
     pass
