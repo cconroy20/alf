@@ -30,6 +30,12 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker,s07=s07,b14=b14,m11=m11
      libcafe = [0.32,0.3,0.28,0.26,0.26,0.17,0.12,0.06,0.0,0.0]
   ENDIF
 
+  IF 1 EQ 0 THEN BEGIN
+     FOR i=0,n_elements(libfeh)-1 DO $
+        print,libfeh[i],libofe[i],libmgfe[i],libcafe[i],$
+              format='(3(F5.2," & "),F5.2)'
+  ENDIF
+  
   sdir = getenv('ALF_HOME')
   dir  = sdir+'/results/'
   openr,lun,dir+file,/get_lun

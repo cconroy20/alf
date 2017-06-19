@@ -54,26 +54,29 @@ PROGRAM WRITE_A_MODEL
   nlint = 2
   l2(nlint) = lmax
 
+  !loop to generate multiple mock datasets
   DO j=0,0
 
      !compute an array of gaussian deviates
      CALL GASDEV(gdev)
 
+     !string for indexing of filenames
      IF (j.LE.10) THEN
         is = str(j+1)
      ELSE
         WRITE(is,'(I2)') j
      ENDIF
 
-     file = 'nmodel_t6.0_sn0030_'//is//'.dat'
-     s2n  = 1000.  !S/N per A
+     file = 'smodel_t10.0_zp0.0_sig0100_sn0100.dat'
+     pos%sigma  = 100.
+
+     s2n  = 100.  !S/N per A
  
-     pos%sigma  = 250.
-     pos%logage = LOG10(6.0)
+     pos%logage = LOG10(10.0)
      pos%zh     = 0.0
      emnorm     = -5.0
 
-     pos%imf1   = 2.3
+     pos%imf1   = 1.3
      pos%imf2   = 2.3
      pos%imf3   = 0.08
 
@@ -88,10 +91,6 @@ PROGRAM WRITE_A_MODEL
      mspec = 0.0
      CALL GETMODEL(pos,mspec)
 
-     s2n   = 30.0
-     gspec = 0.0
-     file  = 'nmodel_t6.0_sn0030_047-056_'//is//'.dat'
-     
      DO i=1,nl
         !this is to convert between S/N per A and S/N per pix
         IF (lam(i).LT.7500.) THEN
@@ -105,7 +104,7 @@ PROGRAM WRITE_A_MODEL
  
      !write model spectrum to file
      OPEN(12,FILE=TRIM(ALF_HOME)//'models/'//TRIM(file),STATUS='REPLACE')
-   !  WRITE(12,'("# 0.400 0.470")') 
+     WRITE(12,'("# 0.400 0.470")') 
      WRITE(12,'("# 0.470 0.560")')
      !WRITE(12,'("# 0.570 0.640")')
      !WRITE(12,'("# 0.640 0.800")')
@@ -118,38 +117,6 @@ PROGRAM WRITE_A_MODEL
         ENDIF
      ENDDO
      CLOSE(12)
-
-     s2n   = 21.0
-     gspec = 0.0
-     file = 'nmodel_t6.0_sn0021_038-056_'//is//'.dat'
-     
-     DO i=1,nl
-        !this is to convert between S/N per A and S/N per pix
-        IF (lam(i).LT.7500.) THEN
-           s2np = s2n*SQRT(0.9)
-        ELSE
-           s2np = s2n*SQRT(2.5)
-        ENDIF
-        err(i)   = mspec(i)/s2np
-        gspec(i) = mspec(i) + err(i)*gdev(i)
-     ENDDO
- 
-     !write model spectrum to file
-     OPEN(12,FILE=TRIM(ALF_HOME)//'models/'//TRIM(file),STATUS='REPLACE')
-     WRITE(12,'("# 0.380 0.470")') 
-     WRITE(12,'("# 0.470 0.560")')
-     !WRITE(12,'("# 0.570 0.640")')
-     !WRITE(12,'("# 0.640 0.800")')
-     !WRITE(12,'("# 0.800 0.892")')
-     !WRITE(12,'("# 0.963 1.015")') 
-     DO i=1,nl
-        IF (lam(i).GE.lmin.AND.lam(i).LE.lmax) THEN
-           WRITE(12,'(F10.3,2ES12.4,2x,F4.1,2x,F7.2)') &
-                lam(i),gspec(i),err(i),1.0,ires
-        ENDIF
-     ENDDO
-     CLOSE(12)
-
 
      
   ENDDO

@@ -241,6 +241,7 @@ PROGRAM ALF
      prhi%sigma = sigma_indx+10.
 
      !de-redshift, monte carlo sample the noise, and compute indices
+     !NB: need to mask bad pixels!
      DO j=1,nmcindx
         CALL GASDEV(gdev(1:datmax))
         tflx(1:datmax) = linterp(data(1:datmax)%lam/(1+velz_indx),&

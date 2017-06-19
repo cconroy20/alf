@@ -294,8 +294,9 @@ MODULE ALF_VARS
   TYPE(SSP) :: sspgrid
   !define the object for the raw data array
   TYPE(TDATA), DIMENSION(ndat) :: data
+  
   !define the object for the data interpolated to the model arr
-  TYPE(TDATA), DIMENSION(nl)  :: idata
+  !TYPE(TDATA), DIMENSION(nl)  :: idata
 
 
 END MODULE ALF_VARS
