@@ -17,6 +17,7 @@ class Alf(object):
         self.model = {}
         self.residual = None
         try:
+            #pass
             self.mcmc = np.loadtxt('{0}.mcmc'.format(self.outfiles))
         except:
             warning = ('Do not have the *.mcmc file')
@@ -121,6 +122,8 @@ class Alf(object):
         if infile is not '':
             self.process_model_data(infile)
 
+
+        self.mass = None
         """
         Check the values of the nuisance parameters
         and raise a warning if they are too large.
@@ -156,10 +159,12 @@ class Alf(object):
             self.model = None
             # Bail out of this function
 
+        #self.model['wave'] = m_wave
+        #self.model['spec'] = m_flux
 
+        #'''
         self.compare = {}
         # Find overlapping wavelength range
-        """
         self.compare['min'] = max([d_wave[0], m_wave[0]])
         self.compare['max'] = min([d_wave[-1], m_wave[-1]])
 
@@ -167,26 +172,44 @@ class Alf(object):
         self.data['wave'] = d_wave[i]
         self.data['spec'] = d_flux[i]
         self.data['erro'] = d_erro[i]
-        """
 
-        self.model['wave'] = m_wave
-        self.model['spec'] = m_flux
-        """
         i = ((m_wave >= self.compare['min']) & (m_wave <= self.compare['max']))
         self.model['wave'] = m_wave[i]
         self.model['spec'] = m_flux[i]
-        """
 
-        """
         self.model['interp_spec'] = np.interp(self.data['wave'], self.model['wave'], self.model['spec'])
 
         self.compare['chunk'] = 1000
         self.compare['num'] = int(self.compare['max'] - self.compare['min'])/self.compare['chunk'] + 1
 
+        # Normalize data and model by dividing by polynomials
+        for i in range(0, self.compare['num']):
+            k = ((self.model['wave'] >= self.compare['min']+self.compare['chunk']*i) &
+                 (self.model['wave'] <= self.compare['min']+self.compare['chunk']*(i+1)))
+            if not np.any(k) or len(self.model['wave'][k]) <= 10:
+                continue
+
+            j = ((self.data['wave'] >= min(self.model['wave'][k])) &
+                 (self.data['wave'] <= max(self.model['wave'][k])))
+
+            coeffs = chebfit(self.data['wave'][j],
+                             self.data['spec'][j], 2)
+            poly = chebval(self.data['wave'][j], coeffs)
+            self.data['spec'][j] = self.data['spec'][j]/poly
+            self.data['erro'][j] = self.data['erro'][j]/poly
+
+            coeffs = chebfit(self.data['wave'][j],
+                             self.model['interp_spec'][j], 2)
+            poly = chebval(self.data['wave'][j], coeffs)
+            self.model['interp_spec'][j] = self.model['interp_spec'][j]/poly
+
+            coeffs = chebfit(self.model['wave'][k],
+                             self.model['spec'][k], 2)
+            poly = chebval(self.model['wave'][k], coeffs)
+            self.model['spec'][k] = self.model['spec'][k]/poly
 
         self.residual = (self.model['interp_spec']-self.data['spec'])/self.model['interp_spec']*1e2
-        """
-
+        #'''
 
     def get_m2l(self, info, in_=False, mw=0):
 
@@ -205,18 +228,24 @@ class Alf(object):
         krpa_imf3 = 2.3
 
         val = (self.basic['Type'] == 'cl50')
-        age = self.basic['logage'][val][0]
+        logage = self.basic['logage'][val][0]
         zh = self.basic['zH'][val][0]
 
         # line 546 in alf.f90
-        msto = max(min((10**(msto_t0+msto_t1*age)*\
-                        msto_z0+msto_z1*zh+msto_z2*zh**2), 3.0), 0.75)
+        msto = max(min(10**(msto_t0+msto_t1*logage) *
+                       (msto_z0+msto_z1*zh+msto_z2*zh**2), 3.0), 0.75)
 
         if mw == 1:
             mass = get_mass(imflo, msto, krpa_imf1, krpa_imf2, krpa_imf3)
         else:
             if info['imf_type'] == 0:
-                pass
+                if in_ == False:
+                    val = np.where(self.labels == 'IMF1')
+                    imf1 = self.mcmc[:,val]
+                else:
+                    imf1 = info['in_imf1']
+                mass = get_mass(imflo, msto, imf1, imf1, krpa_imf3)
+
             elif info['imf_type'] == 1:
                 # Double power-law IMF with a fixed low-mass cutoff
                 if in_ == False:
@@ -259,7 +288,7 @@ class Alf(object):
         pc2cm  = 3.08568E18
         aspec = self.model['spec']*lsun/1e6*self.model['wave']**2/clight/1e8/4/mypi/pc2cm**2
 
-        wave, trans = np.loadtxt('/Users/alexa/alf/scripts/sdss_r.dat', usecols=(0,1), unpack=True)
+        wave, trans = np.loadtxt('/Users/alexa/alf/infiles/filters.dat', usecols=(0,1), unpack=True)
         interptrans = np.interp(self.model['wave'], wave, trans, left=0, right=0)
 
         tot_flux = np.trapz(aspec*interptrans, np.log(self.model['wave']))/np.trapz(interptrans, np.log(self.model['wave']))
@@ -267,6 +296,8 @@ class Alf(object):
 
         # Getting a slightly different value than the alf getm2l.f90 code.
         # Could be a difference in the transmission curve
+        if in_ == False:
+            self.mass = self.get_cls(mass)
 
         return mass/10**(2./5 * (4.64 - mag))
 
@@ -368,14 +399,15 @@ class Alf(object):
         if not mock:
             fstring = (
                        '{0}/{1}_{2}_ssp{3}_fit{4}_imf{5}_'
-                       'nad{6}_bh{7}_ns{8}_wd{9}_model_compare.pdf'
+                       'nad{6}_bh{7}_ns{8}_wd{9}_{10}_model_compare.pdf'
                        )
             fname = fstring.format(outpath,
                     self.legend.replace(' ', '_'),
                     info['instrument'], info['ssp_type'],
                     info['fit_type'], info['imf_type'],
                     info['nad'], info['bh_remnants'],
-                    info['ns_remnants'], info['wd_remnants'])
+                    info['ns_remnants'], info['wd_remnants'],
+                    info['outfiles'].split('_')[-1])
         else:
             fname = '{0}/{1}_model_compare.pdf'.format(outpath, info['in_sigma'])
         with PdfPages(fname) as pdf:
@@ -384,27 +416,12 @@ class Alf(object):
                 ax1 = plt.subplot2grid((3,2), (0,0), rowspan=2, colspan=2)
                 ax2 = plt.subplot2grid((3,2), (2,0), rowspan=1, colspan=2)
 
-                k = ((self.model['wave'] >= self.compare['min']+self.compare['chunk']*i) &
-                     (self.model['wave'] <= self.compare['min']+self.compare['chunk']*(i+1)))
-                if not np.any(k) or len(self.model['wave'][k]) <= 10:
-                    continue
-
-                j = ((self.data['wave'] >= min(self.model['wave'][k])) &
-                     (self.data['wave'] <= max(self.model['wave'][k])))
-
-                coeffs = chebfit(self.data['wave'][j],
-                                 self.data['spec'][j], 2)
-                poly = chebval(self.data['wave'][j], coeffs)
                 ax1.plot(self.data['wave'][j],
-                         self.data['spec'][j]/poly,
+                         self.data['spec'][j],
                          'k-', lw=2, label='Data')
 
-                coeffs = chebfit(self.model['wave'][k],
-                                 self.model['spec'][k], 2)
-                poly = chebval(self.model['wave'][k], coeffs)
-
                 ax1.plot(self.model['wave'][k],
-                         self.model['spec'][k]/poly,
+                         self.model['spec'][k],
                          color='#E32017', lw=2, label='Model')
                 ax1.legend(frameon=False)
 
@@ -519,14 +536,15 @@ class Alf(object):
         if not mock:
             fstring = (
                        '{0}/{1}_{2}_ssp{3}_fit{4}_imf{5}_'
-                       'nad{6}_bh{7}_ns{8}_wd{9}_posterior.pdf'
+                       'nad{6}_bh{7}_ns{8}_wd{9}_{10}_posterior.pdf'
                        )
             fname = fstring.format(path,
                     self.legend.replace(' ', '_'),
                     info['instrument'], info['ssp_type'],
                     info['fit_type'], info['imf_type'],
                     info['nad'], info['bh_remnants'],
-                    info['ns_remnants'], info['wd_remnants'])
+                    info['ns_remnants'], info['wd_remnants'],
+                    info['outfiles'].split('_')[-1])
         else:
             fname = '{0}/{1}_posterior.pdf'.format(path, info['in_sigma'])
         plt.savefig(fname)
