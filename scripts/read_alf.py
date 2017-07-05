@@ -8,10 +8,9 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from astropy.io import ascii
 from astropy.table import Table, Column, hstack
-from sedpy import observate
 
 class Alf(object):
-    def __init__(self, infile, outfiles, legend):
+    def __init__(self, outfiles, legend):
         self.outfiles = outfiles
         self.legend = legend
         self.residual = None
@@ -409,24 +408,8 @@ class Alf(object):
                                #plot_contours=True)
 
         plt.tight_layout()
-        #plt.show()
-        #plt.savefig('{0}/{1}_corner.pdf'.format(outpath, self.legend))
 
-    def plot_traces(self, outpath, info, mock=False):
-        if not mock:
-            fstring = (
-                       '{0}/{1}_{2}_ssp{3}_fit{4}_imf{5}_'
-                       'nad{6}_bh{7}_ns{8}_wd{9}_traces.pdf'
-                       )
-            outname = fstring.format(outpath,
-                    self.legend.replace(' ', '_'),
-                    info['instrument'], info['ssp_type'],
-                    info['fit_type'], info['imf_type'],
-                    info['nad'], info['bh_remnants'],
-                    info['ns_remnants'], info['wd_remnants'])
-
-        else:
-            outname = '{0}/{1}_traces.pdf'.format(outpath, info['in_sigma'])
+    def plot_traces(self, fname):
         plt.cla()
         plt.clf()
 
@@ -455,7 +438,7 @@ class Alf(object):
                 plt.close()
                 plt.cla()
 
-    def plot_posterior(self, path, info, mock=False):
+    def plot_posterior(self, fname):
         plt.cla()
         plt.clf()
 
@@ -480,20 +463,6 @@ class Alf(object):
             #axarr[i-1][0].autoscale(tight=True)
 
         plt.tight_layout()
-        if not mock:
-            fstring = (
-                       '{0}/{1}_{2}_ssp{3}_fit{4}_imf{5}_'
-                       'nad{6}_bh{7}_ns{8}_wd{9}_{10}_posterior.pdf'
-                       )
-            fname = fstring.format(path,
-                    self.legend.replace(' ', '_'),
-                    info['instrument'], info['ssp_type'],
-                    info['fit_type'], info['imf_type'],
-                    info['nad'], info['bh_remnants'],
-                    info['ns_remnants'], info['wd_remnants'],
-                    info['outfiles'].split('_')[-1])
-        else:
-            fname = '{0}/{1}_posterior.pdf'.format(path, info['in_sigma'])
         plt.savefig(fname)
 
     def get_cls(self, distribution):
