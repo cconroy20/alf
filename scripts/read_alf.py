@@ -1,6 +1,6 @@
 import sys
 import warnings
-import copy
+from copy import deepcopy
 import numpy as np
 from numpy.polynomial.chebyshev import chebfit, chebval
 from scipy import constants, interpolate
@@ -150,14 +150,14 @@ class Alf(object):
         """
         Normalize the data and model spectra
         """
-        self.spectra['m_flux_norm'] = copy.deepcopy(self.spectra['m_flux'])
-        self.spectra['d_flux_norm'] = copy.deepcopy(self.spectra['d_flux'])
-        self.spectra['unc_norm'] = copy.deepcopy(self.spectra['unc'])
+        self.spectra['m_flux_norm'] = deepcopy(self.spectra['m_flux'])
+        self.spectra['d_flux_norm'] = deepcopy(self.spectra['d_flux'])
+        self.spectra['unc_norm']    = deepcopy(self.spectra['unc'])
 
         chunks = 1000
         min_ = min(self.spectra['wave'])
         max_ = max(self.spectra['wave'])
-        num = (int(max_ - min_)/chunks) + 1
+        num  = (int(max_ - min_)/chunks) + 1
 
         for i in range(num):
             k = ((self.spectra['wave'] >= min_ + chunks*i) &
@@ -180,19 +180,19 @@ class Alf(object):
         imflo = 0.08
         imfhi = 100.0
 
-        msto_t0=0.33250847
-        msto_t1=-0.29560944
-        msto_z0=0.95402521
-        msto_z1=0.21944863
-        msto_z2=0.070565820
+        msto_t0 = +0.33250847
+        msto_t1 = -0.29560944
+        msto_z0 = +0.95402521
+        msto_z1 = +0.21944863
+        msto_z2 = +0.070565820
 
         krpa_imf1 = 1.3
         krpa_imf2 = 2.3
         krpa_imf3 = 2.3
 
-        val = (self.basic['Type'] == 'cl50')
-        logage = self.basic['logage'][val][0]
-        zh = self.basic['zH'][val][0]
+        val = (self.results['Type'] == 'cl50')
+        logage = self.results['logage'][val][0]
+        zh = self.results['zH'][val][0]
 
         # line 546 in alf.f90
         msto = max(min(10**(msto_t0+msto_t1*logage)*\
@@ -217,8 +217,6 @@ class Alf(object):
                     val = np.where(self.labels == 'IMF2')
                     imf2 = self.mcmc[:,val]
 
-                    #plt.hist(np.squeeze(imf2))
-                    #plt.show()
                 else:
                     imf1 = info['in_imf1']
                     imf2 = info['in_imf2']
@@ -240,25 +238,22 @@ class Alf(object):
                     imf1 = info['in_imf1']
                     imf2 = info['in_imf2']
                     imf3 = info['in_mcut']
-                    print "Input: "
-                    print imf1, imf2, imf3
-
                 mass = get_mass(imf3, msto, imf1, imf2, krpa_imf3)
             elif info['imf_type'] == 4:
                 print "Not implemented yet"
 
         # Covert units of spectrum
         mypi   = 3.14159265
-        lsun = 3.839e33
+        lsun   = 3.839e33
         clight = 2.9979E10
         pc2cm  = 3.08568E18
 
-        flux = self.data['m_flux']/self.data['m_poly']
-        aspec = (flux*lsun/1e6*self.data['wave']**2/clight/1e8/4/mypi/pc2cm**2)
+        flux = self.spectra['m_flux']/self.spectra['poly']
+        aspec = (flux*lsun/1e6*self.spectra['wave']**2/clight/1e8/4/mypi/pc2cm**2)
 
         wave, trans = np.loadtxt('/Users/alexa/alf/infiles/filters.dat',
                                  usecols=(0,1), unpack=True)
-        interptrans = np.interp(self.data['wave'], wave, trans, left=0, right=0)
+        interptrans = np.interp(self.spectra['wave'], wave, trans, left=0, right=0)
 
         tot_flux = np.trapz(aspec*interptrans, np.log(self.data['wave']))/np.trapz(interptrans, np.log(self.data['wave']))
         mag = -2.5*np.log10(tot_flux) - 48.60
