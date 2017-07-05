@@ -507,10 +507,7 @@ class Alf(object):
         return {'cl50': median, 'cl84':  upper, 'cl16': lower}
 
     def write_params(self):
-        fname = '{0}_parameter_values.txt'.format(self.outfiles)
-        with open(fname, 'w') as f:
-            for a in self.params.keys():
-                f.write('{0:5}: {1:5.5} \n'.format(a, self.params[a]))
+        pass
 
 def get_mass(mlo, mto, imf1, imf2, imfup):#, imf3, imf4, timfnorm):
 
