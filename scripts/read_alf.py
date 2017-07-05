@@ -1,5 +1,6 @@
 import sys
 import warnings
+import copy
 import numpy as np
 from numpy.polynomial.chebyshev import chebfit, chebval
 from scipy import constants, interpolate
@@ -15,7 +16,6 @@ class Alf(object):
         self.legend = legend
         self.residual = None
         try:
-            #pass
             self.mcmc = np.loadtxt('{0}.mcmc'.format(self.outfiles))
         except:
             warning = ('Do not have the *.mcmc file')
@@ -43,26 +43,29 @@ class Alf(object):
 
         old = False
         if len(results.colnames) == 52:
-           self.labels = np.array(['chi2','velz','sigma','logage','zH',
-                      'FeH', 'a', 'C', 'N', 'Na', 'Mg',
-                      'Si', 'K', 'Ca', 'Ti','V', 'Cr',
-                      'Mn', 'Co', 'Ni', 'Cu', 'Sr','Ba',
-                      'Eu', 'Teff', 'IMF1', 'IMF2', 'logfy',
-                      'sigma2', 'velz2', 'logm7g', 'hotteff',
-                      'loghot','fy_logage','logtrans', 'logemline_H',
-                      'logemline_Oiii','logemline_Sii', 'logemline_Ni',
-                      'logemline_Nii','jitter','IMF3', 'logsky', 'IMF4',
-                      'h3', 'h4', 'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k'])
+           self.labels = np.array([
+                      'chi2','velz','sigma','logage','zH',
+                      'FeH', 'a', 'C', 'N', 'Na', 'Mg', 'Si',
+                      'K', 'Ca', 'Ti','V', 'Cr', 'Mn', 'Co',
+                      'Ni', 'Cu', 'Sr','Ba', 'Eu', 'Teff',
+                      'IMF1', 'IMF2', 'logfy', 'sigma2', 'velz2',
+                      'logm7g', 'hotteff', 'loghot','fy_logage',
+                      'logtrans', 'logemline_H', 'logemline_Oiii',
+                      'logemline_Sii', 'logemline_Ni', 'logemline_Nii',
+                      'jitter','IMF3', 'logsky', 'IMF4', 'h3', 'h4',
+                      'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k'
+                      ])
         elif len(results.colnames) == 50:
-            self.labels = np.array(['chi2','velz','sigma','logage','zH',
-                      'FeH', 'a', 'C', 'N', 'Na', 'Mg',
-                      'Si', 'K', 'Ca', 'Ti','V', 'Cr',
-                      'Mn', 'Co', 'Ni', 'Cu', 'Sr','Ba',
-                      'Eu', 'Teff', 'IMF1', 'IMF2', 'logfy',
-                      'sigma2', 'velz2', 'logm7g', 'hotteff',
-                      'loghot','fy_logage','logtrans', 'logemline_H',
-                      'logemline_Oiii','logemline_Sii', 'logemline_Ni',
-                      'logemline_Nii','jitter','IMF3', 'logsky', 'IMF4',
+            self.labels = np.array([
+                      'chi2','velz','sigma','logage','zH',
+                      'FeH', 'a', 'C', 'N', 'Na', 'Mg', 'Si',
+                      'K', 'Ca', 'Ti','V', 'Cr', 'Mn', 'Co',
+                      'Ni', 'Cu', 'Sr','Ba', 'Eu', 'Teff',
+                      'IMF1', 'IMF2', 'logfy', 'sigma2', 'velz2',
+                      'logm7g', 'hotteff', 'loghot','fy_logage',
+                      'logtrans', 'logemline_H', 'logemline_Oiii',
+                      'logemline_Sii', 'logemline_Ni', 'logemline_Nii',
+                      'jitter','IMF3', 'logsky', 'IMF4',
                       'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k'])
             old = True
 
@@ -89,14 +92,8 @@ class Alf(object):
         results.add_column(types, index=0)
 
         """
-        Split the big table up
+        Create separate table for abundances
         """
-
-        self.basic = results['Type', 'chi2',
-                             'velz', 'sigma',
-                             'logage', 'zH',
-                             'FeH']
-
         self.xH = results['Type','a', 'C', 'N', 'Na', 'Mg',
                           'Si', 'K', 'Ca', 'Ti','V', 'Cr',
                           'Mn', 'Co', 'Ni', 'Cu', 'Sr','Ba',
@@ -106,8 +103,9 @@ class Alf(object):
         # is filled in abundance_correct()
         self.xFe = {}
 
-        self.results = results['Type', 'Teff', 'IMF1',
-                               'IMF2', 'logfy', 'sigma2',
+        self.results = results['Type', 'chi2', 'velz', 'sigma',
+                               'logage', 'zH', 'FeH', 'Teff',
+                               'IMF1', 'IMF2', 'logfy', 'sigma2',
                                'velz2', 'logm7g', 'hotteff',
                                'loghot','fy_logage', 'logtrans',
                                'logemline_H', 'logemline_Oiii',
@@ -117,20 +115,24 @@ class Alf(object):
                                'ML_r','ML_i', 'ML_k', 'MW_r',
                                'MW_i', 'MW_k']
 
+        """
+        Read in input data and best fit model
+        """
         try:
             m = np.loadtxt('{0}.bestspec'.format(self.outfiles))
-            data = {}
-            data['wave'] = m[:,0]/(1.+self.basic['velz'][5]*1e3/constants.c)
-            data['m_flux'] = m[:,1] # Model spectrum, normalization applied
-            data['d_flux'] = m[:,2] # Data spectrum
-            data['d_snr'] = m[:,3]  # Including jitter and inflated errors
-            data['m_poly'] = m[:,4] # Polynomial used to create m_flux
-            data['residual'] = (m[:,1] - m[:,2])/m[:,1] * 1e2
-            self.data = data
         except:
             warning = ('Do not have the *.bestspec file')
             warnings.warn(warning)
             self.data = None
+        data = {}
+        data['wave'] = m[:,0]/(1.+self.results['velz'][5]*1e3/constants.c)
+        data['m_flux'] = m[:,1] # Model spectrum, normalization applied
+        data['d_flux'] = m[:,2] # Data spectrum
+        data['snr'] = m[:,3]  # Including jitter and inflated errors
+        data['unc'] = 1/m[:,3]
+        data['poly'] = m[:,4] # Polynomial used to create m_flux
+        data['residual'] = (m[:,1] - m[:,2])/m[:,1] * 1e2
+        self.spectra = data
 
         self.mass = None
 
@@ -148,36 +150,29 @@ class Alf(object):
         """
         Normalize the data and model spectra
         """
+        self.spectra['m_flux_norm'] = copy.deepcopy(self.spectra['m_flux'])
+        self.spectra['d_flux_norm'] = copy.deepcopy(self.spectra['d_flux'])
+        self.spectra['unc_norm'] = copy.deepcopy(self.spectra['unc'])
 
-        #self.compare['chunk'] = 10000
-        #self.compare['num'] = (int(self.compare['max'] - self.compare['min'])/self.compare['chunk'] + 1
+        chunks = 1000
+        min_ = min(self.spectra['wave'])
+        max_ = max(self.spectra['wave'])
+        num = (int(max_ - min_)/chunks) + 1
 
-        # Normalize data and model by dividing by polynomials
-        for i in range(0, self.compare['num']):
-            k = ((self.model['wave'] >= self.compare['min']+self.compare['chunk']*i) &
-                 (self.model['wave'] <= self.compare['min']+self.compare['chunk']*(i+1)))
-            if not np.any(k) or len(self.model['wave'][k]) <= 10:
-                continue
+        for i in range(num):
+            k = ((self.spectra['wave'] >= min_ + chunks*i) &
+                 (self.spectra['wave'] <= min_ + chunks*(i+1)))
 
-            j = ((self.data['wave'] >= min(self.model['wave'][k])) &
-                 (self.data['wave'] <= max(self.model['wave'][k])))
+            coeffs = chebfit(self.spectra['wave'][k],
+                             self.spectra['d_flux_norm'][k], 2)
+            poly = chebval(self.spectra['wave'][k], coeffs)
+            self.spectra['d_flux_norm'][k] = self.spectra['d_flux_norm'][k]/poly
+            self.spectra['unc_norm'][k] = self.spectra['unc_norm'][k]/poly
 
-            coeffs = chebfit(self.data['wave'][j],
-                             self.data['spec'][j], 2)
-            poly = chebval(self.data['wave'][j], coeffs)
-            self.data['spec'][j] = self.data['spec'][j]/poly
-            self.data['erro'][j] = self.data['erro'][j]/poly
-
-            coeffs = chebfit(self.data['wave'][j],
-                             self.model['interp_spec'][j], 2)
-            poly = chebval(self.data['wave'][j], coeffs)
-            self.model['interp_spec'][j] = self.model['interp_spec'][j]/poly
-
-            coeffs = chebfit(self.model['wave'][k],
-                             self.model['spec'][k], 2)
-            poly = chebval(self.model['wave'][k], coeffs)
-            self.model['spec'][k] = self.model['spec'][k]/poly
-
+            coeffs = chebfit(self.spectra['wave'][k],
+                             self.spectra['m_flux_norm'][k], 2)
+            poly = chebval(self.spectra['wave'][k], coeffs)
+            self.spectra['m_flux_norm'][k] = self.spectra['m_flux_norm'][k]/poly
 
     def get_m2l(self, info, in_=False, mw=0):
 
@@ -257,13 +252,13 @@ class Alf(object):
         lsun = 3.839e33
         clight = 2.9979E10
         pc2cm  = 3.08568E18
+
         flux = self.data['m_flux']/self.data['m_poly']
         aspec = (flux*lsun/1e6*self.data['wave']**2/clight/1e8/4/mypi/pc2cm**2)
 
         wave, trans = np.loadtxt('/Users/alexa/alf/infiles/filters.dat',
                                  usecols=(0,1), unpack=True)
         interptrans = np.interp(self.data['wave'], wave, trans, left=0, right=0)
-
 
         tot_flux = np.trapz(aspec*interptrans, np.log(self.data['wave']))/np.trapz(interptrans, np.log(self.data['wave']))
         mag = -2.5*np.log10(tot_flux) - 48.60
@@ -357,41 +352,36 @@ class Alf(object):
 
             self.xFe[col] = self.get_cls(xfe_vals)
 
-    def plot_model(self, outpath, info, mock=False):
-        if not mock:
-            fstring = (
-                       '{0}/{1}_{2}_ssp{3}_fit{4}_imf{5}_'
-                       'nad{6}_bh{7}_ns{8}_wd{9}_{10}_model_compare.pdf'
-                       )
-            fname = fstring.format(outpath,
-                    self.legend.replace(' ', '_'),
-                    info['instrument'], info['ssp_type'],
-                    info['fit_type'], info['imf_type'],
-                    info['nad'], info['bh_remnants'],
-                    info['ns_remnants'], info['wd_remnants'],
-                    info['outfiles'].split('_')[-1])
-        else:
-            fname = '{0}/{1}_model_compare.pdf'.format(outpath, info['in_sigma'])
+    def plot_model(self, fname):
+
+        chunks = 1000
+        min_ = min(self.spectra['wave'])
+        max_ = max(self.spectra['wave'])
+        num = (int(max_ - min_)/chunks) + 1
+
         with PdfPages(fname) as pdf:
-            for i in range(0, self.compare['num']):
+            for i in range(num):
                 fig = plt.figure(figsize=(14,9), facecolor='white')
                 ax1 = plt.subplot2grid((3,2), (0,0), rowspan=2, colspan=2)
                 ax2 = plt.subplot2grid((3,2), (2,0), rowspan=1, colspan=2)
 
-                ax1.plot(self.data['wave'][j],
-                         self.data['spec'][j],
+
+                j = ((self.spectra['wave'] >= min_ + chunks*i) &
+                     (self.spectra['wave'] <= min_ + chunks*(i+1)))
+                ax1.plot(self.spectra['wave'][j],
+                         self.spectra['d_flux_norm'][j],
                          'k-', lw=2, label='Data')
 
-                ax1.plot(self.model['wave'][k],
-                         self.model['spec'][k],
+                ax1.plot(self.spectra['wave'][j],
+                         self.spectra['m_flux_norm'][j],
                          color='#E32017', lw=2, label='Model')
                 ax1.legend(frameon=False)
 
-                ax2.plot(self.data['wave'][j], self.residual[j],
+                ax2.plot(self.spectra['wave'][j], self.spectra['residual'][j],
                             color='#7156A5', lw=2, alpha=0.7)
-                ax2.fill_between(self.data['wave'][j],
-                        -self.data['erro'][j]/self.data['spec'][j]*1e2,
-                        self.data['erro'][j]/self.data['spec'][j]*1e2,
+                ax2.fill_between(self.spectra['wave'][j],
+                        -(self.spectra['unc'][j])*1e2,
+                        +(self.spectra['unc'][j])*1e2,
                         color='#CCCCCC')
                 ax2.set_ylim(-4.9, 4.9)
 
