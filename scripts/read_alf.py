@@ -13,8 +13,6 @@ class Alf(object):
     def __init__(self, infile, outfiles, legend):
         self.outfiles = outfiles
         self.legend = legend
-        self.data = {}
-        self.model = {}
         self.residual = None
         try:
             #pass
@@ -119,11 +117,23 @@ class Alf(object):
                                'ML_r','ML_i', 'ML_k', 'MW_r',
                                'MW_i', 'MW_k']
 
-        if infile is not '':
-            self.process_model_data(infile)
-
+        try:
+            m = np.loadtxt('{0}.bestspec'.format(self.outfiles))
+            data = {}
+            data['wave'] = m[:,0]/(1.+self.basic['velz'][5]*1e3/constants.c)
+            data['m_flux'] = m[:,1] # Model spectrum, normalization applied
+            data['d_flux'] = m[:,2] # Data spectrum
+            data['d_snr'] = m[:,3]  # Including jitter and inflated errors
+            data['m_poly'] = m[:,4] # Polynomial used to create m_flux
+            data['residual'] = (m[:,1] - m[:,2])/m[:,1] * 1e2
+            self.data = data
+        except:
+            warning = ('Do not have the *.bestspec file')
+            warnings.warn(warning)
+            self.data = None
 
         self.mass = None
+
         """
         Check the values of the nuisance parameters
         and raise a warning if they are too large.
@@ -134,53 +144,13 @@ class Alf(object):
         #    warnings.warn(warning.format(self.path, 'loghot',
         #                  self.results['loghot'][0]))
 
-    def process_model_data(self, infile):
+    def normalize_spectra(self):
         """
+        Normalize the data and model spectra
         """
 
-        # NOTE: Use the posteriors for the velocity
-        try:
-            d = np.loadtxt('{0}.dat'.format(infile))
-            d_wave = d[:,0]/(1.+self.basic['velz'][0]*1e3/constants.c)
-            d_flux = d[:,1]
-            d_erro = d[:,2]
-        except:
-            warning = ('Do not have the input data file')
-            warnings.warn(warning)
-            self.data = None
-            # Bail out of this function
-        try:
-            m = np.loadtxt('{0}.bestspec'.format(self.outfiles))
-            m_wave = m[:,0]/(1.+self.basic['velz'][0]*1e3/constants.c)
-            m_flux = m[:,1]
-        except:
-            warning = ('Do not have the *.bestspec file')
-            warnings.warn(warning)
-            self.model = None
-            # Bail out of this function
-
-        #self.model['wave'] = m_wave
-        #self.model['spec'] = m_flux
-
-        #'''
-        self.compare = {}
-        # Find overlapping wavelength range
-        self.compare['min'] = max([d_wave[0], m_wave[0]])
-        self.compare['max'] = min([d_wave[-1], m_wave[-1]])
-
-        i = ((d_wave >= self.compare['min']) & (d_wave <= self.compare['max']))
-        self.data['wave'] = d_wave[i]
-        self.data['spec'] = d_flux[i]
-        self.data['erro'] = d_erro[i]
-
-        i = ((m_wave >= self.compare['min']) & (m_wave <= self.compare['max']))
-        self.model['wave'] = m_wave[i]
-        self.model['spec'] = m_flux[i]
-
-        self.model['interp_spec'] = np.interp(self.data['wave'], self.model['wave'], self.model['spec'])
-
-        self.compare['chunk'] = 1000
-        self.compare['num'] = int(self.compare['max'] - self.compare['min'])/self.compare['chunk'] + 1
+        #self.compare['chunk'] = 10000
+        #self.compare['num'] = (int(self.compare['max'] - self.compare['min'])/self.compare['chunk'] + 1
 
         # Normalize data and model by dividing by polynomials
         for i in range(0, self.compare['num']):
@@ -208,8 +178,6 @@ class Alf(object):
             poly = chebval(self.model['wave'][k], coeffs)
             self.model['spec'][k] = self.model['spec'][k]/poly
 
-        self.residual = (self.model['interp_spec']-self.data['spec'])/self.model['interp_spec']*1e2
-        #'''
 
     def get_m2l(self, info, in_=False, mw=0):
 
@@ -232,7 +200,7 @@ class Alf(object):
         zh = self.basic['zH'][val][0]
 
         # line 546 in alf.f90
-        msto = max(min(10**(msto_t0+msto_t1*logage) *
+        msto = max(min(10**(msto_t0+msto_t1*logage)*\
                        (msto_z0+msto_z1*zh+msto_z2*zh**2), 3.0), 0.75)
 
         if mw == 1:
@@ -253,6 +221,9 @@ class Alf(object):
                     imf1 = self.mcmc[:,val]
                     val = np.where(self.labels == 'IMF2')
                     imf2 = self.mcmc[:,val]
+
+                    #plt.hist(np.squeeze(imf2))
+                    #plt.show()
                 else:
                     imf1 = info['in_imf1']
                     imf2 = info['in_imf2']
@@ -286,31 +257,22 @@ class Alf(object):
         lsun = 3.839e33
         clight = 2.9979E10
         pc2cm  = 3.08568E18
-        aspec = self.model['spec']*lsun/1e6*self.model['wave']**2/clight/1e8/4/mypi/pc2cm**2
+        flux = self.data['m_flux']/self.data['m_poly']
+        aspec = (flux*lsun/1e6*self.data['wave']**2/clight/1e8/4/mypi/pc2cm**2)
 
-        wave, trans = np.loadtxt('/Users/alexa/alf/infiles/filters.dat', usecols=(0,1), unpack=True)
-        interptrans = np.interp(self.model['wave'], wave, trans, left=0, right=0)
+        wave, trans = np.loadtxt('/Users/alexa/alf/infiles/filters.dat',
+                                 usecols=(0,1), unpack=True)
+        interptrans = np.interp(self.data['wave'], wave, trans, left=0, right=0)
 
-        tot_flux = np.trapz(aspec*interptrans, np.log(self.model['wave']))/np.trapz(interptrans, np.log(self.model['wave']))
+
+        tot_flux = np.trapz(aspec*interptrans, np.log(self.data['wave']))/np.trapz(interptrans, np.log(self.data['wave']))
         mag = -2.5*np.log10(tot_flux) - 48.60
 
-        # Getting a slightly different value than the alf getm2l.f90 code.
-        # Could be a difference in the transmission curve
         if in_ == False:
             self.mass = self.get_cls(mass)
 
+        # Getting a slightly different value than the alf getm2l.f90 code.
         return mass/10**(2./5 * (4.64 - mag))
-
-
-        # NOTE: Not sure if observate is going to work, need to understand units better
-        # For observate the assumed input units are erg/s/cm^2/AA and AA
-        # Might be in correct units already?
-
-        # Get luminosity over filters
-        #print observate.list_available_filters()
-        #filts = observate.load_filters(['sdss_r0'])
-        #tmp = observate.getSED(self.data['wave'], aspec, filterlist=filts)
-
 
     def abundance_correct(self, s07=False, b14=False, m11=True):
         """
