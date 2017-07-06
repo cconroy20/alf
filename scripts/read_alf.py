@@ -10,9 +10,10 @@ from astropy.io import ascii
 from astropy.table import Table, Column, hstack
 
 class Alf(object):
-    def __init__(self, outfiles, legend):
+    def __init__(self, outfiles, info):
         self.outfiles = outfiles
-        self.legend = legend
+        self.legend = info['label']
+        self.imf_type = info['imf_type']
         self.residual = None
         try:
             self.mcmc = np.loadtxt('{0}.mcmc'.format(self.outfiles))
@@ -173,7 +174,7 @@ class Alf(object):
             poly = chebval(self.spectra['wave'][k], coeffs)
             self.spectra['m_flux_norm'][k] = self.spectra['m_flux_norm'][k]/poly
 
-    def get_m2l(self, info, in_=False, mw=0):
+    def get_m2l(self, in_=False, mw=0):
 
         # Taken from alf_vars.f90
         imflo = 0.08
@@ -200,7 +201,7 @@ class Alf(object):
         if mw == 1:
             mass = get_mass(imflo, msto, krpa_imf1, krpa_imf2, krpa_imf3)
         else:
-            if info['imf_type'] == 0:
+            if imf_type == 0:
                 if in_ == False:
                     val = np.where(self.labels == 'IMF1')
                     imf1 = self.mcmc[:,val]
@@ -208,7 +209,7 @@ class Alf(object):
                     imf1 = info['in_imf1']
                 mass = get_mass(imflo, msto, imf1, imf1, krpa_imf3)
 
-            elif info['imf_type'] == 1:
+            elif imf_type == 1:
                 # Double power-law IMF with a fixed low-mass cutoff
                 if in_ == False:
                     val = np.where(self.labels == 'IMF1')
@@ -222,9 +223,9 @@ class Alf(object):
 
                 mass = get_mass(imflo, msto, imf1, imf2, krpa_imf3)
 
-            elif info['imf_type'] == 2:
+            elif imf_type == 2:
                 pass
-            elif info['imf_type'] == 3:
+            elif imf_type == 3:
                 # Double power-law IMF with a variable low-mass cutoff
                 if in_ == False:
                     val = np.where(self.labels == 'IMF1')
@@ -238,7 +239,7 @@ class Alf(object):
                     imf2 = info['in_imf2']
                     imf3 = info['in_mcut']
                 mass = get_mass(imf3, msto, imf1, imf2, krpa_imf3)
-            elif info['imf_type'] == 4:
+            elif imf_type == 4:
                 print "Not implemented yet"
 
         # Covert units of spectrum
@@ -359,7 +360,6 @@ class Alf(object):
                 ax1 = plt.subplot2grid((3,2), (0,0), rowspan=2, colspan=2)
                 ax2 = plt.subplot2grid((3,2), (2,0), rowspan=1, colspan=2)
 
-
                 j = ((self.spectra['wave'] >= min_ + chunks*i) &
                      (self.spectra['wave'] <= min_ + chunks*(i+1)))
                 ax1.plot(self.spectra['wave'][j],
@@ -389,18 +389,13 @@ class Alf(object):
 
                 pdf.savefig()
 
-    def plot_corner(self, outpath, info, params=None):
+    def plot_corner(self, params=None):
         import corner
 
         labels = np.array(self.labels)
-        if info['imf_type'] == 1:
-            params = ['chi2', 'velz', 'sigma',
-                      'zH', 'logage', 'IMF1', 'IMF2',
-                      'ML_r', 'MW_r']
-        elif info['imf_type'] == 3:
-            params = ['chi2', 'velz', 'sigma',
-                      'zH', 'logage', 'IMF1', 'IMF2',
-                      'IMF3', 'ML_r', 'MW_r']
+        params = ['chi2', 'velz', 'sigma',
+                  'zH', 'logage', 'IMF1', 'IMF2',
+                  'ML_r', 'MW_r']
         use = np.in1d(labels, params)
 
         figure = corner.corner(self.mcmc[:,use],
@@ -422,7 +417,7 @@ class Alf(object):
             for j in range(0,self.nwalks):
                 data[i,j] = self.mcmc[i*510+j]
 
-        full = hstack((self.basic, self.xH, self.results))
+        full = hstack((self.xH, self.results))
         val = (full['Type_1'] == 'chi2')
         with PdfPages(outname) as pdf:
             for i, (label, trace) in enumerate(zip(self.labels, data.T)):
@@ -447,7 +442,7 @@ class Alf(object):
         plt.tick_params(axis='both', which='major', labelsize=15)
         plt.tick_params(axis='both', which='minor', labelsize=10)
 
-        full = hstack((self.basic, self.xH, self.results))
+        full = hstack((self.xH, self.results))
         val = (full['Type_1'] == 'chi2')
         for i, label in enumerate(self.labels):
             if (label=='ML_k' or label == 'MW_k' or
