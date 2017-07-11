@@ -12,7 +12,7 @@ from astropy.table import Table, Column, hstack
 class Alf(object):
     def __init__(self, outfiles, info):
         self.outfiles = outfiles
-        self.legend = info['label']
+        #self.legend = info['label']
         self.imf_type = info['imf_type']
         self.residual = None
         try:
@@ -174,7 +174,7 @@ class Alf(object):
             poly = chebval(self.spectra['wave'][k], coeffs)
             self.spectra['m_flux_norm'][k] = self.spectra['m_flux_norm'][k]/poly
 
-    def get_m2l(self, in_=False, mw=0):
+    def get_m2l(self, info, in_=False, mw=0):
 
         # Taken from alf_vars.f90
         imflo = 0.08
@@ -201,7 +201,7 @@ class Alf(object):
         if mw == 1:
             mass = get_mass(imflo, msto, krpa_imf1, krpa_imf2, krpa_imf3)
         else:
-            if imf_type == 0:
+            if self.imf_type == 0:
                 if in_ == False:
                     val = np.where(self.labels == 'IMF1')
                     imf1 = self.mcmc[:,val]
@@ -209,7 +209,7 @@ class Alf(object):
                     imf1 = info['in_imf1']
                 mass = get_mass(imflo, msto, imf1, imf1, krpa_imf3)
 
-            elif imf_type == 1:
+            elif self.imf_type == 1:
                 # Double power-law IMF with a fixed low-mass cutoff
                 if in_ == False:
                     val = np.where(self.labels == 'IMF1')
@@ -223,9 +223,9 @@ class Alf(object):
 
                 mass = get_mass(imflo, msto, imf1, imf2, krpa_imf3)
 
-            elif imf_type == 2:
+            elif self.imf_type == 2:
                 pass
-            elif imf_type == 3:
+            elif self.imf_type == 3:
                 # Double power-law IMF with a variable low-mass cutoff
                 if in_ == False:
                     val = np.where(self.labels == 'IMF1')
@@ -239,7 +239,7 @@ class Alf(object):
                     imf2 = info['in_imf2']
                     imf3 = info['in_mcut']
                 mass = get_mass(imf3, msto, imf1, imf2, krpa_imf3)
-            elif imf_type == 4:
+            elif self.imf_type == 4:
                 print "Not implemented yet"
 
         # Covert units of spectrum
@@ -255,7 +255,7 @@ class Alf(object):
                                  usecols=(0,1), unpack=True)
         interptrans = np.interp(self.spectra['wave'], wave, trans, left=0, right=0)
 
-        tot_flux = np.trapz(aspec*interptrans, np.log(self.data['wave']))/np.trapz(interptrans, np.log(self.data['wave']))
+        tot_flux = np.trapz(aspec*interptrans, np.log(self.spectra['wave']))/np.trapz(interptrans, np.log(self.spectra['wave']))
         mag = -2.5*np.log10(tot_flux) - 48.60
 
         if in_ == False:
