@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from astropy.io import ascii
 from astropy.table import Table, Column, hstack
+import fsps
 
 class Alf(object):
     def __init__(self, outfiles, info):
@@ -117,6 +118,9 @@ class Alf(object):
 
         """
         Read in input data and best fit model
+
+        This isn't going to work correctly if the file
+        doesn't exist
         """
         try:
             m = np.loadtxt('{0}.bestspec'.format(self.outfiles))
@@ -133,6 +137,28 @@ class Alf(object):
         data['poly'] = m[:,4] # Polynomial used to create m_flux
         data['residual'] = (m[:,1] - m[:,2])/m[:,1] * 1e2
         self.spectra = data
+
+        try:
+            m = np.loadtxt('{0}.bestspec2'.format(self.outfiles))
+            model = {}
+            model['wave'] = m[:,0]/(1.+self.results['velz'][5]*1e3/constants.c)
+            model['flux'] = m[:,1]
+            self.ext_model = model
+        except:
+            self.ext_model = None
+
+        """
+        plt.cla()
+        plt.clf()
+        plt.plot(self.ext_model['wave'], self.ext_model['flux'],
+                 label='Extended Model')
+        plt.plot(self.spectra['wave'], self.spectra['m_flux']/self.spectra['poly'], color='k', label='Normal Model/Polynomial')
+        plt.legend()
+        plt.show()
+        plt.cla()
+        plt.clf()
+        """
+
 
         self.mass = None
 
@@ -163,6 +189,9 @@ class Alf(object):
             k = ((self.spectra['wave'] >= min_ + chunks*i) &
                  (self.spectra['wave'] <= min_ + chunks*(i+1)))
 
+            if len(self.spectra['d_flux_norm'][k]) < 10:
+                continue
+
             coeffs = chebfit(self.spectra['wave'][k],
                              self.spectra['d_flux_norm'][k], 2)
             poly = chebval(self.spectra['wave'][k], coeffs)
@@ -174,7 +203,7 @@ class Alf(object):
             poly = chebval(self.spectra['wave'][k], coeffs)
             self.spectra['m_flux_norm'][k] = self.spectra['m_flux_norm'][k]/poly
 
-    def get_m2l(self, info, in_=False, mw=0):
+    def get_m2l(self, info, filters, in_=False, vega=False, mw=0):
 
         # Taken from alf_vars.f90
         imflo = 0.08
@@ -248,21 +277,45 @@ class Alf(object):
         clight = 2.9979E10
         pc2cm  = 3.08568E18
 
-        flux = self.spectra['m_flux']/self.spectra['poly']
-        aspec = (flux*lsun/1e6*self.spectra['wave']**2/clight/1e8/4/mypi/pc2cm**2)
+        if self.ext_model is None:
+            flux = self.spectra['m_flux']/self.spectra['poly']
+            wave = self.spectra['wave']
+        else:
+            flux = self.ext_model['flux']
+            wave = self.ext_model['wave']
+        aspec = (flux*(wave**2/
+                 (clight*1e8))*(lsun/(1e6*4*mypi*pc2cm**2)))
 
-        wave, trans = np.loadtxt('/Users/alexa/alf/infiles/filters.dat',
-                                 usecols=(0,1), unpack=True)
-        interptrans = np.interp(self.spectra['wave'], wave, trans, left=0, right=0)
+        print filters
+        band = fsps.find_filter(filters)
+        if filters == 'v':
+            band = band[21]
+        else:
+            band = band[0]
+        print band
+        band_info = fsps.get_filter(band) # need to fix if ever want more
 
-        tot_flux = np.trapz(aspec*interptrans, np.log(self.spectra['wave']))/np.trapz(interptrans, np.log(self.spectra['wave']))
+        t_wave, trans = band_info.transmission
+        interptrans = np.interp(wave, t_wave, trans, left=0, right=0)
+
+        tot_flux = np.trapz(aspec*interptrans,
+                    np.log(wave))/np.trapz(interptrans, np.log(wave))
+        # In AB
         mag = -2.5*np.log10(tot_flux) - 48.60
 
         if in_ == False:
             self.mass = self.get_cls(mass)
 
-        # Getting a slightly different value than the alf getm2l.f90 code.
-        return mass/10**(2./5 * (4.64 - mag))
+        if vega is False:
+            msun = band_info.msun_ab
+            lum = 10**(2./5 * (msun - mag))
+        else:
+            msun = band_info.msun_vega
+            # AB to Vega conversion factor
+            ab_to_vega = (band_info.msun_vega - band_info.msun_ab)
+            lum = 10**(2./5 * (msun - (mag + ab_to_vega)))
+
+        return mass/lum
 
     def abundance_correct(self, s07=False, b14=False, m11=True):
         """
