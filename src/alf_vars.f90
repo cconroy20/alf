@@ -100,7 +100,7 @@ MODULE ALF_VARS
   !rather than the proper convolution in log_lambda space
   !don't turn this on - the "correct" version is just as fast
   INTEGER :: velbroad_simple=0
-
+  
   !--------------------------------------------------------------!
   !    the parameters below should not be modified unless you    !
   !    really know what you are doing!                           !

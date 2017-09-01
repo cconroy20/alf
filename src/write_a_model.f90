@@ -9,8 +9,9 @@ PROGRAM WRITE_A_MODEL
   IMPLICIT NONE
 
   INTEGER  :: i,j
-  REAL(DP) :: s2n,s2np,lmin,lmax,ires=0.,emnorm
+  REAL(DP) :: s2n,s2np,lmin,lmax,ires=0.,emnorm,msto
   REAL(DP), DIMENSION(nl) :: gspec,mspec,lam,err,gdev
+  REAL(DP), DIMENSION(nfil) :: m2l=0.0
   CHARACTER(100) :: file=''
   CHARACTER(50)  :: infile=''
   CHARACTER(2), DIMENSION(10)  :: str=''
@@ -91,6 +92,13 @@ PROGRAM WRITE_A_MODEL
      mspec = 0.0
      CALL GETMODEL(pos,mspec)
 
+     !compute M/L
+     msto = MAX(MIN(10**(msto_t0+msto_t1*pos%logage) * &
+          (msto_z0+msto_z1*pos%zh+msto_z2*pos%zh**2),3.0),0.75)
+     CALL GETM2L(msto,lam,mspec,pos,m2l)
+     !print to screen
+     !write(*,*) m2l
+     
      DO i=1,nl
         !this is to convert between S/N per A and S/N per pix
         IF (lam(i).LT.7500.) THEN
