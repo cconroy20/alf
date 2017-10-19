@@ -79,7 +79,13 @@ MODULE ALF_VARS
 
   !fit the h3 and h4 parameters for the LOSVD
   INTEGER :: fit_hermite=0
-  
+
+  !if set, compute velocity broadening via a simple method
+  !rather than the proper convolution in log_lambda space
+  !don't turn this on - the "correct" version is just as fast
+  !unless you are fitting for the Hermite terms!
+  INTEGER :: velbroad_simple=0
+ 
   !--------------------------------------------------------------!
   !  the options below have not been tested/used in a long time  !
   !  and so are effectively deprecated                           !
@@ -96,10 +102,6 @@ MODULE ALF_VARS
   INTEGER :: fake_response=0
   !Turn off the IMF sensitivity at <7000A if this parameter is =1
   INTEGER :: blueimf_off=0
-  !if set, compute velocity broadening via a simple method
-  !rather than the proper convolution in log_lambda space
-  !don't turn this on - the "correct" version is just as fast
-  INTEGER :: velbroad_simple=0
   
   !--------------------------------------------------------------!
   !    the parameters below should not be modified unless you    !

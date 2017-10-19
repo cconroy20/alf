@@ -3,7 +3,7 @@ FUNCTION GETVELZ()
   !function to estimate the recession velocity
   !this routine is used to get a first-guess at the velocity
   !so that the subsequent Powell minimization (in alf)
-  !coverges faster.  Uses  the first two wavelength segments
+  !coverges faster.  Uses the first two wavelength segments
 
   USE alf_vars; USE nr, ONLY : locate
   USE alf_utils, ONLY : linterp,contnormspec,velbroad
@@ -107,7 +107,7 @@ FUNCTION GETVELZ()
      WRITE(*,'("   Failed to find a redshift solution, setting velz=0.0")')
      WRITE(*,'("    delta(velz|chi2<0.5) = ",F8.2)') MAXVAL(tvza)-MINVAL(tvza)
      !DO i=1,nv
-     !   write(99,*) tvz(i),tchi2(i)
+     !   write(909,*) tvz(i),tchi2(i)
      !ENDDO
      getvelz = 0.0
   ENDIF

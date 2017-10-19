@@ -68,10 +68,10 @@ PROGRAM WRITE_A_MODEL
         WRITE(is,'(I2)') j
      ENDIF
 
-     file = 'smodel_t10.0_zp0.0_sig0100_sn0100.dat'
-     pos%sigma  = 100.
+     file = 'hmodel_t10.0_zp0.0.dat'
+     pos%sigma  = 1.
 
-     s2n  = 100.  !S/N per A
+     s2n  = 10000.  !S/N per A
  
      pos%logage = LOG10(10.0)
      pos%zh     = 0.0

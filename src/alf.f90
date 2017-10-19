@@ -37,7 +37,7 @@ PROGRAM ALF
   !NB: setting this to >1 currently results in errors in the *sum outputs
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=60000
+  INTEGER, PARAMETER :: nburn=1000
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=512
   !save the chain outputs to file and the model spectra
@@ -89,11 +89,11 @@ PROGRAM ALF
   !---------------------------------------------------------------!
 
   !flag specifying if fitting indices or spectra
-  fit_indices = 0
+  fit_indices = 1
 
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
-  fit_type = 0
+  fit_type = 1
 
   !fit h3 and h4 parameters
   fit_hermite = 0
@@ -109,7 +109,7 @@ PROGRAM ALF
   mwimf = 0
 
   !fit two-age SFH or not?
-  fit_two_ages = 1
+  fit_two_ages = 0
 
   !IMF slope within the non-parametric IMF bins
   !0 = flat, 1 = Kroupa, 2 = Salpeter
@@ -142,6 +142,10 @@ PROGRAM ALF
      smooth_trans = 0.0
   ENDIF
 
+  IF (fit_hermite.EQ.1) THEN
+       velbroad_simple = 1
+  ENDIF
+  
   IF (ssp_type.EQ.'cvd') THEN
      !always limit the [Z/H] range for CvD since
      !these models are actually only at Zsol
@@ -279,6 +283,7 @@ PROGRAM ALF
      ELSE
         data%sky = tiny_number
      ENDIF
+     data%sky = tiny_number
 
      !we only compute things up to 500A beyond the input fit region
      nl_fit = MIN(MAX(locate(lam,l2(nlint)+500.0),1),nl)

@@ -62,7 +62,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   pos%logemline_nii  = myran()*2-4
   pos%logemline_sii  = myran()*2-4
   pos%jitter         = myran()*0.5+0.75
-  pos%logsky         = myran()*2-4
+  pos%logsky         = myran()*3-6
   pos%h3             = (myran()-0.5)*0.02
   pos%h4             = (myran()-0.5)*0.02
   
@@ -106,9 +106,15 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
 
   !priors (low)
   IF (fit_type.EQ.0) THEN
-     !in this case we're fitting a two component model
-     !so dont allow them to overlap in age
-     IF (prlo%logage.EQ.test%logage) prlo%logage = LOG10(3.0)
+     IF (fit_two_ages.EQ.0) THEN
+        !in this case we have a single age model, so it needs to
+        !cover the full range
+        IF (prlo%logage.EQ.test%logage) prlo%logage = LOG10(0.5)
+     ELSE
+        !in this case we're fitting a two component model
+        !so dont allow them to overlap in age
+        IF (prlo%logage.EQ.test%logage) prlo%logage = LOG10(3.0)
+     ENDIF
   ELSE
      !in this case we have a single age model, so it needs to
      !cover the full range
@@ -152,7 +158,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prlo%logemline_ni.EQ.test%logemline_ni) prlo%logemline_ni       = -6.0
   IF (prlo%logemline_nii.EQ.test%logemline_nii) prlo%logemline_nii    = -6.0
   IF (prlo%jitter.EQ.test%jitter) prlo%jitter    = 0.1
-  IF (prlo%logsky.EQ.test%logsky) prlo%logsky    = -6.0
+  IF (prlo%logsky.EQ.test%logsky) prlo%logsky    = -9.0
   IF (prlo%h3.EQ.test%h3) prlo%h3    = -0.4
   IF (prlo%h4.EQ.test%h4) prlo%h4    = -0.4
 
