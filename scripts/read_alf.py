@@ -11,17 +11,12 @@ from astropy.table import Table, Column, hstack
 import fsps
 
 class Alf(object):
-    def __init__(self, outfiles, info=None):
+    def __init__(self, outfiles, read_mcmc=True, info=None):
         self.outfiles = outfiles
         #self.legend = info['label']
         #self.imf_type = info['imf_type']
-        try:
+        if read_mcmc:
             self.mcmc = np.loadtxt('{0}.mcmc'.format(self.outfiles))
-        except:
-            warning = ('Do not have the *.mcmc file')
-            warnings.warn(warning)
-            self.mcmc = None
-
         results = ascii.read('{0}.sum'.format(self.outfiles))
 
         self.nsample = None
