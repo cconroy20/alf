@@ -15,11 +15,12 @@ class Alf(object):
         self.outfiles = outfiles
         #self.legend = info['label']
         #self.imf_type = info['imf_type']
+        self.nsample = None
+
         if read_mcmc:
             self.mcmc = np.loadtxt('{0}.mcmc'.format(self.outfiles))
         results = ascii.read('{0}.sum'.format(self.outfiles))
 
-        self.nsample = None
         with open('{0}.sum'.format(self.outfiles)) as f:
             for line in f:
                 if line[0] == '#':
@@ -29,47 +30,47 @@ class Alf(object):
                         self.nchain = float(line.split('=')[1].strip())
                     elif 'Nsample' in line:
                         self.nsample = float(line.split('=')[1].strip())
-        if not self.nsample:
+        #if not self.nsample:
             # The old files don't have this
             # in the header. This is just a
             # guess at the default. Might
             # need to change.
-            self.nsample = 1
+        #    self.nsample = 1
 
-        old = False
-        if len(results.colnames) == 52:
-           self.labels = np.array([
-                      'chi2','velz','sigma','logage','zH',
-                      'FeH', 'a', 'C', 'N', 'Na', 'Mg', 'Si',
-                      'K', 'Ca', 'Ti','V', 'Cr', 'Mn', 'Co',
-                      'Ni', 'Cu', 'Sr','Ba', 'Eu', 'Teff',
-                      'IMF1', 'IMF2', 'logfy', 'sigma2', 'velz2',
-                      'logm7g', 'hotteff', 'loghot','fy_logage',
-                      'logtrans', 'logemline_H', 'logemline_Oiii',
-                      'logemline_Sii', 'logemline_Ni', 'logemline_Nii',
-                      'jitter','IMF3', 'logsky', 'IMF4', 'h3', 'h4',
-                      'ML_v','ML_i','ML_k','MW_v', 'MW_i','MW_k'
-                      ])
-        elif len(results.colnames) == 50:
-            self.labels = np.array([
-                      'chi2','velz','sigma','logage','zH',
-                      'FeH', 'a', 'C', 'N', 'Na', 'Mg', 'Si',
-                      'K', 'Ca', 'Ti','V', 'Cr', 'Mn', 'Co',
-                      'Ni', 'Cu', 'Sr','Ba', 'Eu', 'Teff',
-                      'IMF1', 'IMF2', 'logfy', 'sigma2', 'velz2',
-                      'logm7g', 'hotteff', 'loghot','fy_logage',
-                      'logtrans', 'logemline_H', 'logemline_Oiii',
-                      'logemline_Sii', 'logemline_Ni', 'logemline_Nii',
-                      'jitter','IMF3', 'logsky', 'IMF4',
-                      'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k'])
-            old = True
+        #old = False
+        #if len(results.colnames) == 52:
+        self.labels = np.array([
+                  'chi2','velz','sigma','logage','zH',
+                  'FeH', 'a', 'C', 'N', 'Na', 'Mg', 'Si',
+                  'K', 'Ca', 'Ti','V', 'Cr', 'Mn', 'Co',
+                  'Ni', 'Cu', 'Sr','Ba', 'Eu', 'Teff',
+                  'IMF1', 'IMF2', 'logfy', 'sigma2', 'velz2',
+                  'logm7g', 'hotteff', 'loghot','fy_logage',
+                  'logtrans', 'logemline_H', 'logemline_Oiii',
+                  'logemline_Sii', 'logemline_Ni', 'logemline_Nii',
+                  'jitter','IMF3', 'logsky', 'IMF4', 'h3', 'h4',
+                  'ML_v','ML_i','ML_k','MW_v', 'MW_i','MW_k'
+                  ])
+        #elif len(results.colnames) == 50:
+        #    self.labels = np.array([
+        #              'chi2','velz','sigma','logage','zH',
+        #              'FeH', 'a', 'C', 'N', 'Na', 'Mg', 'Si',
+        #              'K', 'Ca', 'Ti','V', 'Cr', 'Mn', 'Co',
+        #              'Ni', 'Cu', 'Sr','Ba', 'Eu', 'Teff',
+        #              'IMF1', 'IMF2', 'logfy', 'sigma2', 'velz2',
+        #              'logm7g', 'hotteff', 'loghot','fy_logage',
+        #              'logtrans', 'logemline_H', 'logemline_Oiii',
+        #              'logemline_Sii', 'logemline_Ni', 'logemline_Nii',
+        #              'jitter','IMF3', 'logsky', 'IMF4',
+        #              'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k'])
+        #    old = True
 
         results = Table(results, names=self.labels)
-        if old:
-            h3 = Column(np.zeros(len(results['chi2'])), name='h3')
-            h4 = Column(np.zeros(len(results['chi2'])), name='h4')
-            results.add_column(h3, index=43)
-            results.add_column(h4, index=44)
+        #if old:
+        #    h3 = Column(np.zeros(len(results['chi2'])), name='h3')
+        #    h4 = Column(np.zeros(len(results['chi2'])), name='h4')
+        #    results.add_column(h3, index=43)
+        #    results.add_column(h4, index=44)
 
         """
         0:   Mean of the posterior
