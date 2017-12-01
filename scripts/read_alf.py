@@ -127,14 +127,14 @@ class Alf(object):
         #    warnings.warn(warning.format(self.path, 'loghot',
         #                  self.results['loghot'][0]))
 
-    def get_total_met(obj):
+    def get_total_met(self):
 
-        zh = np.where(obj.labels == 'zH')
-        feh = np.where(obj.labels == 'FeH')
-        total_met = obj.mcmc[:,zh] + obj.mcmc[:,feh]
+        zh = np.where(self.labels == 'zH')
+        feh = np.where(self.labels == 'FeH')
+        total_met = self.mcmc[:,zh] + self.mcmc[:,feh]
 
         #Computing errors directly from the chains.
-        return obj.get_cls(total_met)
+        self.tmet = self.get_cls(total_met)
 
     def normalize_spectra(self):
         """
