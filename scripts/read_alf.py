@@ -11,11 +11,10 @@ from astropy.table import Table, Column, hstack
 import fsps
 
 class Alf(object):
-    def __init__(self, outfiles, info):
+    def __init__(self, outfiles, info=None):
         self.outfiles = outfiles
         #self.legend = info['label']
-        self.imf_type = info['imf_type']
-        self.residual = None
+        #self.imf_type = info['imf_type']
         try:
             self.mcmc = np.loadtxt('{0}.mcmc'.format(self.outfiles))
         except:
@@ -54,7 +53,7 @@ class Alf(object):
                       'logtrans', 'logemline_H', 'logemline_Oiii',
                       'logemline_Sii', 'logemline_Ni', 'logemline_Nii',
                       'jitter','IMF3', 'logsky', 'IMF4', 'h3', 'h4',
-                      'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k'
+                      'ML_v','ML_i','ML_k','MW_v', 'MW_i','MW_k'
                       ])
         elif len(results.colnames) == 50:
             self.labels = np.array([
@@ -113,7 +112,7 @@ class Alf(object):
                                'logemline_Sii', 'logemline_Ni',
                                'logemline_Nii','jitter','IMF3',
                                'logsky', 'IMF4', 'h3', 'h4',
-                               'ML_r','ML_i', 'ML_k', 'MW_r',
+                               'ML_v','ML_i', 'ML_k', 'MW_v',
                                'MW_i', 'MW_k']
 
         """
@@ -141,26 +140,14 @@ class Alf(object):
         try:
             m = np.loadtxt('{0}.bestspec2'.format(self.outfiles))
             model = {}
-            model['wave'] = m[:,0]/(1.+self.results['velz'][5]*1e3/constants.c)
+            model['wave'] = m[:,0]
+            #model['wave'] = m[:,0]/(1.+self.results['velz'][5]*1e3/constants.c)
             model['flux'] = m[:,1]
             self.ext_model = model
         except:
             self.ext_model = None
 
-        """
-        plt.cla()
-        plt.clf()
-        plt.plot(self.ext_model['wave'], self.ext_model['flux'],
-                 label='Extended Model')
-        plt.plot(self.spectra['wave'], self.spectra['m_flux']/self.spectra['poly'], color='k', label='Normal Model/Polynomial')
-        plt.legend()
-        plt.show()
-        plt.cla()
-        plt.clf()
-        """
-
-
-        self.mass = None
+        #self.mass = None
 
         """
         Check the values of the nuisance parameters
@@ -171,6 +158,15 @@ class Alf(object):
         #if self.results['loghot'][0] > -1.0:
         #    warnings.warn(warning.format(self.path, 'loghot',
         #                  self.results['loghot'][0]))
+
+    def get_total_met(obj):
+
+        zh = np.where(obj.labels == 'zH')
+        feh = np.where(obj.labels == 'FeH')
+        total_met = obj.mcmc[:,zh] + obj.mcmc[:,feh]
+
+        #Computing errors directly from the chains.
+        return obj.get_cls(total_met)
 
     def normalize_spectra(self):
         """
@@ -203,7 +199,12 @@ class Alf(object):
             poly = chebval(self.spectra['wave'][k], coeffs)
             self.spectra['m_flux_norm'][k] = self.spectra['m_flux_norm'][k]/poly
 
-    def get_m2l(self, info, filters, in_=False, vega=False, mw=0):
+    def get_m2l(self, info, filters, in_=False, vega=False, remnants=True, mw=0):
+        """
+        Note: That this does not work correctly. It needs to work directly from
+        the chains.
+        """
+
 
         # Taken from alf_vars.f90
         imflo = 0.08
@@ -228,7 +229,8 @@ class Alf(object):
                        (msto_z0+msto_z1*zh+msto_z2*zh**2), 3.0), 0.75)
 
         if mw == 1:
-            mass = get_mass(imflo, msto, krpa_imf1, krpa_imf2, krpa_imf3)
+            mass = get_mass(imflo, msto, krpa_imf1, krpa_imf2,
+                    krpa_imf3, remnants=remnants)
         else:
             if self.imf_type == 0:
                 if in_ == False:
@@ -236,7 +238,8 @@ class Alf(object):
                     imf1 = self.mcmc[:,val]
                 else:
                     imf1 = info['in_imf1']
-                mass = get_mass(imflo, msto, imf1, imf1, krpa_imf3)
+                mass = get_mass(imflo, msto, imf1, imf1, krpa_imf3,
+                        remnants=remnants)
 
             elif self.imf_type == 1:
                 # Double power-law IMF with a fixed low-mass cutoff
@@ -250,7 +253,8 @@ class Alf(object):
                     imf1 = info['in_imf1']
                     imf2 = info['in_imf2']
 
-                mass = get_mass(imflo, msto, imf1, imf2, krpa_imf3)
+                mass = get_mass(imflo, msto, imf1, imf2, krpa_imf3,
+                        remnants=remnants)
 
             elif self.imf_type == 2:
                 pass
@@ -267,7 +271,8 @@ class Alf(object):
                     imf1 = info['in_imf1']
                     imf2 = info['in_imf2']
                     imf3 = info['in_mcut']
-                mass = get_mass(imf3, msto, imf1, imf2, krpa_imf3)
+                mass = get_mass(imf3, msto, imf1, imf2, krpa_imf3,
+                        remnants=remnants)
             elif self.imf_type == 4:
                 print "Not implemented yet"
 
@@ -286,34 +291,29 @@ class Alf(object):
         aspec = (flux*(wave**2/
                  (clight*1e8))*(lsun/(1e6*4*mypi*pc2cm**2)))
 
-        print filters
+        #print filters
         band = fsps.find_filter(filters)
         if filters == 'v':
             band = band[21]
         else:
             band = band[0]
-        print band
         band_info = fsps.get_filter(band) # need to fix if ever want more
 
         t_wave, trans = band_info.transmission
         interptrans = np.interp(wave, t_wave, trans, left=0, right=0)
 
+        # put in check for when transmission curve is out of bounds
         tot_flux = np.trapz(aspec*interptrans,
                     np.log(wave))/np.trapz(interptrans, np.log(wave))
+
         # In AB
         mag = -2.5*np.log10(tot_flux) - 48.60
 
-        if in_ == False:
+        if in_ == False and mw == 0:
             self.mass = self.get_cls(mass)
 
-        if vega is False:
-            msun = band_info.msun_ab
-            lum = 10**(2./5 * (msun - mag))
-        else:
-            msun = band_info.msun_vega
-            # AB to Vega conversion factor
-            ab_to_vega = (band_info.msun_vega - band_info.msun_ab)
-            lum = 10**(2./5 * (msun - (mag + ab_to_vega)))
+        msun = band_info.msun_ab
+        lum = 10**(2./5 * (msun - mag))
 
         return mass/lum
 
@@ -443,6 +443,12 @@ class Alf(object):
                 pdf.savefig()
 
     def plot_corner(self, params=None):
+        """
+        Note: still in progress. I'd like to make it so
+        people can pass an argument of the parameters
+        they'd like on this plot.
+        """
+
         import corner
 
         labels = np.array(self.labels)
@@ -457,12 +463,12 @@ class Alf(object):
 
         plt.tight_layout()
 
-    def plot_traces(self, fname):
+    def plot_traces(self, outname):
         plt.cla()
         plt.clf()
 
         self.nchain = 100
-        self.nwalks = 510
+        self.nwalks = 512
 
         num = len(self.labels)
         data = np.zeros((self.nchain, self.nwalks, num))
@@ -526,7 +532,7 @@ class Alf(object):
     def write_params(self):
         pass
 
-def get_mass(mlo, mto, imf1, imf2, imfup):#, imf3, imf4, timfnorm):
+def get_mass(mlo, mto, imf1, imf2, imfup, remnants=True):#, imf3, imf4, timfnorm):
 
     # Taken from alf_vars.f90
     imflo = 0.08
@@ -556,13 +562,14 @@ def get_mass(mlo, mto, imf1, imf2, imfup):#, imf3, imf4, timfnorm):
 
     getmass = getmass/imfnorm
 
-    # BH remnants
-    # 40<M<imf_up leave behidn a 0.5*M BH
-    getmass = getmass + 0.5*m2**(-imf1+imf2)*(imfhi**(-imfup+2)-bhlim**(-imfup+2))/(-imfup+2)/imfnorm
+    if remnants:
+        # BH remnants
+        # 40<M<imf_up leave behidn a 0.5*M BH
+        getmass = getmass + 0.5*m2**(-imf1+imf2)*(imfhi**(-imfup+2)-bhlim**(-imfup+2))/(-imfup+2)/imfnorm
 
-    # NS remnants
-    # 8.5<M<40 leave behind a 1.4 Msun NS
-    getmass = getmass +  1.4*m2**(-imf1+imf2)*(bhlim**(-imfup+1)-nslim**(-imfup+1))/(-imfup+1)/imfnorm
+        # NS remnants
+        # 8.5<M<40 leave behind a 1.4 Msun NS
+        getmass = getmass +  1.4*m2**(-imf1+imf2)*(bhlim**(-imfup+1)-nslim**(-imfup+1))/(-imfup+1)/imfnorm
 
     # WD remnants
     # M<8.5 leave beind a 0.077*M+0.48 WD
@@ -575,7 +582,7 @@ def get_mass(mlo, mto, imf1, imf2, imfup):#, imf3, imf4, timfnorm):
         getmass = getmass + 0.48*m2**(-imf1+imf2)*(nslim**(-imfup+1)-mto**(-imfup+1))/(-imfup+1)/imfnorm
         getmass = getmass + 0.077*m2**(-imf1+imf2)*(nslim**(-imfup+2)-mto**(-imfup+2))/(-imfup+2)/imfnorm
 
-        # What's going on lines 221-223 of getmass.f90?
+    # What's going on lines 221-223 of getmass.f90?
 
     return getmass
 
