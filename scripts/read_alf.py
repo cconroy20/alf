@@ -30,15 +30,7 @@ class Alf(object):
                         self.nchain = float(line.split('=')[1].strip())
                     elif 'Nsample' in line:
                         self.nsample = float(line.split('=')[1].strip())
-        #if not self.nsample:
-            # The old files don't have this
-            # in the header. This is just a
-            # guess at the default. Might
-            # need to change.
-        #    self.nsample = 1
 
-        #old = False
-        #if len(results.colnames) == 52:
         self.labels = np.array([
                   'chi2','velz','sigma','logage','zH',
                   'FeH', 'a', 'C', 'N', 'Na', 'Mg', 'Si',
@@ -51,26 +43,8 @@ class Alf(object):
                   'jitter','IMF3', 'logsky', 'IMF4', 'h3', 'h4',
                   'ML_v','ML_i','ML_k','MW_v', 'MW_i','MW_k'
                   ])
-        #elif len(results.colnames) == 50:
-        #    self.labels = np.array([
-        #              'chi2','velz','sigma','logage','zH',
-        #              'FeH', 'a', 'C', 'N', 'Na', 'Mg', 'Si',
-        #              'K', 'Ca', 'Ti','V', 'Cr', 'Mn', 'Co',
-        #              'Ni', 'Cu', 'Sr','Ba', 'Eu', 'Teff',
-        #              'IMF1', 'IMF2', 'logfy', 'sigma2', 'velz2',
-        #              'logm7g', 'hotteff', 'loghot','fy_logage',
-        #              'logtrans', 'logemline_H', 'logemline_Oiii',
-        #              'logemline_Sii', 'logemline_Ni', 'logemline_Nii',
-        #              'jitter','IMF3', 'logsky', 'IMF4',
-        #              'ML_r','ML_i','ML_k','MW_r', 'MW_i','MW_k'])
-        #    old = True
 
         results = Table(results, names=self.labels)
-        #if old:
-        #    h3 = Column(np.zeros(len(results['chi2'])), name='h3')
-        #    h4 = Column(np.zeros(len(results['chi2'])), name='h4')
-        #    results.add_column(h3, index=43)
-        #    results.add_column(h4, index=44)
 
         """
         0:   Mean of the posterior
@@ -143,8 +117,6 @@ class Alf(object):
         except:
             self.ext_model = None
 
-        #self.mass = None
-
         """
         Check the values of the nuisance parameters
         and raise a warning if they are too large.
@@ -194,124 +166,6 @@ class Alf(object):
                              self.spectra['m_flux_norm'][k], 2)
             poly = chebval(self.spectra['wave'][k], coeffs)
             self.spectra['m_flux_norm'][k] = self.spectra['m_flux_norm'][k]/poly
-
-    def get_m2l(self, info, filters, in_=False, vega=False, remnants=True, mw=0):
-        """
-        Note: That this does not work correctly. It needs to work directly from
-        the chains.
-        """
-
-
-        # Taken from alf_vars.f90
-        imflo = 0.08
-        imfhi = 100.0
-
-        msto_t0 = +0.33250847
-        msto_t1 = -0.29560944
-        msto_z0 = +0.95402521
-        msto_z1 = +0.21944863
-        msto_z2 = +0.070565820
-
-        krpa_imf1 = 1.3
-        krpa_imf2 = 2.3
-        krpa_imf3 = 2.3
-
-        val = (self.results['Type'] == 'cl50')
-        logage = self.results['logage'][val][0]
-        zh = self.results['zH'][val][0]
-
-        # line 546 in alf.f90
-        msto = max(min(10**(msto_t0+msto_t1*logage)*\
-                       (msto_z0+msto_z1*zh+msto_z2*zh**2), 3.0), 0.75)
-
-        if mw == 1:
-            mass = get_mass(imflo, msto, krpa_imf1, krpa_imf2,
-                    krpa_imf3, remnants=remnants)
-        else:
-            if self.imf_type == 0:
-                if in_ == False:
-                    val = np.where(self.labels == 'IMF1')
-                    imf1 = self.mcmc[:,val]
-                else:
-                    imf1 = info['in_imf1']
-                mass = get_mass(imflo, msto, imf1, imf1, krpa_imf3,
-                        remnants=remnants)
-
-            elif self.imf_type == 1:
-                # Double power-law IMF with a fixed low-mass cutoff
-                if in_ == False:
-                    val = np.where(self.labels == 'IMF1')
-                    imf1 = self.mcmc[:,val]
-                    val = np.where(self.labels == 'IMF2')
-                    imf2 = self.mcmc[:,val]
-
-                else:
-                    imf1 = info['in_imf1']
-                    imf2 = info['in_imf2']
-
-                mass = get_mass(imflo, msto, imf1, imf2, krpa_imf3,
-                        remnants=remnants)
-
-            elif self.imf_type == 2:
-                pass
-            elif self.imf_type == 3:
-                # Double power-law IMF with a variable low-mass cutoff
-                if in_ == False:
-                    val = np.where(self.labels == 'IMF1')
-                    imf1 = self.mcmc[:,val]
-                    val = np.where(self.labels == 'IMF2')
-                    imf2 = self.mcmc[:,val]
-                    val = np.where(self.labels == 'IMF3')
-                    imf3 = self.mcmc[:,val]
-                else:
-                    imf1 = info['in_imf1']
-                    imf2 = info['in_imf2']
-                    imf3 = info['in_mcut']
-                mass = get_mass(imf3, msto, imf1, imf2, krpa_imf3,
-                        remnants=remnants)
-            elif self.imf_type == 4:
-                print "Not implemented yet"
-
-        # Covert units of spectrum
-        mypi   = 3.14159265
-        lsun   = 3.839e33
-        clight = 2.9979E10
-        pc2cm  = 3.08568E18
-
-        if self.ext_model is None:
-            flux = self.spectra['m_flux']/self.spectra['poly']
-            wave = self.spectra['wave']
-        else:
-            flux = self.ext_model['flux']
-            wave = self.ext_model['wave']
-        aspec = (flux*(wave**2/
-                 (clight*1e8))*(lsun/(1e6*4*mypi*pc2cm**2)))
-
-        #print filters
-        band = fsps.find_filter(filters)
-        if filters == 'v':
-            band = band[21]
-        else:
-            band = band[0]
-        band_info = fsps.get_filter(band) # need to fix if ever want more
-
-        t_wave, trans = band_info.transmission
-        interptrans = np.interp(wave, t_wave, trans, left=0, right=0)
-
-        # put in check for when transmission curve is out of bounds
-        tot_flux = np.trapz(aspec*interptrans,
-                    np.log(wave))/np.trapz(interptrans, np.log(wave))
-
-        # In AB
-        mag = -2.5*np.log10(tot_flux) - 48.60
-
-        if in_ == False and mw == 0:
-            self.mass = self.get_cls(mass)
-
-        msun = band_info.msun_ab
-        lum = 10**(2./5 * (msun - mag))
-
-        return mass/lum
 
     def abundance_correct(self, s07=False, b14=False, m11=True):
         """
@@ -527,60 +381,6 @@ class Alf(object):
 
     def write_params(self):
         pass
-
-def get_mass(mlo, mto, imf1, imf2, imfup, remnants=True):#, imf3, imf4, timfnorm):
-
-    # Taken from alf_vars.f90
-    imflo = 0.08
-    imfhi = 100.0
-
-    # From getmass.f90
-    # What are these?
-    bhlim=40.0
-    nslim=8.5
-    m2 = 0.5
-    m3 = 1.0
-
-    # For IMF type NOT 4
-
-    # Normalize the weights so that 1 Msun formed at t=0
-    imfnorm = ((m2**(-imf1+2)-mlo**(-imf1+2))/(-imf1+2) +
-               m2**(-imf1+imf2)*(m3**(-imf2+2)-m2**(-imf2+2))/(-imf2+2) +
-               m2**(-imf1+imf2)*(imfhi**(-imfup+2)-m3**(-imfup+2))/(-imfup+2))
-
-    # Stars still alive
-    getmass = (m2**(-imf1+2)-mlo**(-imf1+2))/(-imf1+2)
-    if mto < m3:
-        getmass = getmass + m2**(-imf1+imf2)*(mto**(-imf2+2)-m2**(-imf2+2))/(-imf2+2)
-    else:
-        getmass = getmass + (m2**(-imf1+imf2)*(m3**(-imf2+2)-m2**(-imf2+2))/(-imf2+2) +
-                             m2**(-imf1+imf2)*(mto**(-imfup+2)-m3**(-imfup+2))/(-imfup+2))
-
-    getmass = getmass/imfnorm
-
-    if remnants:
-        # BH remnants
-        # 40<M<imf_up leave behidn a 0.5*M BH
-        getmass = getmass + 0.5*m2**(-imf1+imf2)*(imfhi**(-imfup+2)-bhlim**(-imfup+2))/(-imfup+2)/imfnorm
-
-        # NS remnants
-        # 8.5<M<40 leave behind a 1.4 Msun NS
-        getmass = getmass +  1.4*m2**(-imf1+imf2)*(bhlim**(-imfup+1)-nslim**(-imfup+1))/(-imfup+1)/imfnorm
-
-    # WD remnants
-    # M<8.5 leave beind a 0.077*M+0.48 WD
-    if mto < m3:
-        getmass = getmass + 0.48*m2**(-imf1+imf2)*(nslim**(-imfup+1)-m3**(-imfup+1))/(-imfup+1)/imfnorm
-        getmass = getmass + 0.48*m2**(-imf1+imf2)*(m3**(-imf2+1)-mto**(-imf2+1))/(-imf2+1)/imfnorm
-        getmass = getmass + 0.077*m2**(-imf1+imf2)*(nslim**(-imfup+2)-m3**(-imfup+2))/(-imfup+2)/imfnorm
-        getmass = getmass + 0.077*m2**(-imf1+imf2)*(m3**(-imf2+2)-mto**(-imf2+2))/(-imf2+2)/imfnorm
-    else:
-        getmass = getmass + 0.48*m2**(-imf1+imf2)*(nslim**(-imfup+1)-mto**(-imfup+1))/(-imfup+1)/imfnorm
-        getmass = getmass + 0.077*m2**(-imf1+imf2)*(nslim**(-imfup+2)-mto**(-imfup+2))/(-imfup+2)/imfnorm
-
-    # What's going on lines 221-223 of getmass.f90?
-
-    return getmass
 
 if __name__=='__main__':
     pass
