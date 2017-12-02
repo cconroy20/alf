@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from astropy.io import ascii
 from astropy.table import Table, Column, hstack
-import fsps
 
 class Alf(object):
     def __init__(self, outfiles, read_mcmc=True, info=None):
@@ -292,7 +291,7 @@ class Alf(object):
 
                 pdf.savefig()
 
-    def plot_corner(self, params=None):
+    def plot_corner(self, params):
         """
         Note: still in progress. I'd like to make it so
         people can pass an argument of the parameters
@@ -302,14 +301,12 @@ class Alf(object):
         import corner
 
         labels = np.array(self.labels)
-        params = ['chi2', 'velz', 'sigma',
-                  'zH', 'logage', 'IMF1', 'IMF2',
-                  'ML_r', 'MW_r']
+
         use = np.in1d(labels, params)
 
         figure = corner.corner(self.mcmc[:,use],
-                               labels=labels[use])#,
-                               #plot_contours=True)
+                               labels=labels[use],
+                               plot_contours=True)
 
         plt.tight_layout()
 
