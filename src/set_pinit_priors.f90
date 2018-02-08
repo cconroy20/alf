@@ -256,7 +256,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   !test the priors and if the priors have been altered then 
   !re-initialize the parameters within the prior range
   !NB: why not simply always initialize the starting position this way?
-  DO i=3,npar
+  DO i=2,npar
      IF (prhiarr1(i).LE.prloarr1(i)) THEN
         WRITE(*,*) 'SET_PINIT_PRIORS ERROR: prhi < prlo!', i
         STOP

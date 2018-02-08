@@ -37,7 +37,7 @@ PROGRAM ALF
   !NB: setting this to >1 currently results in errors in the *sum outputs
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=1000
+  INTEGER, PARAMETER :: nburn=20000
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=512
   !save the chain outputs to file and the model spectra
@@ -89,11 +89,11 @@ PROGRAM ALF
   !---------------------------------------------------------------!
 
   !flag specifying if fitting indices or spectra
-  fit_indices = 1
+  fit_indices = 0
 
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
-  fit_type = 1
+  fit_type = 0
 
   !fit h3 and h4 parameters
   fit_hermite = 0
@@ -120,6 +120,8 @@ PROGRAM ALF
   prhi%teff   =  2.0
   prlo%teff   = -2.0
 
+  !prhi%sigma  = 50.
+  
   !---------------------------------------------------------------!
   !--------------Do not change things below this line-------------!
   !---------------unless you know what you are doing--------------!
@@ -141,11 +143,7 @@ PROGRAM ALF
      !in velocity space, set the parameter below to that extra smoothing
      smooth_trans = 0.0
   ENDIF
-
-  IF (fit_hermite.EQ.1) THEN
-       velbroad_simple = 1
-  ENDIF
-  
+ 
   IF (ssp_type.EQ.'cvd') THEN
      !always limit the [Z/H] range for CvD since
      !these models are actually only at Zsol
@@ -219,6 +217,7 @@ PROGRAM ALF
   !read in the data and wavelength boundaries
   CALL READ_DATA(file,sigma_indx,velz_indx)
 
+  
   IF (fit_indices.EQ.1) THEN
 
      !fold in the approx data sigma into the "instrumental"

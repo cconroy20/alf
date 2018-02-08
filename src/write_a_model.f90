@@ -24,7 +24,7 @@ PROGRAM WRITE_A_MODEL
   !instrumental resolution (<10 -> no broadening)
   ires     = 1. !100.
   imf_type = 1
-  fit_type = 1
+  fit_type = 0
   
   str = (/'00','01','02','03','04','05','06','07','08','09'/)
 
@@ -77,7 +77,7 @@ PROGRAM WRITE_A_MODEL
      pos%zh     = 0.0
      emnorm     = -5.0
 
-     pos%imf1   = 1.3
+     pos%imf1   = 2.3
      pos%imf2   = 2.3
      pos%imf3   = 0.08
 
@@ -97,7 +97,7 @@ PROGRAM WRITE_A_MODEL
           (msto_z0+msto_z1*pos%zh+msto_z2*pos%zh**2),3.0),0.75)
      CALL GETM2L(msto,lam,mspec,pos,m2l)
      !print to screen
-     !write(*,*) m2l
+     write(*,*) m2l
      
      DO i=1,nl
         !this is to convert between S/N per A and S/N per pix

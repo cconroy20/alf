@@ -147,7 +147,7 @@ MODULE ALF_VARS
   INTEGER, PARAMETER :: nimf_full=16, nmcut=8, nimfoff=2, nimfnp=9
   INTEGER, PARAMETER :: nimf=nimf_full-nimfoff
   !max degree of polynomial used for continuum fitting
-  INTEGER, PARAMETER :: npolymax = 20
+  INTEGER, PARAMETER :: npolymax = 14
   !wavelength interval used to determine polynomial degree
   REAL, PARAMETER :: poly_dlam = 100.0
   !max number of data wavelength points

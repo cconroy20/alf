@@ -1,4 +1,4 @@
-FUNCTION READ_SPECBIN, file, lam=lam
+FUNCTION READ_SPECBIN, file, lam=lam, nw=nw, nc=nc
 
   sdir = getenv('ALF_HOME')
 
@@ -6,14 +6,16 @@ FUNCTION READ_SPECBIN, file, lam=lam
           format='(A,A,A,I)'
 
   wh = where(name EQ 'Nwalkers',ct1)
-  nw = long(val[wh])
+  nw = (long(val[wh]))[0]
   wh = where(name EQ 'Nchain',ct2)
-  nc = long(val[wh])
+  nc = (long(val[wh]))[0]
   wh = where(name EQ 'Nsample',ct3)
   ns = long(val[wh])
   wh = where(name EQ 'Nwave',ct4)
   nl = long(val[wh])
 
+
+  
   IF ct1 EQ 0 OR ct2 EQ 0 OR ct3 EQ 0 OR ct4 EQ 0 THEN BEGIN
      print,'ERROR: missing one or more header entries in *sum file'
      RETURN,0

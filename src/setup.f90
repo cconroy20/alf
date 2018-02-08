@@ -123,6 +123,42 @@ SUBROUTINE SETUP()
      ENDDO
   ENDDO
 
+  ! Replace the [Z/H]=+0.2 models with the +0.0 models
+  ! as the former are broken
+  sspgrid%solar(:,:,nzmet) = sspgrid%solar(:,:,nzmet-1)
+  sspgrid%nap(:,:,nzmet) = sspgrid%nap(:,:,nzmet-1)
+  sspgrid%nam(:,:,nzmet) = sspgrid%nam(:,:,nzmet-1)
+  sspgrid%cap(:,:,nzmet) = sspgrid%cap(:,:,nzmet-1)
+  sspgrid%cam(:,:,nzmet) = sspgrid%cam(:,:,nzmet-1)
+  sspgrid%fep(:,:,nzmet) = sspgrid%fep(:,:,nzmet-1)
+  sspgrid%fem(:,:,nzmet) = sspgrid%fem(:,:,nzmet-1)
+  sspgrid%cp(:,:,nzmet)  = sspgrid%cp(:,:,nzmet-1)
+  sspgrid%cm(:,:,nzmet)  = sspgrid%cm(:,:,nzmet-1)
+  sspgrid%np(:,:,nzmet)  = sspgrid%np(:,:,nzmet-1)
+  sspgrid%nm(:,:,nzmet)  = sspgrid%nm(:,:,nzmet-1)
+  sspgrid%ap(:,:,nzmet)  = sspgrid%ap(:,:,nzmet-1)
+  sspgrid%tip(:,:,nzmet) = sspgrid%tip(:,:,nzmet-1)
+  sspgrid%tim(:,:,nzmet) = sspgrid%tim(:,:,nzmet-1)
+  sspgrid%mgp(:,:,nzmet) = sspgrid%mgp(:,:,nzmet-1)
+  sspgrid%mgm(:,:,nzmet) = sspgrid%mgm(:,:,nzmet-1)
+  sspgrid%sip(:,:,nzmet) = sspgrid%sip(:,:,nzmet-1)
+  sspgrid%sim(:,:,nzmet) = sspgrid%sim(:,:,nzmet-1)
+  sspgrid%teffp(:,:,nzmet) = sspgrid%teffp(:,:,nzmet-1)
+  sspgrid%teffm(:,:,nzmet) = sspgrid%teffm(:,:,nzmet-1)
+  sspgrid%crp(:,:,nzmet)  = sspgrid%crp(:,:,nzmet-1)
+  sspgrid%mnp(:,:,nzmet)  =  sspgrid%mnp(:,:,nzmet-1)
+  sspgrid%bap(:,:,nzmet)  = sspgrid%bap(:,:,nzmet-1)
+  sspgrid%bam(:,:,nzmet)  = sspgrid%bam(:,:,nzmet-1)
+  sspgrid%nip(:,:,nzmet)  = sspgrid%nip(:,:,nzmet-1)
+  sspgrid%cop(:,:,nzmet)  = sspgrid%cop(:,:,nzmet-1)
+  sspgrid%eup(:,:,nzmet)  = sspgrid%eup(:,:,nzmet-1)
+  sspgrid%srp(:,:,nzmet)  = sspgrid%srp(:,:,nzmet-1)
+  sspgrid%kp(:,:,nzmet)   = sspgrid%kp(:,:,nzmet-1)
+  sspgrid%vp(:,:,nzmet)   = sspgrid%vp(:,:,nzmet-1)
+  sspgrid%cup(:,:,nzmet)  = sspgrid%cup(:,:,nzmet-1)
+  sspgrid%nap6(:,:,nzmet) = sspgrid%nap6(:,:,nzmet-1)
+  sspgrid%nap9(:,:,nzmet) = sspgrid%nap9(:,:,nzmet-1)
+
   lam = sspgrid%lam
   sspgrid%logagegrid_rfcn = LOG10((/1.0,3.0,5.0,9.0,13.0/))
 

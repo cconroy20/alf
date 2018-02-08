@@ -84,7 +84,7 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
            
            !normalize the weights to integrate to unity
            func(il:ih) = func(il:ih) / TSUM(vel(il:ih),func(il:ih))
-           spec(i) = TSUM(vel(il:ih),func(il:ih)*tspec(il:ih))
+           spec(i)     = TSUM(vel(il:ih),func(il:ih)*tspec(il:ih))
            
         ENDIF
          
