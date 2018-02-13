@@ -10,9 +10,12 @@ from astropy.io import ascii
 from astropy.table import Table, Column, hstack
 
 class Alf(object):
-    def __init__(self, outfiles, read_mcmc=True, info=None):
+    def __init__(self, outfiles, read_mcmc=True, info=None, infile=None):
         self.outfiles = outfiles
-        #self.legend = info['label']
+        if info:
+            self.legend = info
+        if infile:
+            self.indata = np.loadtxt(infile)
         #self.imf_type = info['imf_type']
         self.nsample = None
 
