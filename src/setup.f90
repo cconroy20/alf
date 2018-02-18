@@ -14,6 +14,7 @@ SUBROUTINE SETUP()
   REAL(DP), DIMENSION(ntrans) :: ltrans,ftrans_h2o,ftrans_o2,strans
   REAL(DP), DIMENSION(3) :: tmpzgrid
   CHARACTER(4), DIMENSION(nzmet) :: charz
+  CHARACTER(5), DIMENSION(nzmet) :: charz2
   CHARACTER(4), DIMENSION(8) :: charm
   CHARACTER(5), DIMENSION(nage)  :: chart
   CHARACTER(3), DIMENSION(nage_rfcn) :: chart2
@@ -48,6 +49,7 @@ SUBROUTINE SETUP()
 
   
   charz  = (/'m1.5','m1.0','m0.5','p0.0','p0.2'/)
+  charz2  = (/'-1.50','-1.00','-0.50','+0.00','+0.25'/)
   charm  = (/'0.08','0.10','0.15','0.20','0.25','0.30','0.35','0.40'/)
   chart  = (/'t01.0','t03.0','t05.0','t07.0','t09.0','t11.0','t13.5'/)
   chart2 = (/'t01','t03','t05','t09','t13'/)
@@ -326,51 +328,61 @@ SUBROUTINE SETUP()
   !-------------------------------------------------------------------------!
 
   !read in hot stars 
-  OPEN(24,FILE=TRIM(ALF_HOME)//'/infiles/ap00t08000g4.00at12.spec.s100',&
-       STATUS='OLD',iostat=stat,ACTION='READ')
-  DO i=1,nstart-1
-     READ(24,*) 
-  ENDDO
-  DO i=1,nl
-     READ(24,*) d1,sspgrid%hotspec(i,1)
-  ENDDO
-  CLOSE(24)
-  OPEN(25,FILE=TRIM(ALF_HOME)//'/infiles/ap00t10000g4.00at12.spec.s100',&
-       STATUS='OLD',iostat=stat,ACTION='READ')
-  DO i=1,nstart-1
-     READ(25,*) 
-  ENDDO
-  DO i=1,nl
-     READ(25,*) d1,sspgrid%hotspec(i,2)
-  ENDDO
-  CLOSE(25)
-  OPEN(26,FILE=TRIM(ALF_HOME)//'/infiles/ap00t20000g4.00at12.spec.s100',&
-       STATUS='OLD',iostat=stat,ACTION='READ')
-  DO i=1,nstart-1
-     READ(26,*) 
-  ENDDO
-  DO i=1,nl
-     READ(26,*) d1,sspgrid%hotspec(i,3)
-  ENDDO
-  CLOSE(26)
-  OPEN(27,FILE=TRIM(ALF_HOME)//'/infiles/ap00t30000g4.00at12.spec.s100',&
-       STATUS='OLD',iostat=stat,ACTION='READ')
-  DO i=1,nstart-1
-     READ(27,*) 
-  ENDDO
-  DO i=1,nl
-     READ(27,*) d1,sspgrid%hotspec(i,4)
-  ENDDO
-  CLOSE(27)
+  DO j=1,nzmet
+     write(*,*) TRIM(ALF_HOME)//'/infiles/at12_feh'//charz2(j)//&
+          '_afe+0.0_t08000g4.00.spec.s100'
+     OPEN(24,FILE=TRIM(ALF_HOME)//'/infiles/at12_feh'//charz2(j)//&
+          '_afe+0.0_t08000g4.00.spec.s100',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
+     DO i=1,nstart-1
+        READ(24,*)
+     ENDDO
+     DO i=1,nl
+        READ(24,*) d1,sspgrid%hotspec(i,1,j)
+     ENDDO
+     CLOSE(24)
+     OPEN(25,FILE=TRIM(ALF_HOME)//'/infiles/at12_feh'//charz2(j)//&
+          '_afe+0.0_t10000g4.00.spec.s100',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
+     DO i=1,nstart-1
+        READ(25,*) 
+     ENDDO
+     DO i=1,nl
+        READ(25,*) d1,sspgrid%hotspec(i,2,j)
+     ENDDO
+     CLOSE(25)
+     OPEN(26,FILE=TRIM(ALF_HOME)//'/infiles/at12_feh'//charz2(j)//&
+          '_afe+0.0_t20000g4.00.spec.s100',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
+     DO i=1,nstart-1
+        READ(26,*) 
+     ENDDO
+     DO i=1,nl
+        READ(26,*) d1,sspgrid%hotspec(i,3,j)
+     ENDDO
+     CLOSE(26)
+     OPEN(27,FILE=TRIM(ALF_HOME)//'/infiles/at12_feh'//charz2(j)//&
+          '_afe+0.0_t30000g4.00.spec.s100',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
+     DO i=1,nstart-1
+        READ(27,*) 
+     ENDDO
+     DO i=1,nl
+        READ(27,*) d1,sspgrid%hotspec(i,4,j)
+     ENDDO
+     CLOSE(27)
  
-  !normalize to a 13 Gyr SSP at 1um (same norm for the M7III param)
-  !NB: this normalization was changed on 7/20/15.  Also, a major
-  !bug was found in which the indices of the array were reversed.
-  vv = locate(sspgrid%lam(1:nl),l1um)
-  DO i=1,nhot
-     sspgrid%hotspec(:,i) = sspgrid%hotspec(:,i)/sspgrid%hotspec(vv,i)*&
-          sspgrid%logssp(vv,imfr1,imfr2,nage,nzmet-1)
+     !normalize to a 13 Gyr SSP at 1um (same norm for the M7III param)
+     !NB: this normalization was changed on 7/20/15.  Also, a major
+     !bug was found in which the indices of the array were reversed.
+     vv = locate(sspgrid%lam(1:nl),l1um)
+     DO i=1,nhot
+        sspgrid%hotspec(:,i,j) = sspgrid%hotspec(:,i,j)/sspgrid%hotspec(vv,i,j)*&
+             sspgrid%logssp(vv,imfr1,imfr2,nage,nzmet-1)
+     ENDDO
+
   ENDDO
+  
   !hot star Teff in kK
   sspgrid%teffarrhot = (/8.0,10.,20.,30./)
 
@@ -551,8 +563,10 @@ SUBROUTINE SETUP()
         ENDDO
      ENDDO
 
-     DO i=1,nhot
-        CALL VELBROAD(lam,sspgrid%hotspec(:,i),sig0,lamlo,lamhi,smooth)
+     DO j=1,nzmet
+        DO i=1,nhot
+           CALL VELBROAD(lam,sspgrid%hotspec(:,i,j),sig0,lamlo,lamhi,smooth)
+        ENDDO
      ENDDO
 
      CALL VELBROAD(lam,sspgrid%m7g,sig0,lamlo,lamhi,smooth)

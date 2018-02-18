@@ -275,7 +275,7 @@ MODULE ALF_VARS
      REAL(DP), DIMENSION(nl,nimfnp,nage,nzmet)         :: sspnp
      REAL(DP), DIMENSION(nimf)          :: imfx1,imfx2
      REAL(DP), DIMENSION(nmcut)         :: imfx3
-     REAL(DP), DIMENSION(nl,nhot)       :: hotspec
+     REAL(DP), DIMENSION(nl,nhot,nzmet) :: hotspec
      REAL(DP), DIMENSION(nl)            :: atm_trans_h2o,atm_trans_o2
      REAL(DP), DIMENSION(nhot)          :: teffarrhot
   END TYPE SSP

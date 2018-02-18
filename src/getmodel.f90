@@ -329,12 +329,15 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      CALL ADD_RESPONSE(spec,pos%teff,50.,1.d0,nage_rfcn-1,dm2,vm2,sspgrid%solar,&
           sspgrid%teffp,sspgrid%teffm)
 
-     !add a hot star
+     !add a hot star (interpolate in hot_teff and [Z/H]
      vh   = MAX(MIN(locate(sspgrid%teffarrhot,pos%hotteff),nhot-1),1)
      dh   = (pos%hotteff-sspgrid%teffarrhot(vh))/&
           (sspgrid%teffarrhot(vh+1)-sspgrid%teffarrhot(vh))
+     tmp  = dh*dm*sspgrid%hotspec(:,vh+1,vm+1) + &
+          (1-dh)*dm*sspgrid%hotspec(:,vh,vm+1) + &
+          dh*(1-dm)*sspgrid%hotspec(:,vh+1,vm) + &
+          (1-dh)*(1-dm)*sspgrid%hotspec(:,vh,vm)
      fy   = MAX(MIN(10**pos%loghot,1.0),0.0)
-     tmp  = dh*sspgrid%hotspec(:,vh+1) + (1-dh)*sspgrid%hotspec(:,vh)
      spec = (1-fy)*spec + fy*tmp
      
      !add in an M7 giant
