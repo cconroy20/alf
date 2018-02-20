@@ -329,8 +329,6 @@ SUBROUTINE SETUP()
 
   !read in hot stars 
   DO j=1,nzmet
-     write(*,*) TRIM(ALF_HOME)//'/infiles/at12_feh'//charz2(j)//&
-          '_afe+0.0_t08000g4.00.spec.s100'
      OPEN(24,FILE=TRIM(ALF_HOME)//'/infiles/at12_feh'//charz2(j)//&
           '_afe+0.0_t08000g4.00.spec.s100',&
           STATUS='OLD',iostat=stat,ACTION='READ')
