@@ -169,12 +169,20 @@ class Alf(object):
             poly = chebval(self.spectra['wave'][k], coeffs)
             self.spectra['m_flux_norm'][k] = self.spectra['m_flux_norm'][k]/poly
 
-    def abundance_correct(self, s07=False, b14=False, m11=True):
+    def abundance_correct(self, s07=False, b14=False, m11=True, short=True):
         """
         Convert abundances from X/H to X/Fe.
 
         Correct the raw abundance values given
         by ALF.
+
+        s07:
+
+        b14:
+
+        m11:
+
+        short:
         """
 
         # Correction factros from Schiavon 2007, Table 6
@@ -250,7 +258,10 @@ class Alf(object):
             elif col in group2 or col in group3:
                 xfe_vals = xfe
 
-            self.xFe[col] = self.get_cls(xfe_vals)
+            if short:
+                self.xFe[col] = self.get_cls(xfe_vals)
+            else:
+                self.xFe[col] = xfe_vals
 
     def plot_model(self, fname):
 
