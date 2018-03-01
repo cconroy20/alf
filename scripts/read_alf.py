@@ -149,7 +149,7 @@ class Alf(object):
         chunks = 1000
         min_ = min(self.spectra['wave'])
         max_ = max(self.spectra['wave'])
-        num  = (int(max_ - min_)/chunks) + 1
+        num  = int((int(max_ - min_)/chunks)) + 1
 
         for i in range(num):
             k = ((self.spectra['wave'] >= min_ + chunks*i) &
@@ -268,7 +268,7 @@ class Alf(object):
         chunks = 1000
         min_ = min(self.spectra['wave'])
         max_ = max(self.spectra['wave'])
-        num = (int(max_ - min_)/chunks) + 1
+        num = int((max_ - min_)/chunks) + 1
 
         with PdfPages(fname) as pdf:
             for i in range(num):
@@ -305,7 +305,7 @@ class Alf(object):
 
                 pdf.savefig()
 
-    def plot_corner(self, params):
+    def plot_corner(self, outname, params):
         """
         Note: still in progress. I'd like to make it so
         people can pass an argument of the parameters
@@ -323,6 +323,8 @@ class Alf(object):
                                plot_contours=True)
 
         plt.tight_layout()
+        plt.savefig(outname)
+
 
     def plot_traces(self, outname):
         plt.cla()
