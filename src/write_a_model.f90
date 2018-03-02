@@ -82,6 +82,7 @@ PROGRAM WRITE_A_MODEL
      pos%imf3   = 0.08
 
      pos%logemline_h    = emnorm
+     pos%logemline_oii  = emnorm
      pos%logemline_oiii = emnorm
      pos%logemline_sii  = emnorm
      pos%logemline_ni   = emnorm

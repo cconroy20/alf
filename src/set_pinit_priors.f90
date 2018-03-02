@@ -57,6 +57,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   pos%velz2          = myran()*10-5
   pos%logtrans       = myran()*4-4.
   pos%logemline_h    = myran()*2-4
+  pos%logemline_oii  = myran()*2-4
   pos%logemline_oiii = myran()*2-4
   pos%logemline_ni   = myran()*2-4
   pos%logemline_nii  = myran()*2-4
@@ -153,6 +154,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prlo%velz2.EQ.test%velz2) prlo%velz2      = -1E3
   IF (prlo%logtrans.EQ.test%logtrans) prlo%logtrans = -6.0
   IF (prlo%logemline_h.EQ.test%logemline_h) prlo%logemline_h          = -6.0
+  IF (prlo%logemline_oii.EQ.test%logemline_oii) prlo%logemline_oii    = -6.0
   IF (prlo%logemline_oiii.EQ.test%logemline_oiii) prlo%logemline_oiii = -6.0
   IF (prlo%logemline_sii.EQ.test%logemline_sii) prlo%logemline_sii    = -6.0
   IF (prlo%logemline_ni.EQ.test%logemline_ni) prlo%logemline_ni       = -6.0
@@ -216,6 +218,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   IF (prhi%velz2.EQ.test%velz2) prhi%velz2      = 1E3
   IF (prhi%logtrans.EQ.test%logtrans) prhi%logtrans = 1.0
   IF (prhi%logemline_h.EQ.test%logemline_h) prhi%logemline_h          = 1.0
+  IF (prhi%logemline_oii.EQ.test%logemline_oii) prhi%logemline_oii    = 1.0
   IF (prhi%logemline_oiii.EQ.test%logemline_oiii) prhi%logemline_oiii = 1.0
   IF (prhi%logemline_sii.EQ.test%logemline_sii) prhi%logemline_sii    = 1.0
   IF (prhi%logemline_ni.EQ.test%logemline_ni) prhi%logemline_ni       = 1.0

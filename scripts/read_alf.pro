@@ -50,28 +50,31 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker,s07=s07,b14=b14,m11=m11
   sum    = strpos(file,'.sum')
   simple = strpos(file,'simple')
 
-  IF n_elements(ts) EQ 52 THEN BEGIN
+  IF n_elements(ts) EQ 53 THEN BEGIN
      readcol,dir+file,chi2,velz,sigma,logage,zh,feh,afe,cfe,$
              nfe,nafe,mgfe,sife,kfe,cafe,tife,vfe,crfe,mnfe,cofe,nife,$
              cufe,srfe,bafe,eufe,teff,imf1,imf2,logfy,sigma2,$
-             velz2,logm7g,hotteff,loghot,fy_logage,logtrans,d1,d2,d3,d4,d5,$
-             jitter,imf3,logsky,imf4,h3,h4,m2lr,m2li,m2lk,m2lmwr,$
-             m2lmwi,m2lmwk,/sil
+             velz2,logm7g,hotteff,loghot,fy_logage,emh,emo2,$
+             emo3,ems2,emn1,emn2,logtrans,jitter,logsky,imf3,imf4,$
+             h3,h4,m2lr,m2li,m2lk,m2lmwr,m2lmwi,m2lmwk,/sil
+  ENDIF ELSE  IF n_elements(ts) EQ 52 THEN BEGIN
+     readcol,dir+file,chi2,velz,sigma,logage,zh,feh,afe,cfe,$
+             nfe,nafe,mgfe,sife,kfe,cafe,tife,vfe,crfe,mnfe,cofe,nife,$
+             cufe,srfe,bafe,eufe,teff,imf1,imf2,logfy,sigma2,$
+             velz2,logm7g,hotteff,loghot,fy_logage,logtrans,emh,$
+             emo3,ems2,emn1,emn2,jitter,imf3,logsky,imf4,h3,h4,m2lr,m2li,$
+             m2lk,m2lmwr,m2lmwi,m2lmwk,/sil
+     emo2 = findgen(n_elements(chi2))
   ENDIF ELSE IF n_elements(ts) EQ 50 THEN BEGIN
      readcol,dir+file,chi2,velz,sigma,logage,zh,feh,afe,cfe,$
              nfe,nafe,mgfe,sife,kfe,cafe,tife,vfe,crfe,mnfe,cofe,nife,$
              cufe,srfe,bafe,eufe,teff,imf1,imf2,logfy,sigma2,$
-             velz2,logm7g,hotteff,loghot,fy_logage,logtrans,d1,d2,d3,d4,d5,$
-             jitter,imf3,logsky,imf4,m2lr,m2li,m2lk,m2lmwr,m2lmwi,m2lmwk,/sil
+             velz2,logm7g,hotteff,loghot,fy_logage,logtrans,emh,$
+             emo3,ems2,emn1,emn2,jitter,imf3,logsky,imf4,m2lr,m2li,m2lk,$
+             m2lmwr,m2lmwi,m2lmwk,/sil
      h3   = findgen(n_elements(chi2))
      h4   = findgen(n_elements(chi2))
-  ENDIF ELSE IF n_elements(ts) EQ 49 THEN BEGIN
-     readcol,dir+file,chi2,velz,sigma,logage,zh,feh,afe,cfe,$
-             nfe,nafe,mgfe,sife,kfe,cafe,tife,vfe,crfe,mnfe,cofe,nife,$
-             cufe,srfe,bafe,eufe,teff,imf1,imf2,logfy,sigma2,$
-             velz2,logm7g,hotteff,loghot,fy_logage,logtrans,d1,d2,d3,d4,d5,$
-             jitter,imf3,logsky,m2lr,m2li,m2lk,m2lmwr,m2lmwi,m2lmwk,/sil
-     imf4 = findgen(n_elements(chi2))
+     emo2 = findgen(n_elements(chi2))
   ENDIF ELSE BEGIN
      print,'READ_ALF ERROR: file format not recognized, returning...',$
            n_elements(ts)
@@ -84,11 +87,11 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker,s07=s07,b14=b14,m11=m11
          imf1:0.0,imf2:0.0,imf3:0.0,imf4:0.0,imf5:0.0,logfy:0.0,fy_logage:0.0,$
          sigma:0.0,sigma2:0.0,tfeh:0.0,velz:0.0,velz2:0.0,logm7g:0.0,hotteff:0.0,$
          loghot:0.0,logtrans:0.0,chi2:0.0,mlk:0.0,mli:0.0,mlr:0.0,mlk_mw:0.0,$
-         mli_mw:0.0,mlr_mw:0.0,indgb:0.0,emline:fltarr(5),lsig:0.0,ml:0.0,$
-         lage:99.0,vmag:99.,fuv:99.,nuv:99.,logemline_h:0.0,logemline_oiii:0.0,$
-         logemline_sii:0.0,logemline_ni:0.0,logemline_nii:0.0,delafe:0.0,$
-         delmgfe:0.0,delcafe:0.0,jitter:0.0,logsky:0.0,logm:0.0,imf:fltarr(5),$
-         h3:0.0,h4:0.0}
+         mli_mw:0.0,mlr_mw:0.0,indgb:0.0,emline:fltarr(6),lsig:0.0,ml:0.0,$
+         lage:99.0,vmag:99.,fuv:99.,nuv:99.,logemline_h:0.0,logemline_oii:0.0,$
+         logemline_oiii:0.0,logemline_sii:0.0,logemline_ni:0.0,logemline_nii:0.0,$
+         delafe:0.0,delmgfe:0.0,delcafe:0.0,jitter:0.0,logsky:0.0,logm:0.0,$
+         imf:fltarr(5),h3:0.0,h4:0.0}
 
   IF errp EQ -1 THEN BEGIN
      tfeh = feh
@@ -207,12 +210,13 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker,s07=s07,b14=b14,m11=m11
   res.mlk_mw = m2lmwk
   
   FOR i=0,n_elements(logage)-1 DO $
-     res[i].emline = [d1[i],d2[i],d3[i],d4[i],d5[i]]
+     res[i].emline = [emh[i],emo2[i],emo3[i],ems2[i],emn1[i],emn2[i]]
   res.logemline_h    = res.emline[0]
-  res.logemline_oiii = res.emline[1]
-  res.logemline_sii  = res.emline[2]
-  res.logemline_ni   = res.emline[3]
-  res.logemline_nii  = res.emline[4]
+  res.logemline_oii  = res.emline[1]
+  res.logemline_oiii = res.emline[2]
+  res.logemline_sii  = res.emline[3]
+  res.logemline_ni   = res.emline[4]
+  res.logemline_nii  = res.emline[5]
 
   IF errp EQ -1 THEN BEGIN
      res[sind].lsig = alog10(res[sind].sigma)

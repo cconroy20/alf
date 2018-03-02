@@ -65,6 +65,7 @@ PROGRAM SPEC_FROM_SUM
   !we turn off the emission lines, since they are often highly
   !unconstrained if they are not included in the wavelength range
   pos%logemline_h    = -8.0
+  pos%logemline_oii  = -8.0
   pos%logemline_oiii = -8.0
   pos%logemline_nii  = -8.0
   pos%logemline_sii  = -8.0

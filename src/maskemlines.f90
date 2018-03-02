@@ -12,7 +12,6 @@ SUBROUTINE MASKEMLINES(zred,sigma)
   !---------------------------------------------------------------!
 
   !central wavelengths of (potentially) strong emission lines
-
   !convert to observed frame
   wave0 = emlines * (1+zred/clight*1E5)
   !mask within +/-m sigma of the central wavelength

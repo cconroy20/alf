@@ -369,18 +369,26 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      !add emission lines
      IF (maskem.EQ.0) THEN
 
-        !these line ratios come from Cloudy or Osterbrock (Table 4.2)
-        emnormall(1)  = 10**pos%logemline_h / 11.21  ! Hy
-        emnormall(2)  = 10**pos%logemline_h / 6.16   ! Hd
-        emnormall(3)  = 10**pos%logemline_h / 2.87   ! Hb
-        emnormall(4)  = 10**pos%logemline_oiii / 3.0 ! [OIII]
-        emnormall(5)  = 10**pos%logemline_oiii       ! [OIII]
-        emnormall(6)  = 10**pos%logemline_ni         ! [NI]
-        emnormall(7)  = 10**pos%logemline_nii / 2.95 ! [NII]
-        emnormall(8)  = 10**pos%logemline_h          ! Ha
-        emnormall(9)  = 10**pos%logemline_nii        ! [NII]
-        emnormall(10) = 10**pos%logemline_sii        ! [SII]
-        emnormall(11) = 10**pos%logemline_sii * 0.7  ! [SII]
+        !these line ratios come from Nell Byler's Cloudy lookup table
+        emnormall(1)  = 10**pos%logemline_h / 11.21   ! Hy
+        emnormall(2)  = 10**pos%logemline_h / 6.16    ! Hd
+        emnormall(3)  = 10**pos%logemline_h / 2.87    ! Hb
+        emnormall(4)  = 10**pos%logemline_oiii / 3.0  ! [OIII]
+        emnormall(5)  = 10**pos%logemline_oiii        ! [OIII]
+        emnormall(6)  = 10**pos%logemline_ni          ! [NI]
+        emnormall(7)  = 10**pos%logemline_nii / 2.95  ! [NII]
+        emnormall(8)  = 10**pos%logemline_h           ! Ha
+        emnormall(9)  = 10**pos%logemline_nii         ! [NII]
+        emnormall(10) = 10**pos%logemline_sii         ! [SII]
+        emnormall(11) = 10**pos%logemline_sii * 0.77  ! [SII]
+        emnormall(12) = 10**pos%logemline_oii         ! [OII]
+        emnormall(13) = 10**pos%logemline_oii * 1.35  ! [OII]
+        emnormall(14) = 10**pos%logemline_h / 65.0    ! H12 (ratio is made up)
+        emnormall(15) = 10**pos%logemline_h / 55.0    ! H11 (ratio is made up)
+        emnormall(16) = 10**pos%logemline_h / 45.0    ! H10
+        emnormall(17) = 10**pos%logemline_h / 35.0    ! H9
+        emnormall(18) = 10**pos%logemline_h / 25.0    ! H8
+        emnormall(19) = 10**pos%logemline_h / 18.0    ! H7
 
         DO i=1,neml
            !allow the em lines to be offset in velocity from the continuum

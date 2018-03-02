@@ -60,18 +60,19 @@ SUBROUTINE STR2ARR(switch,str,arr)
      arr(31) = str%hotteff
      arr(32) = str%loghot
      arr(33) = str%fy_logage
-     arr(34) = str%logtrans
-     arr(35) = str%logemline_h
+     arr(34) = str%logemline_h
+     arr(35) = str%logemline_oii
      arr(36) = str%logemline_oiii
      arr(37) = str%logemline_sii
      arr(38) = str%logemline_ni
      arr(39) = str%logemline_nii
-     arr(40) = str%jitter
-     arr(41) = str%imf3
+     arr(40) = str%logtrans
+     arr(41) = str%jitter
      arr(42) = str%logsky
-     arr(43) = str%imf4
-     arr(44) = str%h3
-     arr(45) = str%h4
+     arr(43) = str%imf3
+     arr(44) = str%imf4
+     arr(45) = str%h3
+     arr(46) = str%h4
 
   ELSE
 
@@ -115,19 +116,20 @@ SUBROUTINE STR2ARR(switch,str,arr)
      str%hotteff   = arr(31)
      str%loghot    = arr(32)
      str%fy_logage = arr(33)
-     str%logtrans  = arr(34)
-     str%logemline_h    = arr(35)
+     str%logemline_h    = arr(34)
+     str%logemline_oii  = arr(35)
      str%logemline_oiii = arr(36)
      str%logemline_sii  = arr(37)
      str%logemline_ni   = arr(38)
      str%logemline_nii  = arr(39)
-     str%jitter = arr(40)
-     str%imf3   = arr(41)
-     str%logsky = arr(42)
-     str%imf4   = arr(43)
-     str%h3     = arr(44)
-     str%h4     = arr(45)
-     
+     str%logtrans = arr(40)
+     str%jitter   = arr(41)
+     str%logsky   = arr(42)
+     str%imf3     = arr(43)
+     str%imf4     = arr(44)
+     str%h3       = arr(45)
+     str%h4       = arr(46)
+ 
   ENDIF
 
 

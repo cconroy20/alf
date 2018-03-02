@@ -96,7 +96,7 @@ PROGRAM ALF
   fit_type = 0
 
   !fit h3 and h4 parameters
-  fit_hermite = 0
+  fit_hermite = 1
   
   !type of IMF to fit
   !0=1PL, 1=2PL, 2=1PL+cutoff, 3=2PL+cutoff, 4=non-parametric IMF
@@ -120,6 +120,7 @@ PROGRAM ALF
   prhi%teff   =  2.0
   prlo%teff   = -2.0
 
+  !prhi%jitter = 1.1
   !prhi%sigma  = 50.
   
   !---------------------------------------------------------------!
@@ -228,20 +229,21 @@ PROGRAM ALF
      lam = sspgrid%lam
 
      prhi%logemline_h    = -5.0
+     prhi%logemline_oii  = -5.0
      prhi%logemline_oiii = -5.0
      prhi%logemline_nii  = -5.0
      prhi%logemline_sii  = -5.0
      prhi%logemline_ni   = -5.0
      prhi%loghot         = -5.0
-     prhi%logm7g = -5.0
-     prhi%teff   =  2.0
-     prlo%teff   = -2.0
+     prhi%logm7g         = -5.0
+     prhi%teff           =  2.0
+     prlo%teff           = -2.0
      !we dont use velocities or dispersions here, so this 
      !should be unnecessary, but haven't tested turning them off yet.
-     prlo%velz  = -10.
-     prhi%velz  =  10.
-     prlo%sigma = sigma_indx-10.
-     prhi%sigma = sigma_indx+10.
+     prlo%velz           = -10.
+     prhi%velz           =  10.
+     prlo%sigma          = sigma_indx-10.
+     prhi%sigma          = sigma_indx+10.
 
      !de-redshift, monte carlo sample the noise, and compute indices
      !NB: need to mask bad pixels!
@@ -541,6 +543,7 @@ PROGRAM ALF
            
            !turn off various parameters for computing M/L
            opos%logemline_h    = -8.0
+           opos%logemline_oii  = -8.0
            opos%logemline_oiii = -8.0
            opos%logemline_nii  = -8.0
            opos%logemline_sii  = -8.0

@@ -415,7 +415,15 @@ SUBROUTINE SETUP()
   emlines(9)  = 6585.27  ! [NII]
   emlines(10) = 6718.29  ! [SII]
   emlines(11) = 6732.67  ! [SII]
-
+  emlines(12) = 3727.10  ! [OII]
+  emlines(13) = 3729.86  ! [OII]
+  emlines(14) = 3751.22  ! Balmer
+  emlines(15) = 3771.70  ! Balmer
+  emlines(16) = 3798.99  ! Balmer
+  emlines(17) = 3836.49  ! Balmer
+  emlines(18) = 3890.17  ! Balmer
+  emlines(19) = 3971.20  ! Balmer
+    
   IF (apply_temperrfcn.EQ.1) THEN
 
      !read in template error function (computed from SDSS stacks)
