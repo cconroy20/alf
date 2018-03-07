@@ -40,11 +40,11 @@ FUNCTION GETVELZ()
      !de-redshift the data and interpolate to model wave array
      !NB: this is the old way of doing things, compare with func.f90
      data%lam0 = data%lam / (1+tvz(i)/clight*1E5)
-     iidata(1:nl_fit)%flx = linterp(data(1:datmax)%lam0,&
-          data(1:datmax)%flx,sspgrid%lam(1:nl_fit))
-     iidata(1:nl_fit)%err = linterp(data(1:datmax)%lam0,&
-          data(1:datmax)%err,sspgrid%lam(1:nl_fit))
-     
+     iidata(1:nl)%flx = linterp(data(1:datmax)%lam0,&
+          data(1:datmax)%flx,sspgrid%lam(1:nl))
+     iidata(1:nl)%err = linterp(data(1:datmax)%lam0,&
+          data(1:datmax)%err,sspgrid%lam(1:nl))
+
      !only use the first ni wavelength segments
      DO j=1,ni
 
@@ -70,8 +70,8 @@ FUNCTION GETVELZ()
         CALL CONTNORMSPEC(sspgrid%lam,10**sspgrid%logssp(:,imfr1,imfr2,3,nzmet-1),&
              SQRT(10**sspgrid%logssp(:,imfr1,imfr2,3,nzmet-1)),lo,hi,mflx)
 
-        i1 = MIN(MAX(locate(sspgrid%lam,lo),1),nl_fit-1)
-        i2 = MIN(MAX(locate(sspgrid%lam,hi),2),nl_fit)
+        i1 = MIN(MAX(locate(sspgrid%lam,lo),1),nl-1)
+        i2 = MIN(MAX(locate(sspgrid%lam,hi),2),nl)
 
         !only count pixels with non-zero weights
         ng = 0

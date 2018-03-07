@@ -27,12 +27,12 @@ SUBROUTINE CONTNORMSPEC(lam,flx,err,il1,il2,flxout,coeff)
   REAL(DP), DIMENSION(:), INTENT(in) :: lam,flx,err
   REAL(DP), INTENT(in) :: il1,il2
   REAL(DP), DIMENSION(:), INTENT(inout) :: flxout
-  REAL(DP), DIMENSION(npolymax), OPTIONAL :: coeff
+  REAL(DP), DIMENSION(npolymax+1), OPTIONAL :: coeff
   REAL(DP), PARAMETER :: buff=0.0
   REAL(DP), DIMENSION(ndat) :: poly
-  REAL(DP), DIMENSION(npolymax) :: tcoeff=0.0
-  LOGICAL, DIMENSION(npolymax)  :: mask=.TRUE.
-  REAL(DP), DIMENSION(npolymax,npolymax) :: covar
+  REAL(DP), DIMENSION(npolymax+1) :: tcoeff=0.0
+  LOGICAL, DIMENSION(npolymax+1)  :: mask=.TRUE.
+  REAL(DP), DIMENSION(npolymax+1,npolymax+1) :: covar
   REAL(DP) :: ml,chi2sqr
   INTEGER  :: i1,i2,npow,i,n1,n2
   INTERFACE

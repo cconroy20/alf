@@ -16,7 +16,7 @@ FUNCTION FUNC(nposarr,spec,funit)
   REAL(DP), DIMENSION(nl)   :: mspec
   REAL(DP), DIMENSION(ndat) :: mflx,poly,zmspec,terr
   REAL(DP), DIMENSION(npar) :: tposarr=0.0
-  REAL(DP), DIMENSION(npolymax) :: tcoeff
+  REAL(DP), DIMENSION(npolymax+1) :: tcoeff
   REAL(DP), DIMENSION(nindx) :: mindx
   INTEGER  :: i,i1,i2,j,npow,tpow
   TYPE(PARAMS)   :: npos
