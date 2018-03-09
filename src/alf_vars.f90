@@ -85,7 +85,10 @@ MODULE ALF_VARS
   !don't turn this on - the "correct" version is just as fast
   !unless you are fitting for the Hermite terms!
   INTEGER :: velbroad_simple=0
- 
+
+  !flag to turn on the use of an external, tabulated M/L prior
+  INTEGER :: extmlpr = 0
+  
   !--------------------------------------------------------------!
   !  the options below have not been tested/used in a long time  !
   !  and so are effectively deprecated                           !
@@ -199,6 +202,10 @@ MODULE ALF_VARS
   !arrays containing the upper and lower prior limits
   REAL(DP), DIMENSION(npar) :: prloarr=0.,prhiarr=0.
 
+  !array storing the tabulated M/L prior
+  REAL(DP), DIMENSION(ndat,2) :: mlprtab=0.
+  INTEGER :: nmlprtabmax=1
+  
   !array for the template error function
   REAL(DP), DIMENSION(nl) :: temperrfcn=1.0
 

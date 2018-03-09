@@ -6,13 +6,14 @@ FUNCTION FUNC(nposarr,spec,funit)
 
   USE alf_vars; USE nr, ONLY : locate
   USE alf_utils, ONLY : linterp3,contnormspec,getmass,&
-       str2arr,getmodel,linterp,getindx
+       str2arr,getmodel,linterp,getindx,getm2l
   IMPLICIT NONE
 
   REAL(DP), DIMENSION(:), INTENT(inout) :: nposarr
   REAL(DP), DIMENSION(nl), OPTIONAL :: spec
   INTEGER, INTENT(in), OPTIONAL :: funit
   REAL(DP) :: func,pr,tchi2,ml,tl1,tl2,oneplusz,tmps
+  REAL(DP), DIMENSION(nfil) :: mlpr,mlalf
   REAL(DP), DIMENSION(nl)   :: mspec
   REAL(DP), DIMENSION(ndat) :: mflx,poly,zmspec,terr
   REAL(DP), DIMENSION(npar) :: tposarr=0.0
@@ -51,14 +52,12 @@ FUNCTION FUNC(nposarr,spec,funit)
   !regularize the non-parametric IMF
   !the IMF cannot be convex (U shaped)
   IF (imf_type.EQ.4.AND.nonpimf_regularize.EQ.1) THEN
-
      IF ( (npos%imf2-npos%imf1+corr_bin_weight(3)-corr_bin_weight(1)).LT.0.0.AND.&
           (npos%imf3-npos%imf2+corr_bin_weight(5)-corr_bin_weight(3)).GT.0.0 ) pr=0.0
      IF ( (npos%imf3-npos%imf2+corr_bin_weight(5)-corr_bin_weight(3)).LT.0.0.AND.&
           (npos%imf4-npos%imf3+corr_bin_weight(7)-corr_bin_weight(5)).GT.0.0 ) pr=0.0
      IF ( (npos%imf4-npos%imf3+corr_bin_weight(7)-corr_bin_weight(5)).LT.0.0.AND.&
           (0.0-npos%imf4+corr_bin_weight(9)-corr_bin_weight(7)).GT.0.0 ) pr=0.0
-
   ENDIF
 
   !only compute the model and chi2 if the priors are >0.0
@@ -70,7 +69,14 @@ FUNCTION FUNC(nposarr,spec,funit)
      IF (PRESENT(spec)) THEN
         spec = mspec
      ENDIF
+     
+     !include external M/L prior 
+     IF (extmlpr.EQ.1) THEN
+        CALL GETM2L(sspgrid%lam,mspec,npos,mlalf)
+        mlpr = linterp(mlprtab(1:nmlprtabmax,1),mlprtab(1:nmlprtabmax,2),mlalf)
+     ENDIF
 
+     
      IF (fit_indices.EQ.0) THEN
 
         !redshift the model and interpolate to data wavelength array

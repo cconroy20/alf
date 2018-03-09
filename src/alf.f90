@@ -53,7 +53,7 @@ PROGRAM ALF
   INTEGER, PARAMETER  :: nmcindx=1000
 
   INTEGER  :: i,j,k,totacc=0,iter=30,npos
-  REAL(DP) :: velz,msto,minchi2=huge_number,fret,wdth,bret=huge_number
+  REAL(DP) :: velz,minchi2=huge_number,fret,wdth,bret=huge_number
   REAL(DP), DIMENSION(nl)   :: mspec=0.0,mspecmw=0.0,lam=0.0
   REAL(DP), DIMENSION(nfil) :: m2l=0.0,m2lmw=0.0
   REAL(DP), DIMENSION(npar) :: oposarr=0.,bposarr=0.0
@@ -62,6 +62,7 @@ PROGRAM ALF
   REAL(DP), DIMENSION(npar+2*nfil)   :: cl2p5,cl16,cl50,cl84,cl97p5
   REAL(DP), DIMENSION(npar,npar)     :: xi=0.0
   REAL(DP), DIMENSION(npar+2*nfil,nwalkers*nmcmc/nsample) :: mcmcpar=0.0
+
   REAL(DP), DIMENSION(nwalkers*nmcmc/nsample) :: sortpos
   CHARACTER(10) :: time
   REAL(SP)      :: time2
@@ -115,6 +116,9 @@ PROGRAM ALF
   !0 = flat, 1 = Kroupa, 2 = Salpeter
   nonpimf_alpha = 2
 
+  !turn on/off the use of an external tabulated M/L prior
+  extmlpr = 0
+  
   !change the prior limits to kill off these parameters
   prhi%logm7g = -5.0
   prhi%teff   =  2.0
@@ -362,13 +366,12 @@ PROGRAM ALF
         tpos%imf1   = 3.32
         tpos%imf2   = 2.76
         tpos%imf3   = 0.08
-        msto = 10**(msto_t0+msto_t1*tpos%logage) * &
-             ( msto_z0 + msto_z1*tpos%zh + msto_z2*tpos%zh**2 )
+        
         CALL GETMODEL(tpos,mspecmw,mw=1)     !get spectrum for MW IMF
-        CALL GETM2L(msto,lam,mspecmw,tpos,m2lmw,mw=1) !compute M/L_MW
+        CALL GETM2L(lam,mspecmw,tpos,m2lmw,mw=1) !compute M/L_MW
         write(*,'(A10,2F7.2)') 'M/L(MW)=', m2lmw(1:2)
         CALL GETMODEL(tpos,mspec)
-        CALL GETM2L(msto,lam,mspec,tpos,m2l)
+        CALL GETM2L(lam,mspec,tpos,m2l)
         write(*,'(A10,2F7.2)') 'M/L=', m2l(1:2)
         CALL FREE_WORKERS(ntasks-1)
         CALL MPI_FINALIZE(ierr)
@@ -551,14 +554,12 @@ PROGRAM ALF
            opos%logtrans       = -8.0
 
            !compute the main sequence turn-off mass vs. t and Z
-           msto = MAX(MIN(10**(msto_t0+msto_t1*opos%logage) * &
-                (msto_z0+msto_z1*opos%zh+msto_z2*opos%zh**2),3.0),0.75)
            CALL GETMODEL(opos,mspecmw,mw=1)     !get spectrum for MW IMF
-           CALL GETM2L(msto,lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
+           CALL GETM2L(lam,mspecmw,opos,m2lmw,mw=1) !compute M/L_MW
 
            IF (mwimf.EQ.0) THEN
               CALL GETMODEL(opos,mspec)
-              CALL GETM2L(msto,lam,mspec,opos,m2l) ! compute M/L
+              CALL GETM2L(lam,mspec,opos,m2l) ! compute M/L
            ELSE
               m2l   = m2lmw
               mspec = mspecmw

@@ -118,16 +118,36 @@ SUBROUTINE READ_DATA(file,sigma,velz)
 20 CONTINUE
   CLOSE(10)
 
+  datmax = i-1
+  
   IF (i.GT.ndat) THEN
      WRITE(*,*) 'READ_DATA ERROR: data file length exceeds ndat, returning'
      STOP
   ENDIF
 
+  !read in the tabulated M/L prior
+  IF (extmlpr.EQ.1) THEN
+     OPEN(11,FILE=TRIM(ALF_HOME)//'/indata/'//TRIM(file)//'.mlpr',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
+     IF (stat.NE.0) THEN
+        WRITE(*,*) 'READ_DATA ERROR: tabulated M/L prior file not found'
+        WRITE(*,*) TRIM(ALF_HOME)//'/indata/'//TRIM(file)//'.mlpr'
+        STOP
+     ENDIF
+     DO i=1,ndat
+        READ(11,*,IOSTAT=stat) mlprtab(i,1),mlprtab(i,2)
+        IF (stat.NE.0) GOTO 21
+     ENDDO
+21   CONTINUE
+     CLOSE(11)
+     nmlprtabmax = i-1
+  ENDIF
+
+  
   IF (PRESENT(sigma).AND.PRESENT(velz)) THEN
      sigma = isig
      velz  = ivelz
   ENDIF
 
-  datmax = i-1
 
 END SUBROUTINE READ_DATA
