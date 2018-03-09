@@ -13,7 +13,7 @@ FUNCTION FUNC(nposarr,spec,funit)
   REAL(DP), DIMENSION(nl), OPTIONAL :: spec
   INTEGER, INTENT(in), OPTIONAL :: funit
   REAL(DP) :: func,pr,tchi2,ml,tl1,tl2,oneplusz,tmps
-  REAL(DP), DIMENSION(nfil) :: mlpr,mlalf
+  REAL(DP), DIMENSION(nfil) :: mlalf,mlpr
   REAL(DP), DIMENSION(nl)   :: mspec
   REAL(DP), DIMENSION(ndat) :: mflx,poly,zmspec,terr
   REAL(DP), DIMENSION(npar) :: tposarr=0.0
@@ -70,13 +70,13 @@ FUNCTION FUNC(nposarr,spec,funit)
         spec = mspec
      ENDIF
      
-     !include external M/L prior 
+     !include external M/L prior (assuming I-band)
      IF (extmlpr.EQ.1) THEN
         CALL GETM2L(sspgrid%lam,mspec,npos,mlalf)
         mlpr = linterp(mlprtab(1:nmlprtabmax,1),mlprtab(1:nmlprtabmax,2),mlalf)
+        pr   = pr*mlpr(2)
      ENDIF
 
-     
      IF (fit_indices.EQ.0) THEN
 
         !redshift the model and interpolate to data wavelength array
@@ -178,7 +178,7 @@ FUNCTION FUNC(nposarr,spec,funit)
   
   ENDIF
 
-  !include priors
+  !include priors (func is chi^2)
   IF (pr.LE.tiny_number) THEN 
      func = huge_number 
   ELSE 

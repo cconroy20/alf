@@ -143,6 +143,8 @@ SUBROUTINE READ_DATA(file,sigma,velz)
      nmlprtabmax = i-1
   ENDIF
 
+  !ensure that the prior is normalized to unity
+  mlprtab(1:nmlprtabmax,2) = mlprtab(1:nmlprtabmax,2) / MAXVAL(mlprtab(1:nmlprtabmax,2))
   
   IF (PRESENT(sigma).AND.PRESENT(velz)) THEN
      sigma = isig
