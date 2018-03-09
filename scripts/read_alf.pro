@@ -49,7 +49,8 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker,s07=s07,b14=b14,m11=m11
   errp   = strpos(file,'.errp')
   sum    = strpos(file,'.sum')
   simple = strpos(file,'simple')
-
+  mcmc   = strpos(file,'.mcmc')
+  
   IF n_elements(ts) EQ 53 THEN BEGIN
      readcol,dir+file,chi2,velz,sigma,logage,zh,feh,afe,cfe,$
              nfe,nafe,mgfe,sife,kfe,cafe,tife,vfe,crfe,mnfe,cofe,nife,$
@@ -115,12 +116,16 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker,s07=s07,b14=b14,m11=m11
   res.tfeh = feh
 
   ;fold in the [Z/H] result into [Fe/H]
-  IF errp EQ -1 THEN BEGIN
-     res[sind].feh = res[sind].zh + feh[sind]
-     IF sum GT -1 THEN $
-        res[eind].feh = sqrt(res[eind].zh^2+feh[eind]^2)
+  IF mcmc GT -1 THEN BEGIN
+     res.feh = res.zh + feh
   ENDIF ELSE BEGIN
-     res.feh = sqrt(res.zh^2+feh^2)
+     IF errp EQ -1 THEN BEGIN
+        res[sind].feh = res[sind].zh + feh[sind]
+        IF sum GT -1 THEN $
+           res[eind].feh = sqrt(res[eind].zh^2+feh[eind]^2)
+     ENDIF ELSE BEGIN
+        res.feh = sqrt(res.zh^2+feh^2)
+     ENDELSE
   ENDELSE
 
   ;compute the library enhancement factors
@@ -218,15 +223,20 @@ FUNCTION READ_ALF_ONE, file, nwalker=nwalker,s07=s07,b14=b14,m11=m11
   res.logemline_ni   = res.emline[4]
   res.logemline_nii  = res.emline[5]
 
-  IF errp EQ -1 THEN BEGIN
-     res[sind].lsig = alog10(res[sind].sigma)
+  IF mcmc GT -1 THEN BEGIN
+     res.lsig = alog10(res.sigma)
+     res.ml   = res.mli/res.mli_mw
+  ENDIF ELSE BEGIN
+     IF errp EQ -1 THEN BEGIN
+        res[sind].lsig = alog10(res[sind].sigma)
      ;this is not quite right below!  I think we need the actual
      ;chain output to propogate the errors since mli and mli_mw are correlated
-     res[sind].ml   = res[sind].mli/res[0].mli_mw
-     IF sum GT -1 THEN BEGIN
-        res[eind].ml = sqrt(res[eind].mli^2+res[eind].mli_mw^2)/res[0].mli_mw
+        res[sind].ml   = res[sind].mli/res[0].mli_mw
+        IF sum GT -1 THEN BEGIN
+           res[eind].ml = sqrt(res[eind].mli^2+res[eind].mli_mw^2)/res[0].mli_mw
+        ENDIF
      ENDIF
-  ENDIF
+  ENDELSE
 
   ;mass-weighted age
   IF errp EQ -1 THEN BEGIN

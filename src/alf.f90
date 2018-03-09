@@ -124,8 +124,6 @@ PROGRAM ALF
   prhi%teff   =  2.0
   prlo%teff   = -2.0
 
-  !prhi%jitter = 1.1
-  !prhi%sigma  = 50.
   
   !---------------------------------------------------------------!
   !--------------Do not change things below this line-------------!

@@ -12,14 +12,14 @@ FUNCTION FUNC(nposarr,spec,funit)
   REAL(DP), DIMENSION(:), INTENT(inout) :: nposarr
   REAL(DP), DIMENSION(nl), OPTIONAL :: spec
   INTEGER, INTENT(in), OPTIONAL :: funit
-  REAL(DP) :: func,pr,tchi2,ml,tl1,tl2,oneplusz,tmps
-  REAL(DP), DIMENSION(nfil) :: mlalf,mlpr
+  REAL(DP) :: func,pr,tchi2,ml,tl1,tl2,oneplusz,tmps,mlpr,dk
+  REAL(DP), DIMENSION(nfil) :: mlalf
   REAL(DP), DIMENSION(nl)   :: mspec
   REAL(DP), DIMENSION(ndat) :: mflx,poly,zmspec,terr
   REAL(DP), DIMENSION(npar) :: tposarr=0.0
   REAL(DP), DIMENSION(npolymax+1) :: tcoeff
   REAL(DP), DIMENSION(nindx) :: mindx
-  INTEGER  :: i,i1,i2,j,npow,tpow
+  INTEGER  :: i,i1,i2,j,npow,tpow,klo
   TYPE(PARAMS)   :: npos
 
   !------------------------------------------------------!
@@ -73,8 +73,11 @@ FUNCTION FUNC(nposarr,spec,funit)
      !include external M/L prior (assuming I-band)
      IF (extmlpr.EQ.1) THEN
         CALL GETM2L(sspgrid%lam,mspec,npos,mlalf)
-        mlpr = linterp(mlprtab(1:nmlprtabmax,1),mlprtab(1:nmlprtabmax,2),mlalf)
-        pr   = pr*mlpr(2)
+        klo  = MAX(MIN(locate(mlprtab(1:nmlprtabmax,1),mlalf(2)),nmlprtabmax-1),1)
+        dk   = (mlalf(2)-mlprtab(klo,1))/(mlprtab(klo+1,1)-mlprtab(klo,1))
+        dk   = MAX(MIN(dk,1.0),0.0) !no extrapolation
+        mlpr = dk*mlprtab(klo+1,2) + (1-dk)*mlprtab(klo,2)
+        pr   = pr*mlpr
      ENDIF
 
      IF (fit_indices.EQ.0) THEN
