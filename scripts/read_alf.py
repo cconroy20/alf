@@ -10,12 +10,9 @@ from astropy.io import ascii
 from astropy.table import Table, Column, hstack
 
 class Alf(object):
-    def __init__(self, outfiles, read_mcmc=True, info=None, infile=None):
+    def __init__(self, outfiles, read_mcmc=True, info=None):
         self.outfiles = outfiles
-        if info:
-            self.legend = info
-        if infile:
-            self.indata = np.loadtxt(infile)
+        #self.legend = info['label']
         #self.imf_type = info['imf_type']
         self.nsample = None
 
@@ -39,11 +36,11 @@ class Alf(object):
                   'K', 'Ca', 'Ti','V', 'Cr', 'Mn', 'Co',
                   'Ni', 'Cu', 'Sr','Ba', 'Eu', 'Teff',
                   'IMF1', 'IMF2', 'logfy', 'sigma2', 'velz2',
-                  'logm7g', 'hotteff', 'loghot','fy_logage',
-                  'logtrans', 'logemline_H', 'logemline_Oiii',
-                  'logemline_Sii', 'logemline_Ni', 'logemline_Nii',
-                  'jitter','IMF3', 'logsky', 'IMF4', 'h3', 'h4',
-                  'ML_v','ML_i','ML_k','MW_v', 'MW_i','MW_k'
+                  'logm7g', 'hotteff', 'loghot', 'fy_logage',
+                  'logtrans', 'logemline_h', 'logemline_oii',
+                  'logemline_oiii', 'logemline_sii', 'logemline_ni',
+                  'logemline_nii', 'jitter', 'IMF3', 'logsky', 'IMF4',
+                  'h3', 'h4', 'ML_v','ML_i','ML_k','MW_v', 'MW_i','MW_k'
                   ])
 
         results = Table(results, names=self.labels)
@@ -149,7 +146,7 @@ class Alf(object):
         chunks = 1000
         min_ = min(self.spectra['wave'])
         max_ = max(self.spectra['wave'])
-        num  = int((int(max_ - min_)/chunks)) + 1
+        num  = (int(max_ - min_)/chunks) + 1
 
         for i in range(num):
             k = ((self.spectra['wave'] >= min_ + chunks*i) &
@@ -169,20 +166,12 @@ class Alf(object):
             poly = chebval(self.spectra['wave'][k], coeffs)
             self.spectra['m_flux_norm'][k] = self.spectra['m_flux_norm'][k]/poly
 
-    def abundance_correct(self, s07=False, b14=False, m11=True, short=True):
+    def abundance_correct(self, s07=False, b14=False, m11=True):
         """
         Convert abundances from X/H to X/Fe.
 
         Correct the raw abundance values given
         by ALF.
-
-        s07:
-
-        b14:
-
-        m11:
-
-        short:
         """
 
         # Correction factros from Schiavon 2007, Table 6
@@ -258,17 +247,14 @@ class Alf(object):
             elif col in group2 or col in group3:
                 xfe_vals = xfe
 
-            if short:
-                self.xFe[col] = self.get_cls(xfe_vals)
-            else:
-                self.xFe[col] = xfe_vals
+            self.xFe[col] = self.get_cls(xfe_vals)
 
     def plot_model(self, fname):
 
         chunks = 1000
         min_ = min(self.spectra['wave'])
         max_ = max(self.spectra['wave'])
-        num = int((max_ - min_)/chunks) + 1
+        num = (int(max_ - min_)/chunks) + 1
 
         with PdfPages(fname) as pdf:
             for i in range(num):
@@ -305,7 +291,7 @@ class Alf(object):
 
                 pdf.savefig()
 
-    def plot_corner(self, outname, params):
+    def plot_corner(self, params):
         """
         Note: still in progress. I'd like to make it so
         people can pass an argument of the parameters
@@ -323,8 +309,6 @@ class Alf(object):
                                plot_contours=True)
 
         plt.tight_layout()
-        plt.savefig(outname)
-
 
     def plot_traces(self, outname):
         plt.cla()
