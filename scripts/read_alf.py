@@ -36,11 +36,11 @@ class Alf(object):
                   'K', 'Ca', 'Ti','V', 'Cr', 'Mn', 'Co',
                   'Ni', 'Cu', 'Sr','Ba', 'Eu', 'Teff',
                   'IMF1', 'IMF2', 'logfy', 'sigma2', 'velz2',
-                  'logm7g', 'hotteff', 'loghot','fy_logage',
-                  'logtrans', 'logemline_H', 'logemline_Oiii',
-                  'logemline_Sii', 'logemline_Ni', 'logemline_Nii',
-                  'jitter','IMF3', 'logsky', 'IMF4', 'h3', 'h4',
-                  'ML_v','ML_i','ML_k','MW_v', 'MW_i','MW_k'
+                  'logm7g', 'hotteff', 'loghot', 'fy_logage',
+                  'logtrans', 'logemline_h', 'logemline_oii',
+                  'logemline_oiii', 'logemline_sii', 'logemline_ni',
+                  'logemline_nii', 'jitter', 'IMF3', 'logsky', 'IMF4',
+                  'h3', 'h4', 'ML_v','ML_i','ML_k','MW_v', 'MW_i','MW_k'
                   ])
 
         results = Table(results, names=self.labels)
@@ -76,13 +76,11 @@ class Alf(object):
                                'logage', 'zH', 'FeH', 'Teff',
                                'IMF1', 'IMF2', 'logfy', 'sigma2',
                                'velz2', 'logm7g', 'hotteff',
-                               'loghot','fy_logage', 'logtrans',
-                               'logemline_H', 'logemline_Oiii',
-                               'logemline_Sii', 'logemline_Ni',
-                               'logemline_Nii','jitter','IMF3',
-                               'logsky', 'IMF4', 'h3', 'h4',
-                               'ML_v','ML_i', 'ML_k', 'MW_v',
-                               'MW_i', 'MW_k']
+                'loghot', 'fy_logage',
+                  'logtrans', 'logemline_h', 'logemline_oii',
+                  'logemline_oiii', 'logemline_sii', 'logemline_ni',
+                  'logemline_nii', 'jitter', 'IMF3', 'logsky', 'IMF4',
+                  'h3', 'h4', 'ML_v','ML_i','ML_k','MW_v', 'MW_i','MW_k']
 
         """
         Read in input data and best fit model
@@ -146,7 +144,7 @@ class Alf(object):
         chunks = 1000
         min_ = min(self.spectra['wave'])
         max_ = max(self.spectra['wave'])
-        num  = (int(max_ - min_)/chunks) + 1
+        num  = int((max_ - min_)/chunks) + 1
 
         for i in range(num):
             k = ((self.spectra['wave'] >= min_ + chunks*i) &
@@ -254,7 +252,7 @@ class Alf(object):
         chunks = 1000
         min_ = min(self.spectra['wave'])
         max_ = max(self.spectra['wave'])
-        num = (int(max_ - min_)/chunks) + 1
+        num = int((max_ - min_)/chunks) + 1
 
         with PdfPages(fname) as pdf:
             for i in range(num):
@@ -291,13 +289,7 @@ class Alf(object):
 
                 pdf.savefig()
 
-    def plot_corner(self, params):
-        """
-        Note: still in progress. I'd like to make it so
-        people can pass an argument of the parameters
-        they'd like on this plot.
-        """
-
+    def plot_corner(self, outname, params):
         import corner
 
         labels = np.array(self.labels)
@@ -309,6 +301,7 @@ class Alf(object):
                                plot_contours=True)
 
         plt.tight_layout()
+        plt.savefig(outname)
 
     def plot_traces(self, outname):
         plt.cla()
