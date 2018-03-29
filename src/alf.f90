@@ -39,7 +39,7 @@ PROGRAM ALF
   !length of chain burn-in
   INTEGER, PARAMETER :: nburn=10000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=512
+  INTEGER, PARAMETER :: nwalkers=1024
   !save the chain outputs to file and the model spectra
   INTEGER, PARAMETER :: print_mcmc=1, print_mcmc_spec=0
 
@@ -72,7 +72,7 @@ PROGRAM ALF
   REAL(DP)     :: sigma_indx,velz_indx
   REAL(DP), DIMENSION(ndat) :: gdev,tflx
   REAL(DP), DIMENSION(nmcindx,nindx) :: tmpindx=0.
-  REAL(SP), DIMENSION(nmcmc*nwalkers/nsample+1,nl) :: mspec_mcmc=0.0
+  !REAL(SP), DIMENSION(nmcmc*nwalkers/nsample+1,nl) :: mspec_mcmc=0.0
 
   !variables for emcee
   REAL(DP), DIMENSION(npar,nwalkers) :: pos_emcee_in,pos_emcee_out
@@ -97,7 +97,7 @@ PROGRAM ALF
   fit_type = 0
 
   !fit h3 and h4 parameters
-  fit_hermite = 1
+  fit_hermite = 0
   
   !type of IMF to fit
   !0=1PL, 1=2PL, 2=1PL+cutoff, 3=2PL+cutoff, 4=non-parametric IMF
@@ -564,7 +564,7 @@ PROGRAM ALF
            ENDIF
            
            !save each model spectrum
-           mspec_mcmc(1+j+(i-1)*nwalkers/nsample,:) = mspec
+           !mspec_mcmc(1+j+(i-1)*nwalkers/nsample,:) = mspec
 
            !these parameters aren't actually being updated
            IF (fit_indices.EQ.1) THEN
@@ -631,13 +631,13 @@ PROGRAM ALF
      
      !write a binary file of the production chain spectra
      IF (print_mcmc_spec.EQ.1) THEN
-        mspec_mcmc(1,:) = lam
-        OPEN(11,FILE=TRIM(ALF_HOME)//TRIM(OUTDIR)//&
-             TRIM(file)//TRIM(tag)//'.spec',FORM='UNFORMATTED',&
-             STATUS='REPLACE',access='DIRECT',&
-             recl=(1+nmcmc*nwalkers/nsample)*nl*4)
-        WRITE(11,rec=1) mspec_mcmc
-        CLOSE(11)
+      !  mspec_mcmc(1,:) = lam
+      !  OPEN(11,FILE=TRIM(ALF_HOME)//TRIM(OUTDIR)//&
+      !       TRIM(file)//TRIM(tag)//'.spec',FORM='UNFORMATTED',&
+      !       STATUS='REPLACE',access='DIRECT',&
+      !       recl=(1+nmcmc*nwalkers/nsample)*nl*4)
+      !  WRITE(11,rec=1) mspec_mcmc
+      !  CLOSE(11)
      ENDIF
 
      OPEN(13,FILE=TRIM(ALF_HOME)//TRIM(OUTDIR)//&
