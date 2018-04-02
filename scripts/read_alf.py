@@ -128,7 +128,7 @@ class Alf(object):
 
         zh = np.where(self.labels == 'zH')
         feh = np.where(self.labels == 'FeH')
-        total_met = np.sqrt(self.mcmc[:,zh]**2 + self.mcmc[:,feh]**2)
+        total_met = self.mcmc[:,zh] + self.mcmc[:,feh]
 
         #Computing errors directly from the chains.
         self.tmet = self.get_cls(total_met)
