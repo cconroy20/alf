@@ -15,6 +15,7 @@ class Alf(object):
         #self.legend = info['label']
         #self.imf_type = info['imf_type']
         self.nsample = None
+        self.spectra = None
 
         if read_mcmc:
             self.mcmc = np.loadtxt('{0}.mcmc'.format(self.outfiles))
@@ -93,7 +94,6 @@ class Alf(object):
         except:
             warning = ('Do not have the *.bestspec file')
             warnings.warn(warning)
-            self.data = None
         data = {}
         data['wave'] = m[:,0]/(1.+self.results['velz'][5]*1e3/constants.c)
         data['m_flux'] = m[:,1] # Model spectrum, normalization applied
@@ -128,7 +128,7 @@ class Alf(object):
 
         zh = np.where(self.labels == 'zH')
         feh = np.where(self.labels == 'FeH')
-        total_met = self.mcmc[:,zh] + self.mcmc[:,feh]
+        total_met = np.sqrt(self.mcmc[:,zh]**2 + self.mcmc[:,feh]**2)
 
         #Computing errors directly from the chains.
         self.tmet = self.get_cls(total_met)
@@ -289,7 +289,7 @@ class Alf(object):
 
                 pdf.savefig()
 
-    def plot_corner(self, outname, params):
+    def plot_corner(self, outname, params, color='k', save=True):
         import corner
 
         labels = np.array(self.labels)
@@ -298,10 +298,12 @@ class Alf(object):
 
         figure = corner.corner(self.mcmc[:,use],
                                labels=labels[use],
+                               color=color,
                                plot_contours=True)
 
         plt.tight_layout()
-        plt.savefig(outname)
+        if save:
+            plt.savefig(outname)
 
     def plot_traces(self, outname):
         plt.cla()
