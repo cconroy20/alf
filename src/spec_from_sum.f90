@@ -12,7 +12,7 @@ PROGRAM SPEC_FROM_SUM
   INTEGER  :: i,stat
   REAL(DP), DIMENSION(nl) :: mspec,lam,zmspec
   REAL(DP) :: d1,oneplusz
-  CHARACTER(50)  :: infile=''
+  CHARACTER(50)  :: infile='',line=''
   TYPE(PARAMS) :: pos
   CHARACTER(1) :: char
   REAL(DP), DIMENSION(npar) :: posarr=0.0
@@ -21,7 +21,6 @@ PROGRAM SPEC_FROM_SUM
   !-----------------------------------------------------------!
   !-----------------------------------------------------------!
 
-  imf_type = 1
   l1(1) = 0.0
   nlint = 1
   l2(nlint) = 1E5
@@ -45,12 +44,27 @@ PROGRAM SPEC_FROM_SUM
      WRITE(*,*) 'ERROR, file not found: ', infile
      STOP
   ENDIF
-  
+
+  !read in the header and set the relevant parameters
   char = '#'
   DO WHILE (char.EQ.'#')
-     READ(11,*,IOSTAT=stat) char
+     READ(11,'(A50)',IOSTAT=stat) line
+     char = line(1:1)
+     IF (index(line,'mwimf').GT.0) THEN
+        read(line(index(line,'=')+2:index(line,'=')+3),*) mwimf
+     ENDIF
+     IF (index(line,'imf_type').GT.0) THEN
+        read(line(index(line,'=')+2:index(line,'=')+3),*) imf_type
+     ENDIF
+     IF (index(line,'fit_type').GT.0) THEN
+        read(line(index(line,'=')+2:index(line,'=')+3),*) fit_type
+     ENDIF
+     IF (index(line,'nonpimf').GT.0) THEN
+        read(line(index(line,'=')+2:index(line,'=')+3),*) nonpimf_alpha
+     ENDIF
   ENDDO
   BACKSPACE(11)
+  
   READ(11,*) !burn the row containing the mean parameters
   READ(11,*) d1,posarr,mlx2
   CLOSE(11)
