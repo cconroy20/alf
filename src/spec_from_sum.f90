@@ -62,7 +62,13 @@ PROGRAM SPEC_FROM_SUM
      IF (index(line,'nonpimf').GT.0) THEN
         read(line(index(line,'=')+2:index(line,'=')+3),*) nonpimf_alpha
      ENDIF
-  ENDDO
+     IF (index(line,'fit_two_ages').GT.0) THEN
+        read(line(index(line,'=')+2:index(line,'=')+3),*) fit_two_ages
+     ENDIF
+     IF (index(line,'fit_hermite').GT.0) THEN
+        read(line(index(line,'=')+2:index(line,'=')+3),*) fit_hermite
+     ENDIF
+   ENDDO
   BACKSPACE(11)
   
   READ(11,*) !burn the row containing the mean parameters

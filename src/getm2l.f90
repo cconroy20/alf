@@ -45,7 +45,7 @@ SUBROUTINE GETM2L(lam,spec,pos,m2l,mw)
      ENDIF
   ENDIF
 
-  !loop over the three filters
+  !loop over the filters
   DO i=1,nfil
      mag(i) = tsum(lam,aspec*filters(:,i)/lam)
      IF (mag(i).LE.0.0) THEN

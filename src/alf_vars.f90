@@ -124,7 +124,7 @@ MODULE ALF_VARS
   !nstart and nend allow us to use only a subset of 
   !the full wavelength array
   INTEGER, PARAMETER :: nstart = 100 !100   ! 0.36 um
-  INTEGER, PARAMETER :: nend   = 5830 !10566 ! 5830  ! 1.10 um
+  INTEGER, PARAMETER :: nend   = 5830 !10566 (all) ! 5830 (1.10u)
   !number of spectral elements in SSPs
   INTEGER, PARAMETER :: nl = nend-nstart+1
   !number actually used over the range to be fit
@@ -226,9 +226,9 @@ MODULE ALF_VARS
 
   !array of index definitions
   REAL(DP), DIMENSION(7,nindx) :: indxdef=0.
-  INTEGER, DIMENSION(nindx) :: indx2fit=0
+  INTEGER, DIMENSION(nindx)    :: indx2fit=0
   !index definition for CaT
-  REAL(DP), DIMENSION(6,3) :: indxcat=0.0
+  REAL(DP), DIMENSION(6,3)     :: indxcat=0.0
 
   !IMF slopes within each bin
   REAL(DP), DIMENSION(nimfnp) :: npi_alphav=0., npi_renorm=1.0
@@ -279,7 +279,7 @@ MODULE ALF_VARS
      REAL(DP), DIMENSION(nzmet3)        :: logzgrid2     
      REAL(DP), DIMENSION(nl,nimf,nimf,nage,nzmet)        :: logssp
      REAL(DP), DIMENSION(nl,nimf,nimf,nage,nmcut,nzmet3) :: logsspm
-     REAL(DP), DIMENSION(nl,nimfnp,nage,nzmet)         :: sspnp
+     REAL(DP), DIMENSION(nl,nimfnp,nage,nzmet)           :: sspnp
      REAL(DP), DIMENSION(nimf)          :: imfx1,imfx2
      REAL(DP), DIMENSION(nmcut)         :: imfx3
      REAL(DP), DIMENSION(nl,nhot,nzmet) :: hotspec

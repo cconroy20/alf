@@ -39,7 +39,7 @@ PROGRAM ALF
   !length of chain burn-in
   INTEGER, PARAMETER :: nburn=10000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=1024
+  INTEGER, PARAMETER :: nwalkers=512 
   !save the chain outputs to file and the model spectra
   INTEGER, PARAMETER :: print_mcmc=1, print_mcmc_spec=0
 
@@ -97,7 +97,7 @@ PROGRAM ALF
   fit_type = 0
 
   !fit h3 and h4 parameters
-  fit_hermite = 0
+  fit_hermite = 1
   
   !type of IMF to fit
   !0=1PL, 1=2PL, 2=1PL+cutoff, 3=2PL+cutoff, 4=non-parametric IMF
@@ -110,7 +110,7 @@ PROGRAM ALF
   mwimf = 0
 
   !fit two-age SFH or not?
-  fit_two_ages = 0
+  fit_two_ages = 1
 
   !IMF slope within the non-parametric IMF bins
   !0 = flat, 1 = Kroupa, 2 = Salpeter
@@ -198,6 +198,8 @@ PROGRAM ALF
      WRITE(*,'("   ssp_type  =",A4)') ssp_type
      WRITE(*,'("   fit_type  =",I2)') fit_type
      WRITE(*,'("   imf_type  =",I2)') imf_type
+     WRITE(*,'(" fit_hermite =",I2)') fit_hermite
+     WRITE(*,'("fit_two_ages =",I2)') fit_two_ages
      IF (imf_type.EQ.4) &
           WRITE(*,'("   nonpimf   =",I2)') nonpimf_alpha
      WRITE(*,'("  obs_frame  =",I2)') observed_frame 
@@ -650,24 +652,26 @@ PROGRAM ALF
      !write mean of the posterior distributions
      OPEN(14,FILE=TRIM(ALF_HOME)//TRIM(OUTDIR)//&
           TRIM(file)//TRIM(tag)//'.sum',STATUS='REPLACE')
-     WRITE(14,'("#  Elapsed Time: ",F6.2," hr")') time2/3600.
-     WRITE(14,'("#   ssp_type  =",A4)') ssp_type
-     WRITE(14,'("#   fit_type  =",I2)') fit_type
-     WRITE(14,'("#   imf_type  =",I2)') imf_type
-     WRITE(14,'("#    nonpimf  =",I2)') nonpimf_alpha
-     WRITE(14,'("#  obs_frame  =",I2)') observed_frame 
-     WRITE(14,'("#   fit_poly  =",I2)') fit_poly
-     WRITE(14,'("#      mwimf  =",I2)') mwimf
-     WRITE(14,'("#  age-dep Rf =",I2)') use_age_dep_resp_fcns
-     WRITE(14,'("#    Z-dep Rf =",I2)') use_z_dep_resp_fcns
-     WRITE(14,'("#  Nwalkers   = ",I6)') nwalkers
-     WRITE(14,'("#  Nburn      = ",I6)') nburn
-     WRITE(14,'("#  Nchain     = ",I6)') nmcmc
-     WRITE(14,'("#  Nsample    = ",I6)') nsample
-     WRITE(14,'("#  Nwave      = ",I6)') nl
-     WRITE(14,'("#  Ncores     = ",I6)') ntasks
-     WRITE(14,'("#  Facc: ",F5.2)') REAL(totacc)/REAL(nmcmc*nwalkers)
-     WRITE(14,'("#  rows: mean posterior, pos(chi^2_min), 1 sigma errors, '//&
+     WRITE(14,'("#   Elapsed Time: ",F6.2," hr")') time2/3600.
+     WRITE(14,'("#    ssp_type  =",A4)') ssp_type
+     WRITE(14,'("#    fit_type  =",I2)') fit_type
+     WRITE(14,'("#    imf_type  =",I2)') imf_type
+     WRITE(14,'("#  fit_hermite =",I2)') fit_hermite
+     WRITE(14,'("# fit_two_ages =",I2)') fit_two_ages
+     WRITE(14,'("#     nonpimf  =",I2)') nonpimf_alpha
+     WRITE(14,'("#   obs_frame  =",I2)') observed_frame 
+     WRITE(14,'("#    fit_poly  =",I2)') fit_poly
+     WRITE(14,'("#       mwimf  =",I2)') mwimf
+     WRITE(14,'("#   age-dep Rf =",I2)') use_age_dep_resp_fcns
+     WRITE(14,'("#     Z-dep Rf =",I2)') use_z_dep_resp_fcns
+     WRITE(14,'("#   Nwalkers   = ",I6)') nwalkers
+     WRITE(14,'("#   Nburn      = ",I6)') nburn
+     WRITE(14,'("#   Nchain     = ",I6)') nmcmc
+     WRITE(14,'("#   Nsample    = ",I6)') nsample
+     WRITE(14,'("#   Nwave      = ",I6)') nl
+     WRITE(14,'("#   Ncores     = ",I6)') ntasks
+     WRITE(14,'("#   Facc: ",F5.2)') REAL(totacc)/REAL(nmcmc*nwalkers)
+     WRITE(14,'("#   rows: mean posterior, pos(chi^2_min), 1 sigma errors, '//&
           '2.5%, 16%, 50%, 84%, 97.5% CL, lower priors, upper priors ")') 
 
      !write mean of posteriors
