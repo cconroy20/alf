@@ -1,31 +1,30 @@
 PROGRAM ML_FROM_MCMC
 
   ! takes an *mcmc file as input and returns M/L in many filters
-  ! note that M/L is returned in the *observed* frame
+  ! note that M/L is returned in the observed frame
   
   USE alf_vars; USE alf_utils
-  USE nr, ONLY : locate
 
   IMPLICIT NONE
 
   INTEGER, PARAMETER :: nfil2=27
-  INTEGER  :: i,j,k,stat,nwalkers,nchain,nsample
+  INTEGER  :: i,j,k,stat,nwalkers,nchain
   REAL(DP), DIMENSION(nl) :: mspec=0.,lam=0.,zmspec=0.
   REAL(DP) :: d1=0.,oneplusz=0.,mass=0.,msto=0.
-  CHARACTER(50)  :: infile='',line=''
-  TYPE(PARAMS) :: pos
-  CHARACTER(1) :: char=''
+  CHARACTER(50) :: infile='',line=''
+  TYPE(PARAMS)  :: pos
+  CHARACTER(1)  :: char=''
   REAL(DP), DIMENSION(npar)  :: posarr=0.0
   REAL(DP), DIMENSION(nl,nfil2) :: filters2=0.
-  REAL(DP), DIMENSION(nfil2) :: m2l=0.0,mag=0.
+  REAL(DP), DIMENSION(nfil2) :: m2l=0.0,mag=0.,magsun2=0.
   REAL(DP), DIMENSION(6)     :: mlx2=0.0
 
-  !-----------------------------------------------------------!
-  !-----------------------------------------------------------!
+  !----------------------------------------------------------------------!
+  !----------------------------------------------------------------------!
 
   nlint = 1
   l1(1) = 0.0
-  l2(nlint) = 2.5E4
+  l2(nlint) = 1.5E4
 
   IF (IARGC().LT.1) THEN
      WRITE(*,*) 'ERROR: no input file!'
@@ -47,8 +46,10 @@ PROGRAM ML_FROM_MCMC
   !open file for output
   OPEN(12,FILE=TRIM(ALF_HOME)//'models/'//TRIM(infile)//'.ml_all',&
        STATUS='REPLACE')
-
-  !read in the header and set the relevant parameters
+  WRITE(12,*) '# UBVRI, SDSS ugriz, ACS F435W F475W F555W F606W F625W F775W '//&
+       'F814W F850LP, UVIS F336W F390W F438W F475W F555W F606W F775W F814W F850LP'
+  
+  !read in the header to set the relevant parameters
   char = '#'
   DO WHILE (char.EQ.'#')
      READ(11,'(A50)',IOSTAT=stat) line
@@ -80,26 +81,18 @@ PROGRAM ML_FROM_MCMC
   ENDDO
   CLOSE(11)
 
-  !read in parameters from the *mcmc file
-  OPEN(11,FILE=TRIM(ALF_HOME)//'results/'//TRIM(infile)//'.mcmc',&
-       STATUS='OLD',iostat=stat,ACTION='READ')
-  IF (stat.NE.0) THEN
-     WRITE(*,*) 'ERROR, file not found: ', infile
-     STOP
-  ENDIF
-
   !setup the models
   CALL SETUP()
   lam = sspgrid%lam
 
-  !read in filter transmission curves
+  !read in filter transmission curves (they are already normalized)
   OPEN(15,FILE=TRIM(ALF_HOME)//'/infiles/filters2.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SETUP ERROR: filter curves not found'
      STOP
   ENDIF
-  READ(15,*) magsun
+  READ(15,*) magsun2
   DO i=1,nstart-1
      READ(15,*) 
   ENDDO
@@ -107,14 +100,22 @@ PROGRAM ML_FROM_MCMC
      READ(15,*) d1,filters2(i,:)
   ENDDO
   CLOSE(15)
-  
-  !----------------------------------------------------------------------!
-  !----------------------------------------------------------------------!
 
+  !open the *mcmc file
+  OPEN(11,FILE=TRIM(ALF_HOME)//'results/'//TRIM(infile)//'.mcmc',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN
+     WRITE(*,*) 'ERROR, file not found: ', infile
+     STOP
+  ENDIF
+
+  !----------------------------------------------------------------------!
+  !----------------------------------------------------------------------!
   
   DO j=1,nchain
      DO k=1,nwalkers
 
+        !read the parameters from the mcmc file
         READ(11,*) d1,posarr,mlx2
 
         !copy the input parameter array into the structure
@@ -134,14 +135,14 @@ PROGRAM ML_FROM_MCMC
         !redshift the spectrum
         oneplusz = (1+pos%velz/clight*1E5)
         zmspec   = MAX(LINTERP(lam*oneplusz,mspec,lam),0.0)
-        !convert to proper units
+        !convert to proper units for mags
         zmspec  = zmspec*lsun/1E6*lam**2/clight/1E8/4/mypi/pc2cm**2
 
-        !MSTO
+        !main sequence turn-off mass
         msto = 10**(msto_t0+msto_t1*pos%logage) * &
              ( msto_z0 + msto_z1*pos%zh + msto_z2*pos%zh**2 )
 
-        !stellar mass
+        !compute normalized stellar mass
         IF (imf_type.EQ.0) THEN
            mass = getmass(imflo,msto,pos%imf1,pos%imf1,krpa_imf3)
         ELSE IF (imf_type.EQ.1) THEN
@@ -167,7 +168,7 @@ PROGRAM ML_FROM_MCMC
            ENDIF
         ENDDO
 
-
+        !write M/L values to file
         WRITE(12,'(50F7.2)') m2l
 
      ENDDO
