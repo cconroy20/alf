@@ -32,16 +32,15 @@ class Alf(object):
                         self.nsample = float(line.split('=')[1].strip())
 
         self.labels = np.array([
-                  'chi2','velz','sigma','logage','zH',
-                  'FeH', 'a', 'C', 'N', 'Na', 'Mg', 'Si',
-                  'K', 'Ca', 'Ti','V', 'Cr', 'Mn', 'Co',
-                  'Ni', 'Cu', 'Sr','Ba', 'Eu', 'Teff',
-                  'IMF1', 'IMF2', 'logfy', 'sigma2', 'velz2',
-                  'logm7g', 'hotteff', 'loghot', 'fy_logage',
-                  'logtrans', 'logemline_h', 'logemline_oii',
-                  'logemline_oiii', 'logemline_sii', 'logemline_ni',
-                  'logemline_nii', 'jitter', 'IMF3', 'logsky', 'IMF4',
-                  'h3', 'h4', 'ML_v','ML_i','ML_k','MW_v', 'MW_i','MW_k'
+                  'chi2', 'velz', 'sigma', 'logage', 'zH', 'FeH', 'a',
+		  'C', 'N', 'Na', 'Mg', 'Si', 'K', 'Ca', 'Ti', 'V', 'Cr',
+		  'Mn', 'Co', 'Ni', 'Cu', 'Sr', 'Ba', 'Eu', 'Teff',
+		  'IMF1', 'IMF2', 'logfy', 'sigma2', 'velz2', 'logm7g',
+		  'hotteff', 'loghot', 'fy_logage', 'logemline_h',
+		  'logemline_oii', 'logemline_oiii', 'logemline_sii',
+		  'logemline_ni', 'logemline_nii', 'logtrans', 'jitter',
+		  'logsky', 'IMF3', 'IMF4', 'h3', 'h4',
+                  'ML_v','ML_i','ML_k','MW_v', 'MW_i','MW_k'
                   ])
 
         results = Table(results, names=self.labels)
@@ -73,15 +72,16 @@ class Alf(object):
         # is filled in abundance_correct()
         self.xFe = {}
 
-        self.results = results['Type', 'chi2', 'velz', 'sigma',
-                               'logage', 'zH', 'FeH', 'Teff',
-                               'IMF1', 'IMF2', 'logfy', 'sigma2',
-                               'velz2', 'logm7g', 'hotteff',
-                'loghot', 'fy_logage',
-                  'logtrans', 'logemline_h', 'logemline_oii',
-                  'logemline_oiii', 'logemline_sii', 'logemline_ni',
-                  'logemline_nii', 'jitter', 'IMF3', 'logsky', 'IMF4',
-                  'h3', 'h4', 'ML_v','ML_i','ML_k','MW_v', 'MW_i','MW_k']
+        self.results = results['Type',
+                  'chi2', 'velz', 'sigma', 'logage', 'zH', 'FeH', 'a',
+		  'C', 'N', 'Na', 'Mg', 'Si', 'K', 'Ca', 'Ti', 'V', 'Cr',
+		  'Mn', 'Co', 'Ni', 'Cu', 'Sr', 'Ba', 'Eu', 'Teff',
+		  'IMF1', 'IMF2', 'logfy', 'sigma2', 'velz2', 'logm7g',
+		  'hotteff', 'loghot', 'fy_logage', 'logemline_h',
+		  'logemline_oii', 'logemline_oiii', 'logemline_sii',
+		  'logemline_ni', 'logemline_nii', 'logtrans', 'jitter',
+		  'logsky', 'IMF3', 'IMF4', 'h3', 'h4',
+                  'ML_v','ML_i','ML_k','MW_v', 'MW_i','MW_k' ]
 
         """
         Read in input data and best fit model
