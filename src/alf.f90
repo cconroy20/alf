@@ -8,7 +8,7 @@ PROGRAM ALF
   !    Always make sure that the output parameters are not hitting a prior.
   ! 2. Make sure that the chain is converged in all relevant parameters
   !    by plotting the chain trace (parameter vs. chain step).
-  ! 3. Never ever ever use this code blindly.  Fitting spectra is a 
+  ! 3. Do not use this code blindly.  Fitting spectra is a 
   !    subtle art and the code can easily fool you if you don't know
   !    what you're doing.  Make sure you understand *why* the code is 
   !    settling on a particular parameter value.  
@@ -22,6 +22,8 @@ PROGRAM ALF
   !    generically yield well-converged solutions, but you should test
   !    this yourself by fitting mock data generated with write_a_model
 
+  ! To Do: let the Fe-peak elements track Fe in simple mode
+  
   !---------------------------------------------------------------------!
   !---------------------------------------------------------------------!
 
@@ -69,7 +71,7 @@ PROGRAM ALF
   REAL(SP), DIMENSION(2) :: dumt
   CHARACTER(50) :: file='',tag=''
   TYPE(PARAMS)  :: opos,prlo,prhi,bpos,tpos
-  REAL(DP)     :: sigma_indx,velz_indx
+  REAL(DP)      :: sigma_indx,velz_indx
   REAL(DP), DIMENSION(ndat) :: gdev,tflx
   REAL(DP), DIMENSION(nmcindx,nindx) :: tmpindx=0.
   !REAL(SP), DIMENSION(nmcmc*nwalkers/nsample+1,nl) :: mspec_mcmc=0.0
@@ -97,7 +99,7 @@ PROGRAM ALF
   fit_type = 0
 
   !fit h3 and h4 parameters
-  fit_hermite = 1
+  fit_hermite = 0
   
   !type of IMF to fit
   !0=1PL, 1=2PL, 2=1PL+cutoff, 3=2PL+cutoff, 4=non-parametric IMF
@@ -313,6 +315,7 @@ PROGRAM ALF
   CALL STR2ARR(1,prlo,prloarr)   !str->arr
   CALL STR2ARR(1,prhi,prhiarr)   !str->arr
 
+  
   ! The worker's only job is to calculate the value of a function
   ! after receiving a parameter vector.
   IF (taskid.NE.masterid) THEN
@@ -624,7 +627,7 @@ PROGRAM ALF
      WRITE(*,*) 'End Time   '//time(1:2)//':'//time(3:4)
      WRITE(*,'(" Elapsed Time: ",F5.2," hr")') time2/3600.
      WRITE(*,*) 
-     WRITE(*,'("  Facc: ",F5.2)') REAL(totacc)/REAL(nmcmc*nwalkers)
+     WRITE(*,'("  facc: ",F6.3)') REAL(totacc)/REAL(nmcmc*nwalkers)
 
 
      !---------------------------------------------------------------!
@@ -670,7 +673,7 @@ PROGRAM ALF
      WRITE(14,'("#   Nsample    = ",I6)') nsample
      WRITE(14,'("#   Nwave      = ",I6)') nl
      WRITE(14,'("#   Ncores     = ",I6)') ntasks
-     WRITE(14,'("#   Facc: ",F5.2)') REAL(totacc)/REAL(nmcmc*nwalkers)
+     WRITE(14,'("#   facc: ",F6.3)') REAL(totacc)/REAL(nmcmc*nwalkers)
      WRITE(14,'("#   rows: mean posterior, pos(chi^2_min), 1 sigma errors, '//&
           '2.5%, 16%, 50%, 84%, 97.5% CL, lower priors, upper priors ")') 
 
