@@ -1,10 +1,9 @@
 FUNCTION GETVELZ()
 
-  !function to estimate the recession velocity
-  !this routine is used to get a first-guess at the velocity
-  !so that the subsequent Powell minimization (in alf)
-  !coverges faster.  Uses the first two wavelength segments
-
+  ! Function to estimate the recession velocity.
+  ! Uses the first two wavelength segments, unless only one exists
+  ! This routine is a bit clunky, and often fails at low S/N
+  
   USE alf_vars; USE nr, ONLY : locate
   USE alf_utils, ONLY : linterp,contnormspec,velbroad
   IMPLICIT NONE

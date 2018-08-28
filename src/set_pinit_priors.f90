@@ -90,16 +90,6 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
      pos%imf1 = pos%imf2 + myran()*0.5
   ENDIF
 
-  IF (PRESENT(velz)) THEN
-     IF (ABS(pos%velz).LE.tiny_number) THEN
-        pos%velz  = myran()*1E4-1E3
-     ELSE
-        pos%velz  = velz + (myran()*10-5)
-     ENDIF
-  ELSE
-     pos%velz  = myran()*1E4-1E3
-  ENDIF
-
 
   !these pr=test statements allow the user to pre-set
   !specific priors at the beginning of alf.f90; those
@@ -259,7 +249,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   !test the priors and if the priors have been altered then 
   !re-initialize the parameters within the prior range
   !NB: why not simply always initialize the starting position this way?
-  DO i=2,npar
+  DO i=1,npar
      IF (prhiarr1(i).LE.prloarr1(i)) THEN
         WRITE(*,*) 'SET_PINIT_PRIORS ERROR: prhi < prlo!', i
         STOP
@@ -273,6 +263,10 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
      ENDIF
   ENDDO
 
+  IF (PRESENT(velz)) THEN
+     posarr1(1)  = velz + 50*(myran()*2-1.0)
+  ENDIF
+   
   !arr->str
   CALL STR2ARR(2,pos,posarr1)
 

@@ -77,6 +77,7 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
            vel(il:ih)  = (lambda(i)/lambda(il:ih)-1)*clight/1E5
 
            !Gauss-Hermite expansion
+           !based on Cappellari (2017) Eqn 13, 15
            func(il:ih) =  1/SQRT(2*mypi)/sigmal * &
                 EXP(-vel(il:ih)**2/2./sigmal**2) * &
                 (1 + h3*(2*(vel(il:ih)/sigmal)**3-3*(vel(il:ih)/sigmal))/sqrt(3.) + &
@@ -90,7 +91,7 @@ SUBROUTINE VELBROAD(lambda,spec,sigma,minl,maxl,ires)
          
      ENDDO
 
-  !compute smoothing the correct way
+  !compute smoothing the correct way (convolution in dloglambda)
   ELSE
 
      !fancy footwork to allow for input spectra of either length

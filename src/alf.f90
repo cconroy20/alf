@@ -39,9 +39,9 @@ PROGRAM ALF
   !NB: setting this to >1 currently results in errors in the *sum outputs
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=10000
+  INTEGER, PARAMETER :: nburn=60000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=512 
+  INTEGER, PARAMETER :: nwalkers=512 !512 
   !save the chain outputs to file and the model spectra
   INTEGER, PARAMETER :: print_mcmc=1, print_mcmc_spec=0
 
@@ -96,7 +96,7 @@ PROGRAM ALF
 
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
-  fit_type = 0
+  fit_type = 1
 
   !fit h3 and h4 parameters
   fit_hermite = 0
@@ -111,7 +111,7 @@ PROGRAM ALF
   !force a MW (Kroupa) IMF
   mwimf = 0
 
-  !fit two-age SFH or not?
+  !fit two-age SFH or not?  (only considered if fit_type=0)
   fit_two_ages = 1
 
   !IMF slope within the non-parametric IMF bins
@@ -392,14 +392,19 @@ PROGRAM ALF
 
         !make an initial estimate of the redshift
         IF (file(1:4).EQ.'cdfs'.OR.file(1:5).EQ.'legac') THEN
+           WRITE(*,*) 'Setting initial cz to 0.0'
            velz = 0.0 
         ELSE 
-           WRITE(*,*) ' Finding redshift...'
+           WRITE(*,*) ' Fitting cz...'
            velz = getvelz()
+           IF (velz.LT.prlo%velz.OR.velz.GT.prhi%velz) THEN
+              WRITE(*,*) 'cz out of prior bounds, setting to 0.0'
+              velz = 0.0
+           ENDIF
         ENDIF
         opos%velz = velz
         WRITE(*,'("    cz= ",F7.1," (z=",F6.3,")")') &
-             velz, velz/3E5
+             opos%velz, opos%velz/3E5
         
      ENDIF
 
