@@ -10,7 +10,7 @@ from astropy.io import ascii
 from astropy.table import Table, Column, hstack
 
 class Alf(object):
-    def __init__(self, outfiles, read_mcmc=True, info=None):
+    def __init__(self, outfiles, read_mcmc=True, info=None, index=False):
         self.outfiles = outfiles
         #self.legend = info['label']
         #self.imf_type = info['imf_type']
@@ -89,18 +89,19 @@ class Alf(object):
         This isn't going to work correctly if the file
         doesn't exist
         """
-        try:
-            m = np.loadtxt('{0}.bestspec'.format(self.outfiles))
-        except:
-            warning = ('Do not have the *.bestspec file')
-            warnings.warn(warning)
+        #try:
+        m = np.loadtxt('{0}.bestspec'.format(self.outfiles))
+        #except:
+        #    warning = ('Do not have the *.bestspec file')
+        #    warnings.warn(warning)
         data = {}
         data['wave'] = m[:,0]/(1.+self.results['velz'][5]*1e3/constants.c)
         data['m_flux'] = m[:,1] # Model spectrum, normalization applied
         data['d_flux'] = m[:,2] # Data spectrum
         data['snr'] = m[:,3]  # Including jitter and inflated errors
         data['unc'] = 1/m[:,3]
-        data['poly'] = m[:,4] # Polynomial used to create m_flux
+        if not index:
+            data['poly'] = m[:,4] # Polynomial used to create m_flux
         data['residual'] = (m[:,1] - m[:,2])/m[:,1] * 1e2
         self.spectra = data
 
@@ -247,6 +248,81 @@ class Alf(object):
 
             self.xFe[col] = self.get_cls(xfe_vals)
 
+    def get_corrected_abundance_posterior(self, elem, s07=False, b14=False, m11=True):
+        # Correction factros from Schiavon 2007, Table 6
+        # NOTE: Forcing factors to be 0 for [Fe/H]=0.0,0.2
+        lib_feh = [-1.6, -1.4, -1.2, -1.0, -0.8,
+                   -0.6, -0.4, -0.2, 0.0, 0.2]
+        lib_ofe = [0.6, 0.5, 0.5, 0.4, 0.3, 0.2,
+                   0.2, 0.1, 0.0, 0.0]
+
+        if s07:
+            #Schiavon 2007
+            lib_mgfe = [0.4, 0.4, 0.4, 0.4, 0.29,
+                        0.20, 0.13, 0.08, 0.05, 0.04]
+            lib_cafe = [0.32, 0.3, 0.28, 0.26, 0.20,
+                        0.12, 0.06, 0.02, 0.0, 0.0]
+        elif b14:
+            # Fitted from Bensby+ 2014
+            lib_mgfe = [0.4 , 0.4, 0.4, 0.38, 0.37,
+                        0.27, 0.21, 0.12, 0.05, 0.0]
+            lib_cafe = [0.32, 0.3, 0.28, 0.26, 0.26,
+                        0.17, 0.12, 0.06, 0.0, 0.0]
+        elif m11 or (b14 is False and s07 is False):
+            # Fitted to Milone+ 2011 HR MILES stars
+            lib_mgfe = [0.4, 0.4, 0.4, 0.4, 0.34, 0.22,
+                        0.14, 0.11, 0.05, 0.04]
+            # from B14
+            lib_cafe = [0.32, 0.3, 0.28, 0.26, 0.26,
+                        0.17, 0.12, 0.06, 0.0, 0.0]
+
+        # In ALF the oxygen abundance is used
+        # a proxy for alpha abundance
+        del_alfe = interpolate.interp1d(lib_feh, lib_ofe,
+                                        kind='linear',
+                                        bounds_error=False,
+                                        fill_value='extrapolate')
+        del_mgfe = interpolate.interp1d(lib_feh, lib_mgfe,
+                                        kind='linear',
+                                        bounds_error=False,
+                                        fill_value='extrapolate')
+        del_cafe = interpolate.interp1d(lib_feh, lib_cafe,
+                                        kind='linear',
+                                        bounds_error=False,
+                                        fill_value='extrapolate')
+
+        zh = np.where(self.labels == 'zH')
+        al_corr = del_alfe(self.mcmc[:,zh])
+        mg_corr = del_mgfe(self.mcmc[:,zh])
+        ca_corr = del_cafe(self.mcmc[:,zh])
+
+        # Assuming Ca~Ti~Si
+        group1 = {'Ca', 'Ti', 'Si'}
+
+        # These elements seem to show no net enhancemnt
+        # at low metallicity
+        group2 = {'C', 'Ca', 'N', 'Cr', 'Ni', 'Na'}
+
+        # These elements we haven't yet quantified
+        group3 = {'Ba', 'Eu', 'Sr', 'Cu', 'Co',
+                  'K', 'V', 'Mn'}
+
+        feh = np.where(self.labels == 'FeH')
+        xh = np.where(self.labels == elem)
+        xfe = (self.mcmc[:,xh] - self.mcmc[:,feh])
+
+        if elem == 'a':
+            xfe_vals = xfe + al_corr
+        elif elem == 'Mg':
+            xfe_vals = xfe + mg_corr
+        elif elem in group1:
+            xfe_vals = xfe + ca_corr
+        elif elem in group2 or elem in group3:
+            xfe_vals = xfe
+
+        return xfe_vals.flatten()
+
+
     def plot_model(self, fname):
 
         chunks = 1000
@@ -287,6 +363,8 @@ class Alf(object):
                 ax2.set_xlabel(r'Wavelength $(\AA)$',
                                fontsize=22, labelpad=10)
 
+                ax1.set_ylim(0.5, 1.5)
+
                 pdf.savefig()
 
     def plot_corner(self, outname, params, color='k', save=True):
@@ -296,11 +374,13 @@ class Alf(object):
 
         use = np.in1d(labels, params)
 
-        figure = corner.corner(self.mcmc[:,use],
-                               labels=labels[use],
-                               color=color,
-                               plot_contours=True)
-
+        try:
+            figure = corner.corner(self.mcmc[:,use],
+                                   labels=labels[use],
+                                   color=color,
+                                   plot_contours=True)
+        except:
+            print("Didn't work")
         plt.tight_layout()
         if save:
             plt.savefig(outname)
@@ -368,8 +448,9 @@ class Alf(object):
         lower = distribution[int(0.160*num)]
         median = distribution[int(0.500*num)]
         upper = distribution[int(0.840*num)]
+        std = np.std(distribution)
 
-        return {'cl50': median, 'cl84':  upper, 'cl16': lower}
+        return {'cl50': median, 'cl84':  upper, 'cl16': lower, 'std': std}
 
     def write_params(self):
         pass
