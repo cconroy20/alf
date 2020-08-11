@@ -68,14 +68,22 @@ PROGRAM WRITE_A_MODEL
         WRITE(is,'(I2)') j
      ENDIF
 
-     file = 'hmodel_t10.0_zp0.0.dat'
-     pos%sigma  = 1.
+     file = 'zsol_a+0.3.dat'
+     pos%sigma  = 200.00
 
-     s2n  = 10000.  !S/N per A
+     s2n  = 1000.  !S/N per A
  
      pos%logage = LOG10(10.0)
      pos%zh     = 0.0
-     emnorm     = -5.0
+     pos%ch     = 0.3
+     pos%nh     = 0.3
+     emnorm     = -8.0
+
+     pos%mgh = 0.3
+     pos%ah = 0.3
+     pos%tih = 0.3
+     pos%cah = 0.3
+     pos%sih = 0.3
 
      pos%imf1   = 2.3
      pos%imf2   = 2.3
@@ -87,6 +95,8 @@ PROGRAM WRITE_A_MODEL
      pos%logemline_sii  = emnorm
      pos%logemline_ni   = emnorm
      pos%logemline_nii  = emnorm
+     pos%loghot = -8.0
+     pos%hotteff = 8.0
 
      !get a model spectrum
      gspec = 0.0
@@ -111,8 +121,8 @@ PROGRAM WRITE_A_MODEL
  
      !write model spectrum to file
      OPEN(12,FILE=TRIM(ALF_HOME)//'models/'//TRIM(file),STATUS='REPLACE')
-     WRITE(12,'("# 0.400 0.470")') 
-     WRITE(12,'("# 0.470 0.560")')
+   !  WRITE(12,'("# 0.400 0.470")') 
+   !  WRITE(12,'("# 0.470 0.560")')
      !WRITE(12,'("# 0.570 0.640")')
      !WRITE(12,'("# 0.640 0.800")')
      !WRITE(12,'("# 0.800 0.892")')

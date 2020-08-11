@@ -202,7 +202,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
 
   ENDIF
   
-  !vary young population - both fraction and age
+  !include young population - both fraction and age
   !only include these parameters in the "full" model
   IF (fit_type.EQ.0.AND.powell_fitting.EQ.0.AND.fit_two_ages.EQ.1) THEN
      fy    = MAX(MIN(10**pos%logfy,1.0),0.0)

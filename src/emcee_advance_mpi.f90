@@ -24,7 +24,7 @@ SUBROUTINE EMCEE_ADVANCE_MPI (ndim, nwalkers, a, pin, lpin, &
   !   The value of the log-probability function at positions `pin`.
   !
   ! nworkers [integer]:
-  !   The number of available workers, not including the master
+  !   The number of available workers, not including the parent
   !   process, which is assumed to be workerid=0
   
   ! Outputs

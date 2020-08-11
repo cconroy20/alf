@@ -96,8 +96,9 @@ PROGRAM SPEC_FROM_SUM
   !here is the place to make changes to the best-fit model,
   !if so desired
 
-  pos%loghot = -8.0
-
+  !pos%loghot = -8.0
+  !pos%sigma = 0.0
+  
   !------------------------------------------------------------!
 
 

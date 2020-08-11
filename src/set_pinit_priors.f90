@@ -264,7 +264,7 @@ SUBROUTINE SET_PINIT_PRIORS(pos,prlo,prhi,velz)
   ENDDO
 
   IF (PRESENT(velz)) THEN
-     posarr1(1)  = velz + 50*(myran()*2-1.0)
+     posarr1(1)  = velz + 25*(myran()*2-1.0)
   ENDIF
    
   !arr->str

@@ -1,6 +1,6 @@
 PROGRAM ALF
 
-  !  Master program to fit the absorption line spectrum, or indices,
+  !  Main program to fit the absorption line spectrum, or indices,
   !  of a quiescent (>1 Gyr) stellar population
 
   ! Some important points to keep in mind:
@@ -12,7 +12,7 @@ PROGRAM ALF
   !    subtle art and the code can easily fool you if you don't know
   !    what you're doing.  Make sure you understand *why* the code is 
   !    settling on a particular parameter value.  
-  ! 4. Wavelength-dependent instrumental broadening is included but
+  ! 4. Wavelength-dependent instrumental broadening can be included but
   !    will not be accurate in the limit of modest-large redshift b/c
   !    this is implemented in the model restframe at code setup time
   ! 5. The code can fit for the atmospheric transmission function but
@@ -22,7 +22,9 @@ PROGRAM ALF
   !    generically yield well-converged solutions, but you should test
   !    this yourself by fitting mock data generated with write_a_model
 
-  ! To Do: let the Fe-peak elements track Fe in simple mode
+  ! To Do:
+  ! 1. Let the Fe-peak elements track Fe in simple mode
+  ! 2. Force both young and old components to have the same abundance pattern
   
   !---------------------------------------------------------------------!
   !---------------------------------------------------------------------!
@@ -39,12 +41,15 @@ PROGRAM ALF
   !NB: setting this to >1 currently results in errors in the *sum outputs
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=60000
+  INTEGER, PARAMETER :: nburn=2000
   !number of walkers
-  INTEGER, PARAMETER :: nwalkers=512 !512 
+  INTEGER, PARAMETER :: nwalkers=256 !512 
   !save the chain outputs to file and the model spectra
   INTEGER, PARAMETER :: print_mcmc=1, print_mcmc_spec=0
-
+  !option to re-initialize the parameters around the best-fit
+  !solution and execute another round of burn-in
+  INTEGER, PARAMETER :: moreburn=0
+  
   !start w/ powell minimization?
   INTEGER, PARAMETER  :: dopowell=0
   !Powell iteration tolerance
@@ -54,7 +59,7 @@ PROGRAM ALF
   !number of Monte Carlo realizations of the noise for index errors
   INTEGER, PARAMETER  :: nmcindx=1000
 
-  INTEGER  :: i,j,k,totacc=0,iter=30,npos
+  INTEGER  :: i,j,k,totacc=0,iter=30,npos,ml
   REAL(DP) :: velz,minchi2=huge_number,fret,wdth,bret=huge_number
   REAL(DP), DIMENSION(nl)   :: mspec=0.0,mspecmw=0.0,lam=0.0
   REAL(DP), DIMENSION(nfil) :: m2l=0.0,m2lmw=0.0
@@ -85,7 +90,7 @@ PROGRAM ALF
   INTEGER :: ierr,taskid,ntasks,received_tag,status(MPI_STATUS_SIZE)
   INTEGER :: KILL=99,BEGIN=0
   LOGICAL :: wait=.TRUE.
-  INTEGER, PARAMETER :: masterid=0
+  INTEGER, PARAMETER :: parentid=0
  
   !---------------------------------------------------------------!
   !---------------------------Setup-------------------------------!
@@ -96,7 +101,7 @@ PROGRAM ALF
 
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
-  fit_type = 1
+  fit_type = 0
 
   !fit h3 and h4 parameters
   fit_hermite = 0
@@ -106,10 +111,10 @@ PROGRAM ALF
   imf_type = 1
 
   !are the data in the original observed frame?
-  observed_frame = 1
+  observed_frame = 0
 
   !force a MW (Kroupa) IMF
-  mwimf = 0
+  mwimf = 1
 
   !fit two-age SFH or not?  (only considered if fit_type=0)
   fit_two_ages = 1
@@ -126,7 +131,9 @@ PROGRAM ALF
   prhi%teff   =  2.0
   prlo%teff   = -2.0
 
-  
+  !mass of the young component should always be sub-dominant
+  prhi%logfy = -0.5
+
   !---------------------------------------------------------------!
   !--------------Do not change things below this line-------------!
   !---------------unless you know what you are doing--------------!
@@ -187,7 +194,7 @@ PROGRAM ALF
      CALL GETARG(2,tag(2:))
   ENDIF
 
-  IF (taskid.EQ.masterid) THEN
+  IF (taskid.EQ.parentid) THEN
      !write some important variables to screen
      WRITE(*,*) 
      WRITE(*,'(" ************************************")') 
@@ -318,22 +325,22 @@ PROGRAM ALF
   
   ! The worker's only job is to calculate the value of a function
   ! after receiving a parameter vector.
-  IF (taskid.NE.masterid) THEN
+  IF (taskid.NE.parentid) THEN
      
      ! Start event loop
      DO WHILE (wait)
 
-        ! Look for data from the master. This call can accept up
+        ! Look for data from the parent. This call can accept up
         ! to ``nwalkers`` paramater positions, but it expects
         ! that the actual number of positions is smaller and is
         ! given by the MPI_TAG.  This call does not return until
         ! a set of parameter vectors is received
         CALL MPI_RECV(npos, 1, MPI_INTEGER, &
-             masterid, MPI_ANY_TAG, MPI_COMM_WORLD, status, ierr)
+             parentid, MPI_ANY_TAG, MPI_COMM_WORLD, status, ierr)
         received_tag = status(MPI_TAG)
         IF ((received_tag.EQ.KILL).OR.(npos.EQ.0)) EXIT
         CALL MPI_RECV(mpiposarr(1,1), npos*npar, MPI_DOUBLE_PRECISION, &
-             masterid, MPI_ANY_TAG, MPI_COMM_WORLD, status, ierr)
+             parentid, MPI_ANY_TAG, MPI_COMM_WORLD, status, ierr)
    
         IF (taskid.EQ.1.AND.test_time.EQ.1) THEN
            CALL DATE_AND_TIME(TIME=time)
@@ -352,16 +359,16 @@ PROGRAM ALF
                 //time(5:9),npos,taskid
         ENDIF
              
-        !Send it back to the master
+        !Send it back to the parent
         CALL MPI_SEND(lp_mpi(1), npos, MPI_DOUBLE_PRECISION, &
-             masterid, BEGIN, MPI_COMM_WORLD, ierr)
+             parentid, BEGIN, MPI_COMM_WORLD, ierr)
 
      ENDDO
 
   ENDIF
  
-  !this is the master process
-  IF (taskid.EQ.masterid) THEN
+  !this is the parent process
+  IF (taskid.EQ.parentid) THEN
  
      !for testing
      IF (1.EQ.0) THEN
@@ -394,6 +401,8 @@ PROGRAM ALF
         IF (file(1:4).EQ.'cdfs'.OR.file(1:5).EQ.'legac') THEN
            WRITE(*,*) 'Setting initial cz to 0.0'
            velz = 0.0 
+        ELSE IF (file(1:4).EQ.'df44') THEN
+           velz = 6280.00
         ELSE 
            WRITE(*,*) ' Fitting cz...'
            velz = getvelz()
@@ -531,6 +540,56 @@ PROGRAM ALF
      WRITE (*,'(A)') '...100%'
      CALL FLUSH()
 
+
+     !burn-in V2
+     IF (moreburn.EQ.1) THEN 
+
+        ml    = MAXLOC(lp_emcee_in,1)    
+        bposarr  = pos_emcee_in(:,ml) 
+
+        DO j=1,nwalkers
+           DO i=1,npar
+              IF (i.LE.2) wdth = 10.0
+              IF (i.GT.2) wdth = 0.05
+              pos_emcee_in(i,j) = bposarr(i) + wdth*(2.*myran()-1.0)
+              IF (pos_emcee_in(i,j).LE.prloarr(i)) &
+                   pos_emcee_in(i,j)=prloarr(i)+wdth
+              IF (pos_emcee_in(i,j).GE.prhiarr(i)) &
+                   pos_emcee_in(i,j)=prhiarr(i)-wdth
+           ENDDO
+           
+           !Compute the initial log-probability for each walker
+           lp_emcee_in(j) = -0.5*func(pos_emcee_in(:, j))
+        ENDDO
+        
+
+        WRITE(*,*) '   burning in (V2)...'
+        WRITE(*,'(A)',advance='no') '      Progress:'
+        DO i=1,nburn
+           CALL EMCEE_ADVANCE_MPI(npar,nwalkers,2.d0,pos_emcee_in,&
+                lp_emcee_in,pos_emcee_out,lp_emcee_out,accept_emcee,ntasks-1)
+           pos_emcee_in = pos_emcee_out
+           lp_emcee_in  = lp_emcee_out
+           IF (i.EQ.nburn/4.*1) THEN
+              WRITE (*,'(A)',advance='no') ' ...25%'
+              CALL FLUSH()
+           ENDIF
+           IF (i.EQ.nburn/4.*2) THEN
+              WRITE (*,'(A)',advance='no') '...50%'
+              CALL FLUSH()
+           ENDIF
+           IF (i.EQ.nburn/4.*3) THEN
+              WRITE (*,'(A)',advance='no') '...75%'
+              CALL FLUSH()
+           ENDIF
+        ENDDO
+        WRITE (*,'(A)') '...100%'
+        CALL FLUSH()
+        
+     END IF
+
+
+     
      !Run a production chain
      WRITE(*,*) '   production run...'
      
