@@ -162,7 +162,7 @@ MODULE ALF_VARS
   !number of filters
   INTEGER, PARAMETER :: nfil=3
   !number of hot stars
-  INTEGER, PARAMETER :: nhot=4
+  INTEGER, PARAMETER :: nhot=12
   !mag of sun in r,I,K filters (AB mag)
   REAL(DP), PARAMETER, DIMENSION(3) :: magsun = (/4.64,4.52,5.14/)
   !mag of sun in r,I,J filters (AB mag)

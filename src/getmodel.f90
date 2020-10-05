@@ -340,6 +340,7 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      fy   = MAX(MIN(10**pos%loghot,1.0),0.0)
      spec = (1-fy)*spec + fy*tmp
      
+     
      !add in an M7 giant
      fy   = MAX(MIN(10**pos%logm7g,1.0),0.0)
      spec = (1-fy)*spec + fy*sspgrid%m7g

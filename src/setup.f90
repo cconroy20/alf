@@ -329,47 +329,17 @@ SUBROUTINE SETUP()
 
   !read in hot stars 
   DO j=1,nzmet
-     OPEN(24,FILE=TRIM(ALF_HOME)//'/infiles/at12_feh'//charz2(j)//&
-          '_afe+0.0_t08000g4.00.spec.s100',&
+     
+     OPEN(24,FILE=TRIM(ALF_HOME)//'/infiles/hotteff_feh'//charz2(j)//'.dat',&
           STATUS='OLD',iostat=stat,ACTION='READ')
      DO i=1,nstart-1
         READ(24,*)
      ENDDO
      DO i=1,nl
-        READ(24,*) d1,sspgrid%hotspec(i,1,j)
+        READ(24,*) d1,sspgrid%hotspec(i,:,j)
      ENDDO
      CLOSE(24)
-     OPEN(25,FILE=TRIM(ALF_HOME)//'/infiles/at12_feh'//charz2(j)//&
-          '_afe+0.0_t10000g4.00.spec.s100',&
-          STATUS='OLD',iostat=stat,ACTION='READ')
-     DO i=1,nstart-1
-        READ(25,*) 
-     ENDDO
-     DO i=1,nl
-        READ(25,*) d1,sspgrid%hotspec(i,2,j)
-     ENDDO
-     CLOSE(25)
-     OPEN(26,FILE=TRIM(ALF_HOME)//'/infiles/at12_feh'//charz2(j)//&
-          '_afe+0.0_t20000g4.00.spec.s100',&
-          STATUS='OLD',iostat=stat,ACTION='READ')
-     DO i=1,nstart-1
-        READ(26,*) 
-     ENDDO
-     DO i=1,nl
-        READ(26,*) d1,sspgrid%hotspec(i,3,j)
-     ENDDO
-     CLOSE(26)
-     OPEN(27,FILE=TRIM(ALF_HOME)//'/infiles/at12_feh'//charz2(j)//&
-          '_afe+0.0_t30000g4.00.spec.s100',&
-          STATUS='OLD',iostat=stat,ACTION='READ')
-     DO i=1,nstart-1
-        READ(27,*) 
-     ENDDO
-     DO i=1,nl
-        READ(27,*) d1,sspgrid%hotspec(i,4,j)
-     ENDDO
-     CLOSE(27)
- 
+
      !normalize to a 13 Gyr SSP at 1um (same norm for the M7III param)
      !NB: this normalization was changed on 7/20/15.  Also, a major
      !bug was found in which the indices of the array were reversed.
@@ -382,7 +352,7 @@ SUBROUTINE SETUP()
   ENDDO
   
   !hot star Teff in kK
-  sspgrid%teffarrhot = (/8.0,10.,20.,30./)
+  sspgrid%teffarrhot = (/8.0,10.,12.,14.,16.,18.,20.,22.,24.,26.,28.,30./)
 
   !read in M7III star, normalized to a 13 Gyr SSP at 1um
   OPEN(23,FILE=TRIM(ALF_HOME)//'/infiles/M7III.spec.s100',&
