@@ -101,7 +101,7 @@ PROGRAM ALF
 
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
-  fit_type = 0
+  fit_type = 1
 
   !fit h3 and h4 parameters
   fit_hermite = 0
@@ -131,6 +131,7 @@ PROGRAM ALF
   prhi%teff   =  2.0
   prlo%teff   = -2.0
 
+  
   !mass of the young component should always be sub-dominant
   prhi%logfy = -0.5
 
