@@ -225,7 +225,7 @@ class Alf(object):
 
         # These elements seem to show no net enhancemnt
         # at low metallicity
-        group2 = {'C', 'Ca', 'N', 'Cr', 'Ni', 'Na'}
+        group2 = {'C', 'N', 'Cr', 'Ni', 'Na'}
 
         # These elements we haven't yet quantified
         group3 = {'Ba', 'Eu', 'Sr', 'Cu', 'Co',
@@ -301,7 +301,7 @@ class Alf(object):
 
         # These elements seem to show no net enhancemnt
         # at low metallicity
-        group2 = {'C', 'Ca', 'N', 'Cr', 'Ni', 'Na'}
+        group2 = {'C', 'N', 'Cr', 'Ni', 'Na'}
 
         # These elements we haven't yet quantified
         group3 = {'Ba', 'Eu', 'Sr', 'Cu', 'Co',
