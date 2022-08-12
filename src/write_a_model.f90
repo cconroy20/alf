@@ -68,24 +68,24 @@ PROGRAM WRITE_A_MODEL
         WRITE(is,'(I2)') j
      ENDIF
 
-     file = 'zsol_a+0.3.dat'
-     pos%sigma  = 200.00
+     file = 't09_zsol.dat'
+     pos%sigma  = 0.0
 
-     s2n  = 1000.  !S/N per A
+     s2n  = 100000.  !S/N per A
  
-     pos%logage = LOG10(10.0)
+     pos%logage = LOG10(9.0)
      pos%zh     = 0.0
-     pos%ch     = 0.3
-     pos%nh     = 0.3
+   !  pos%ch     = 0.3
+   !  pos%nh     = 0.3
      emnorm     = -8.0
 
-     pos%mgh = 0.3
-     pos%ah = 0.3
-     pos%tih = 0.3
-     pos%cah = 0.3
-     pos%sih = 0.3
+  !   pos%mgh = 0.3
+  !   pos%ah = 0.3
+  !   pos%tih = 0.3
+  !   pos%cah = 0.3
+  !   pos%sih = 0.3
 
-     pos%imf1   = 2.3
+     pos%imf1   = 1.3
      pos%imf2   = 2.3
      pos%imf3   = 0.08
 
@@ -116,7 +116,7 @@ PROGRAM WRITE_A_MODEL
            s2np = s2n*SQRT(2.5)
         ENDIF
         err(i)   = mspec(i)/s2np
-        gspec(i) = mspec(i) + err(i)*gdev(i)
+        gspec(i) = mspec(i) !+ err(i)*gdev(i)
      ENDDO
  
      !write model spectrum to file

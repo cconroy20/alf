@@ -501,8 +501,8 @@ SUBROUTINE SETUP()
      ENDDO
 
      !smooth the response functions
-     DO k=1,nzmet
-        DO j=1,nage_rfcn
+     DO k=nzmet-1,nzmet
+        DO j=nage_rfcn-1,nage_rfcn
            CALL VELBROAD(lam,sspgrid%solar(:,j,k),sig0,lamlo,lamhi,smooth)
            CALL VELBROAD(lam,sspgrid%nap(:,j,k),sig0,lamlo,lamhi,smooth)
            CALL VELBROAD(lam,sspgrid%nam(:,j,k),sig0,lamlo,lamhi,smooth)

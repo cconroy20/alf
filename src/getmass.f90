@@ -71,7 +71,7 @@ FUNCTION GETMASS(mlo,mto,imf1,imf2,imfup,imf3,imf4,timfnorm)
              0.077*m2**(-imf1+imf2)*(nslim**(-imfup+2)-mto**(-imfup+2))/(-imfup+2)/imfnorm
      ENDIF
 
-  ELSE
+  ELSE 
 
      !non-parametric IMF
      

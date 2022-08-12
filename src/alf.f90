@@ -41,7 +41,7 @@ PROGRAM ALF
   !NB: setting this to >1 currently results in errors in the *sum outputs
   INTEGER, PARAMETER :: nsample=1
   !length of chain burn-in
-  INTEGER, PARAMETER :: nburn=2000
+  INTEGER, PARAMETER :: nburn=1000
   !number of walkers
   INTEGER, PARAMETER :: nwalkers=256 !512 
   !save the chain outputs to file and the model spectra
@@ -101,7 +101,7 @@ PROGRAM ALF
 
   !flag determining the level of complexity
   !0=full, 1=simple, 2=super-simple.  See sfvars for details
-  fit_type = 1
+  fit_type = 0
 
   !fit h3 and h4 parameters
   fit_hermite = 0
@@ -114,10 +114,10 @@ PROGRAM ALF
   observed_frame = 0
 
   !force a MW (Kroupa) IMF
-  mwimf = 1
+  mwimf = 0
 
   !fit two-age SFH or not?  (only considered if fit_type=0)
-  fit_two_ages = 1
+  fit_two_ages = 0
 
   !IMF slope within the non-parametric IMF bins
   !0 = flat, 1 = Kroupa, 2 = Salpeter
@@ -130,7 +130,8 @@ PROGRAM ALF
   prhi%logm7g = -5.0
   prhi%teff   =  2.0
   prlo%teff   = -2.0
-
+  prhi%loghot = -4.0
+  prlo%loghot = -6.0
   
   !mass of the young component should always be sub-dominant
   prhi%logfy = -0.5
