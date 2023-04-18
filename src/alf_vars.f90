@@ -22,6 +22,7 @@ MODULE ALF_VARS
   !0: fit the full model (IMF, all abundances, nuisance params, etc)
   !1: only fit velz, sigma, SSP age, Z, Fe,C,N,O,Mg,Si,Ca,Ti,Na
   !2: only fit velz, sigma, SSP age, Z
+  !3: only fit velz, sigma, SSP age, Z and [a/Fe] 
   INTEGER :: fit_type=0
 
   !turn on the use of age-dependent response functions
@@ -157,6 +158,8 @@ MODULE ALF_VARS
   INTEGER, PARAMETER :: ndat = 30000
   !total number of parameters in the simple model
   INTEGER, PARAMETER :: nparsimp = 14
+  !total number of parameters in the semi-simple model
+  INTEGER, PARAMETER :: nparsemisimp = 5
   !number of indices defined in allindices.dat
   INTEGER, PARAMETER :: nindx=25
   !number of filters
@@ -255,7 +258,7 @@ MODULE ALF_VARS
   
   !structure for the set of parameters necessary to generate a model
   TYPE PARAMS
-     REAL(DP) :: velz=0.0,sigma=0.0,logage=1.0,zh=0.0,feh=0.0,ah=0.0,&
+     REAL(DP) :: velz=0.0,sigma=0.0,logage=1.0,zh=0.0,ah=0.0,feh=0.0,&
           nhe=0.0,ch=0.0,nh=0.0,nah=0.0,mgh=0.0,sih=0.0,kh=0.0,&
           cah=0.0,tih=0.0,vh=0.0,crh=0.0,mnh=0.0,coh=0.0,nih=0.0,&
           cuh=0.0,srh=0.0,bah=0.0,euh=0.0,teff=0.0,imf1=1.3,imf2=2.3,&

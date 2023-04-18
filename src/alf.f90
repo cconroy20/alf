@@ -100,7 +100,7 @@ PROGRAM ALF
   fit_indices = 0
 
   !flag determining the level of complexity
-  !0=full, 1=simple, 2=super-simple.  See sfvars for details
+  !0=full, 1=simple, 2=super-simple; 3=semi-simple.
   fit_type = 0
 
   !fit h3 and h4 parameters
@@ -169,7 +169,7 @@ PROGRAM ALF
      ENDIF
   ENDIF
 
-  IF (fit_type.EQ.1.OR.fit_type.EQ.2) mwimf=1
+  IF (fit_type.NE.0) mwimf=1
 
   !---------------------------------------------------------------!
 
@@ -646,6 +646,8 @@ PROGRAM ALF
               pos_emcee_in(nparsimp+1:,j) = 0.0
            ELSE IF (fit_type.EQ.2) THEN
               pos_emcee_in(npowell+1:,j) = 0.0 
+           ELSE IF (fit_type.EQ.3) THEN
+              pos_emcee_in(nparsemisimp+1:,j) = 0.0
            ENDIF
            
            IF (print_mcmc.EQ.1) THEN

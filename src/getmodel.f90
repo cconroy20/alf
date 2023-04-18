@@ -245,9 +245,37 @@ SUBROUTINE GETMODEL(pos,spec,mw)
      dm2 = dm
   ENDIF
 
+  !semi-simple mode
+  IF (powell_fitting.EQ.0.AND.fit_type.EQ.3) THEN
+
+     !all alpha elements (and C, N) vary in lock-step
+
+     !vary [O/H]
+     CALL ADD_RESPONSE(spec,pos%ah,0.3,dr,vr,dm2,vm2,sspgrid%solar,sspgrid%ap)
+     !vary [C/H]
+     CALL ADD_RESPONSE(spec,pos%ah,0.15,dr,vr,dm2,vm2,sspgrid%solar,&
+          sspgrid%cp,sspgrid%cm)
+     !vary [N/H]
+     CALL ADD_RESPONSE(spec,pos%ah,0.3,dr,vr,dm2,vm2,sspgrid%solar,&
+          sspgrid%np,sspgrid%nm)
+     !vary [Mg/H]
+     CALL ADD_RESPONSE(spec,pos%ah,0.3,dr,vr,dm2,vm2,sspgrid%solar,&
+          sspgrid%mgp,sspgrid%mgm)
+     !vary [Si/H]
+     CALL ADD_RESPONSE(spec,pos%ah,0.3,dr,vr,dm2,vm2,sspgrid%solar,&
+          sspgrid%sip,sspgrid%sim)
+     !vary [Ca/H]
+     CALL ADD_RESPONSE(spec,pos%ah,0.3,dr,vr,dm2,vm2,sspgrid%solar,&
+          sspgrid%cap,sspgrid%cam)
+     !vary [Ti/H]
+     CALL ADD_RESPONSE(spec,pos%ah,0.3,dr,vr,dm2,vm2,sspgrid%solar,&
+          sspgrid%tip,sspgrid%tim)
+     
+  ENDIF
+  
   !Only sigma, velz, logage, and [Z/H] are fit when either
   !fitting in Powell mode or "super simple" mode
-  IF (powell_fitting.EQ.0.AND.fit_type.NE.2) THEN
+  IF (powell_fitting.EQ.0.AND.(fit_type.EQ.0.OR.fit_type.EQ.1)) THEN
 
      !vary [Fe/H]
      CALL ADD_RESPONSE(spec,pos%feh,0.3,dr,vr,dm2,vm2,sspgrid%solar,&
