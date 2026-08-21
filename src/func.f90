@@ -45,6 +45,7 @@ FUNCTION FUNC(nposarr,spec,funit)
   DO i=1,npar
      IF (i.GT.npowell.AND.(powell_fitting.NE.0)) CYCLE
      IF (fit_type.EQ.1.AND.i.GT.nparsimp) CYCLE
+     IF (fit_type.EQ.2.AND.i.GT.npowell) CYCLE
      IF (fit_type.EQ.3.AND.i.GT.nparsemisimp) CYCLE
      IF (fit_indices.EQ.1.AND.i.LE.2) CYCLE
      IF ( (nposarr(i).GT.prhiarr(i)).OR.(nposarr(i).LT.prloarr(i)) ) pr=0.0
